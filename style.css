@@ -1,0 +1,63 @@
+body {
+    font-family: "Orbitron", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #000;
+}
+
+#game-screen {
+    background: url('background.png') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    margin: 0;
+}
+
+#registration-screen {
+        background: url('background.png') no-repeat center center;
+        background-size: cover;
+        width: 100%;
+        height: 100vh;
+    }
+
+#game-over-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+    }
+    
+#game-over-screen.d-none {
+        display: none;
+    }
+    
+    
+#pong {
+    border-radius: 10px;
+    margin-top: -20px;
+}
+
+.custom-btn {
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.5rem;
+    border-radius: 8px;
+}
+
+.custom-btn:hover {
+    color: rgb(170, 170, 170);
+}
