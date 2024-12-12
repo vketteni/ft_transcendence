@@ -1,0 +1,8 @@
+{
+	"name": "Django Dev Container",
+	"dockerComposeFile": "../docker-compose.yaml",
+	"service": "web",
+	"workspaceFolder": "/app",
+	"remoteUser": "root"
+  }
+  
