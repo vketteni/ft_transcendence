@@ -126,34 +126,53 @@ function update() {
         player.score++;
         resetBall();
     }
+    checkGameEnd();
 }
 
 
-// Render the game
 function render() {
+    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw paddles
-    drawRect(player.x, player.y, paddleWidth, paddleHeight, 'white');
-    drawRect(ai.x, ai.y, paddleWidth, paddleHeight, 'white');
+    drawRect(player.x, player.y, paddleWidth, paddleHeight, 'turquoise');
+    drawRect(ai.x, ai.y, paddleWidth, paddleHeight, 'pink');
 
-    // Draw ball
-    drawBall(ball.x, ball.y, ballSize / 2, 'white');
+    const ballColor = ball.x < canvas.width / 2 ? 'turquoise' : 'pink';
 
-    // Draw names
+    drawBall(ball.x, ball.y, ballSize / 2, ballColor);
+
+    ctx.font = '20px "Orbitron", sans-serif';
+
     ctx.fillStyle = 'white';
-    ctx.font = '20px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(playerAlias || 'Player', canvas.width / 4, 30); // Player alias
-    ctx.fillText('Computer', (canvas.width * 3) / 4, 30); // Computer name
 
-    // Draw scores
-    ctx.fillText(player.score, canvas.width / 4, 60); // Player score
-    ctx.fillText(ai.score, (canvas.width * 3) / 4, 60); // AI score
+    ctx.fillText(playerAlias || 'Player', canvas.width / 4, 30);
+    ctx.fillText('Computer', (canvas.width * 3) / 4, 30); 
+
+    ctx.fillText(player.score, canvas.width / 4, 60);
+    ctx.fillText(ai.score, (canvas.width * 3) / 4, 60);
 }
 
+function checkGameEnd() {
+    const scoreLimit = 5;
+    if (player.score >= scoreLimit || ai.score >= scoreLimit) {
+        const winnerText = player.score > ai.score ? `${playerAlias || 'Player'} Wins` : 'Computer Wins';
+        document.getElementById('winner').textContent = winnerText;
+        document.getElementById('game-over-screen').classList.remove('d-none');
+        
+        cancelAnimationFrame(gameLoopId);
+    }
+}
 
-// Game loop
+const restartGameButton = document.getElementById('restart-game-button');
+restartGameButton.addEventListener('click', () => {
+    player.score = 0;
+    ai.score = 0;
+    resetBall();
+    document.getElementById('game-over-screen').classList.add('d-none');
+    gameLoop();
+});
+
 function gameLoop() {
     update();
     render();
