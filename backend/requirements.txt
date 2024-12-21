@@ -51,3 +51,6 @@ redis==5.2.0
 celery[redis]==5.4.0
 django-celery-beat>=2.5.0
 starlette==0.45.2
+PyJWT
+django-allauth
+requests
