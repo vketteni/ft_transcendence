@@ -99,16 +99,17 @@ class GameManager:
 
 
     def initial_game_state(self):
+        paddle_height = 100  # Default height
         return {
             'players': {},
             'ball': {'x': 400, 'y': 150, 'vx': 4, 'vy': 4},
             'paddles': {
-                'left': {'y': 150, 'score': 0},
-                'right': {'y': 150, 'score': 0}
+                'left': {'y': 150, 'score': 0, 'height': paddle_height},
+                'right': {'y': 150, 'score': 0, 'height': paddle_height},
             },
             'canvas': {'width': 800, 'height': 400},
             'config': {
-                'paddle': {'width': 15, 'height': 100},
+                'paddle': {'width': 15, 'height': paddle_height},
                 'ball': {'diameter': 20},
             },
             'game_started': False,
@@ -192,10 +193,14 @@ class GameManager:
         ball_state['y'] += ball_state['vy']
 
     def handle_ball_collisions(self, game_state):
-        canvas = game_state['canvas']
-        ball = game_state['config']['ball']
-        paddle = game_state['config']['paddle']
-        ball_state = game_state['ball']
+        canvas = game_state.get('canvas', {})
+        ball = game_state.get('config', {}).get('ball', {})
+        paddle = game_state.get('config', {}).get('paddle', {})
+        ball_state = game_state.get('ball', {})
+
+        if 'height' not in paddle or 'diameter' not in ball:
+            logger.error("Paddle height or ball diameter missing from game config.")
+            return
 
         # Collisions with top and bottom walls
         if ball_state['y'] <= 0 or ball_state['y'] >= canvas['height'] - ball['diameter']:
