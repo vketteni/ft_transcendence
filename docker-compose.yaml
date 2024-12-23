@@ -29,6 +29,7 @@ services:
     depends_on:
       - web
 
+
   redis:
     image: redis:latest
     ports:

@@ -150,7 +150,6 @@ document.addEventListener('keyup', (e) => {
     }
 });
 
-window.addEventListener('resize', resizeCanvas);
 
 // Stop and reset the timer when needed
 export function stopAndResetTimer() {
