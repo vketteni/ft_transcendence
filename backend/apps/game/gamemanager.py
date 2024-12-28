@@ -30,28 +30,28 @@ class GameManager:
         """Run a central loop that updates all active games."""
         next_frame_time = time.perf_counter()
         frame_duration = 1.0 / self.TICK_RATE
-        broadcast_interval = 0.1  # 100ms
+        broadcast_interval = 0.05
         last_broadcast_time = 0
-
         while self.running:
-            # Compute delta time (if needed)
             start = time.perf_counter()
             dt = start - next_frame_time + frame_duration
 
-            # Update all games
-            self.update_all_games(dt)
+            for room_name, game_state in self.games.items():
+                if game_state.get('paused', False):
+                    continue
 
-			# Broadcast states
+                if game_state.get('game_started'):
+                    self.update_game_state(game_state, dt)
+
             if start - last_broadcast_time >= broadcast_interval:
                 await self.broadcast_all_states()
                 last_broadcast_time = start
 
-            # Compute remaining time to maintain stable tick rate
             next_frame_time += frame_duration
             sleep_duration = next_frame_time - time.perf_counter()
             if sleep_duration > 0:
                 await asyncio.sleep(sleep_duration)
-
+ 
     def create_or_get_game(self, room_name):
         if room_name not in self.games:
             self.games[room_name] = self.initial_game_state()
@@ -99,64 +99,81 @@ class GameManager:
 
 
     def initial_game_state(self):
+        paddle_width = 15
+        canvas_width = 800
+        canvas_height = 400 
+
         return {
             'players': {},
-            'ball': {'x': 400, 'y': 150, 'vx': 4, 'vy': 4},
+            'ball': {'x': canvas_width / 2, 'y': canvas_height / 2, 'vx': 4, 'vy': 4, 'render': True},
             'paddles': {
-                'left': {'y': 150, 'score': 0},
-                'right': {'y': 150, 'score': 0}
+                'left': {'x': 0, 'y': 150, 'score': 0},
+                'right': {'x': canvas_width - paddle_width, 'y': 150, 'score': 0},
             },
-            'canvas': {'width': 800, 'height': 400},
+            'canvas': {'width': canvas_width, 'height': canvas_height},
             'config': {
-                'paddle': {'width': 15, 'height': 100},
+                'paddle': {'width': paddle_width, 'height': 100},
                 'ball': {'diameter': 20},
             },
             'game_started': False,
+            'paused': False,
         }
 
-
     def set_game_started(self, room_name, started):
-        """Set the game_started flag for the room."""
         game = self.games.get(room_name)
         if game:
             game['game_started'] = started
-            logger.info(f"Game in room '{room_name}' started: {started}")
+
+    def set_game_paused(self, room_name, paused=True):
+        game = self.games.get(room_name)
+        if game:
+            game['paused'] = paused
+            # game['ball']['render'] = not paused
+
+    def set_game_resumed(self, room_name):
+        self.set_game_paused(room_name, paused=False)
 
     def update_all_games(self, dt):
         for room_name, game_state in self.games.items():
-            if game_state.get('game_started'):  # Only update if the game has started
+            if game_state.get('game_started'):
                 self.update_game_state(game_state, dt)
 
     def set_game_config(self, room_name, canvas, paddle, ball):
-        """Set canvas, paddle, and ball sizes for a specific room."""
         game = self.create_or_get_game(room_name)
         game['canvas'] = canvas
         game['config'] = {
-            'paddle': paddle,
-            'ball': ball
+                'paddle': paddle,
+                'ball': ball
+            }
+        game['paddles']['left'] = {
+            'x': 0,
+            'y': canvas['height'] / 2 - paddle['height'] / 2,
+            'score': game['paddles'].get('left', {}).get('score', 0)
+            }
+        game['paddles']['right'] = {
+            'x': canvas['width'],
+            'y': canvas['height'] / 2 - paddle['height'] / 2,
+            'score': game['paddles'].get('right', {}).get('score', 0)
         }
-        game['paddles']['left']['height'] = paddle['height']
-        game['paddles']['right']['height'] = paddle['height']
         logger.info(f"Game config set for room '{room_name}': canvas={canvas}, paddle={paddle}, ball={ball}")
 
     def update_game_state(self, game_state, dt):
         if 'config' not in game_state:
             return
-        self.update_paddles(game_state)
-        self.update_ai_paddle(game_state)
         self.update_ball_position(game_state)
         self.handle_ball_collisions(game_state)
         self.handle_scoring(game_state)
+        self.update_paddles(game_state)
+        self.update_ai_paddle(game_state)
 
     def update_paddles(self, game_state):
-
         paddle_speed = 6
         canvas_height = game_state['canvas']['height']
         paddle_height = game_state['config']['paddle']['height']
         max_paddle_y = canvas_height - paddle_height
 
         for player_data in game_state['players'].values():
-            if player_data['side'] == 'left':  # Only update the player's paddle
+            if player_data['side'] == 'left':
                 input_data = player_data['input']
                 paddle = game_state['paddles']['left']
 
@@ -165,11 +182,10 @@ class GameManager:
                 if input_data['down']:
                     paddle['y'] += paddle_speed
 
-                # Clamp paddle within canvas bounds
                 paddle['y'] = max(0, min(paddle['y'], max_paddle_y))
 
     def update_ai_paddle(self, game_state):
-        ai_speed = 5
+        ai_speed = 4
         canvas_height = game_state['canvas']['height']
         paddle_height = game_state['config']['paddle']['height']
         ball_y = game_state['ball']['y']
@@ -193,58 +209,106 @@ class GameManager:
 
     def handle_ball_collisions(self, game_state):
         canvas = game_state['canvas']
-        ball = game_state['config']['ball']
-        paddle = game_state['config']['paddle']
+        ball_config = game_state['config'].get('ball', {})
+        paddle_config = game_state['config'].get('paddle', {})
         ball_state = game_state['ball']
-
-        # Collisions with top and bottom walls
-        if ball_state['y'] <= 0 or ball_state['y'] >= canvas['height'] - ball['diameter']:
-            ball_state['vy'] = -ball_state['vy']
-
-        # Collisions with paddles
         left_paddle = game_state['paddles']['left']
         right_paddle = game_state['paddles']['right']
+        ball_radius = ball_config['diameter'] / 2
 
-        if self.check_paddle_collision(ball_state, left_paddle, paddle['width']):
-            self.reflect_ball(ball_state, left_paddle, paddle)
+        # Check wall collisions
+        if (ball_state['vy'] > 0):
+            if ball_state['y'] + ball_radius >= canvas['height']:
+                ball_state['vy'] = -ball_state['vy']
+        if (ball_state['vy'] < 0):
+            if ball_state['y'] - ball_radius <= 0 :
+                ball_state['vy'] = -ball_state['vy']
+        # Check for collision with the left paddle only if the ball is moving left
+        if ball_state['vx'] < 0:
+            if self.check_paddle_collision(ball_state, ball_config, left_paddle, paddle_config):
+                self.reflect_ball(ball_state, left_paddle, paddle_config)
 
-        if self.check_paddle_collision(ball_state, right_paddle, canvas['width'] - paddle['width'] - ball['diameter']):
-            self.reflect_ball(ball_state, right_paddle, paddle)
+        # Check for collision with the right paddle only if the ball is moving right
+        if ball_state['vx'] > 0:
+            if self.check_paddle_collision(ball_state, ball_config, right_paddle, paddle_config):
+                self.reflect_ball(ball_state, right_paddle, paddle_config)
 
-    def check_paddle_collision(self, ball, paddle, paddle_x):
-        return paddle_x <= ball['x'] <= paddle_x + 10 and paddle['y'] <= ball['y'] <= paddle['y'] + paddle['height']
+    def check_paddle_collision(self, ball_state, ball_config, paddle, paddle_config):
+        horizontally_collides = False
+        vertically_collides = False
+        ball_radius = ball_config['diameter'] / 2
+
+        if paddle['x'] == 0: # Left paddle
+            ball_edge_x = ball_state['x'] - ball_radius  # Left edge of the ball
+            paddle_edge_x = paddle['x']  # Right edge of the paddle
+            if ball_edge_x < paddle_edge_x:
+                horizontally_collides = True
+        else: # Right paddle
+            ball_edge_x = ball_state['x'] + ball_radius  # Right edge of the ball
+            paddle_edge_x = paddle['x'] # Left edge of the paddle
+            if ball_edge_x > paddle_edge_x:
+                horizontally_collides = True
+
+        # Check vertical overlap
+        ball_top = ball_state['y']
+        ball_bottom = ball_state['y'] + ball_config['diameter']
+        paddle_top = paddle['y']
+        paddle_bottom = paddle['y'] + paddle_config['height']
+
+        num_samples = 50  # Number of points to sample along the ball's edge
+        for i in range(num_samples + 1):
+            sampled_y = ball_top + i * (ball_bottom - ball_top) / num_samples
+            if paddle_top <= sampled_y <= paddle_bottom:
+                vertically_collides = True
+                break
+
+        return horizontally_collides and vertically_collides
 
     def reflect_ball(self, ball, paddle, paddle_config):
-        relative_hit = (ball['y'] - (paddle['y'] + paddle_config['height'] / 2)) / (paddle_config['height'] / 2)
-        ball['vx'] = -ball['vx']  # Reverse horizontal direction
-        ball['vy'] = 4 * relative_hit  # Adjust vertical velocity based on collision point
+            relative_hit = (ball['y'] - (paddle['y'] + paddle_config['height'] / 2)) / (paddle_config['height'] / 2)
+            ball['vx'] = -ball['vx'] 
+            ball['vy'] = 4 * relative_hit
 
     def handle_scoring(self, game_state):
         ball_state = game_state['ball']
         canvas = game_state['canvas']
-        ball_config = game_state['config']['ball']
 
-        if ball_state['x'] < 0:  # Left side
+        if ball_state['x'] < 0:
             game_state['paddles']['right']['score'] += 1
-            self.reset_ball(ball_state, canvas, ball_config)
-        elif ball_state['x'] > canvas['width']:  # Right side
+            asyncio.create_task(self.reset_ball(ball_state, canvas))
+        elif ball_state['x'] > canvas['width']:
             game_state['paddles']['left']['score'] += 1
-            self.reset_ball(ball_state, canvas, ball_config)
-
-    def reset_ball(self, ball, canvas, ball_config):
-        """Reset ball position to the center of the canvas."""
-        logger.info(f"Resetting ball: previous_position={ball}")
+            asyncio.create_task(self.reset_ball(ball_state, canvas))
+            
+    async def reset_ball(self, ball, canvas):
+        ball['render'] = False
+        
         ball['x'] = canvas['width'] // 2
         ball['y'] = canvas['height'] // 2
         ball['vx'] = 4 * (-1 if ball['vx'] > 0 else 1)
         ball['vy'] = 4 * (-1 if ball['vy'] > 0 else 1)
 
+        # Wait for one broadcast cycle (50ms by default)
+        await asyncio.sleep(0.05) 
+        ball['render'] = True
+
     async def broadcast_all_states(self):
         for room_name, game_state in self.games.items():
+            if not game_state.get('game_started'):
+                continue
             message = {
                 'type': 'state_update',
-                'ball': game_state['ball'],  # Ball position
-                'paddles': game_state['paddles'],  # Paddle positions
+                'ball': game_state['ball'],
+                'paddles': {
+                    'left': {
+                        'y': game_state['paddles']['left']['y'],
+                        'score': game_state['paddles']['left']['score'],
+                    },
+                    'right': {
+                        'y': game_state['paddles']['right']['y'],
+                        'score': game_state['paddles']['right']['score'],
+                    },
+                },
             }
             await self.channel_layer.group_send(
                 f"game_{room_name}",
