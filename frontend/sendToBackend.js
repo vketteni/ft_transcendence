@@ -26,7 +26,7 @@ export function sendDimensions() {
         paddle: { width: GAME_CONFIG.paddleWidth, height: GAME_CONFIG.paddleHeight },
         ball: { diameter: GAME_CONFIG.ballDiameter },
     };
-    console.log("Sending canvas and game config:", canvasConfig);
+    console.log("RESIZE: sending canvas and game config:", canvasConfig);
     socket.send(JSON.stringify(canvasConfig));
 }
 

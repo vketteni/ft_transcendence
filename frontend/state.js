@@ -10,6 +10,7 @@ export let clientState = {
         y: GAME_CONFIG.canvasHeight / 2,
         vx: 4,
         vy: 4,
+        render: false,
     },
 };
 
@@ -19,6 +20,7 @@ export let serverState = {
         y: clientState.ball.y,
         vx: clientState.ball.vx,
         vy: clientState.ball.vy,
+        render: clientState.ball.render,
     },
     paddles: {
         left: { y: clientState.paddles.left.y, score: clientState.paddles.left.score },

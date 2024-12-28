@@ -99,7 +99,7 @@ class GameManager:
 
         return {
             'players': {},
-            'ball': {'x': canvas_width / 2, 'y': canvas_height / 2, 'vx': 4, 'vy': 4},
+            'ball': {'x': canvas_width / 2, 'y': canvas_height / 2, 'vx': 4, 'vy': 4, 'render': True},
             'paddles': {
                 'left': {'x': 0, 'y': 150, 'score': 0},
                 'right': {'x': canvas_width - paddle_width, 'y': 150, 'score': 0},
@@ -170,7 +170,7 @@ class GameManager:
                 paddle['y'] = max(0, min(paddle['y'], max_paddle_y))
 
     def update_ai_paddle(self, game_state):
-        ai_speed = 5
+        ai_speed = 4
         canvas_height = game_state['canvas']['height']
         paddle_height = game_state['config']['paddle']['height']
         ball_y = game_state['ball']['y']
@@ -218,7 +218,6 @@ class GameManager:
             if self.check_paddle_collision(ball_state, ball_config, right_paddle, paddle_config):
                 self.reflect_ball(ball_state, right_paddle, paddle_config)
 
-
     def check_paddle_collision(self, ball_state, ball_config, paddle, paddle_config):
         horizontally_collides = False
         vertically_collides = False
@@ -261,17 +260,22 @@ class GameManager:
 
         if ball_state['x'] < 0:
             game_state['paddles']['right']['score'] += 1
-            self.reset_ball(ball_state, canvas)
+            asyncio.create_task(self.reset_ball(ball_state, canvas))
         elif ball_state['x'] > canvas['width']:
             game_state['paddles']['left']['score'] += 1
-            self.reset_ball(ball_state, canvas)
-
-    def reset_ball(self, ball, canvas):
-        # logger.info(f"Resetting ball: previous_position={ball}")
+            asyncio.create_task(self.reset_ball(ball_state, canvas))
+            
+    async def reset_ball(self, ball, canvas):
+        ball['render'] = False
+        
         ball['x'] = canvas['width'] // 2
         ball['y'] = canvas['height'] // 2
         ball['vx'] = 4 * (-1 if ball['vx'] > 0 else 1)
         ball['vy'] = 4 * (-1 if ball['vy'] > 0 else 1)
+
+        # Wait for one broadcast cycle (50ms by default)
+        await asyncio.sleep(0.05) 
+        ball['render'] = True
 
     async def broadcast_all_states(self):
         for room_name, game_state in self.games.items():
@@ -298,5 +302,6 @@ class GameManager:
                     'data': message,
                 }
             )
+
 # Export a singleton instance of GameManager
 game_manager = GameManager()

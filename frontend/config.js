@@ -11,7 +11,6 @@ export const GAME_CONFIG = {
 export let playerAlias = '';
 export let socket = null;
 
-
 export function initializeWebSocket() {
     if (!socket || socket.readyState === WebSocket.CLOSED) {
         socket = new WebSocket('ws://localhost:8000/ws/game/room1/');
