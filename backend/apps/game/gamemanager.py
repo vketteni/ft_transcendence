@@ -35,7 +35,13 @@ class GameManager:
         while self.running:
             start = time.perf_counter()
             dt = start - next_frame_time + frame_duration
-            self.update_all_games(dt)
+
+            for room_name, game_state in self.games.items():
+                if game_state.get('paused', False):
+                    continue
+
+                if game_state.get('game_started'):
+                    self.update_game_state(game_state, dt)
 
             if start - last_broadcast_time >= broadcast_interval:
                 await self.broadcast_all_states()
@@ -45,7 +51,7 @@ class GameManager:
             sleep_duration = next_frame_time - time.perf_counter()
             if sleep_duration > 0:
                 await asyncio.sleep(sleep_duration)
-
+ 
     def create_or_get_game(self, room_name):
         if room_name not in self.games:
             self.games[room_name] = self.initial_game_state()
@@ -110,13 +116,22 @@ class GameManager:
                 'ball': {'diameter': 20},
             },
             'game_started': False,
+            'paused': False,
         }
 
     def set_game_started(self, room_name, started):
         game = self.games.get(room_name)
         if game:
             game['game_started'] = started
-            logger.info(f"Game in room '{room_name}' started: {started}")
+
+    def set_game_paused(self, room_name, paused=True):
+        game = self.games.get(room_name)
+        if game:
+            game['paused'] = paused
+            # game['ball']['render'] = not paused
+
+    def set_game_resumed(self, room_name):
+        self.set_game_paused(room_name, paused=False)
 
     def update_all_games(self, dt):
         for room_name, game_state in self.games.items():
@@ -133,12 +148,12 @@ class GameManager:
         game['paddles']['left'] = {
             'x': 0,
             'y': canvas['height'] / 2 - paddle['height'] / 2,
-            'score': 0
+            'score': game['paddles'].get('left', {}).get('score', 0)
             }
         game['paddles']['right'] = {
             'x': canvas['width'],
             'y': canvas['height'] / 2 - paddle['height'] / 2,
-            'score': 0
+            'score': game['paddles'].get('right', {}).get('score', 0)
         }
         logger.info(f"Game config set for room '{room_name}': canvas={canvas}, paddle={paddle}, ball={ball}")
 

@@ -76,6 +76,25 @@ body {
     background-color: rgb(100, 100, 100);
 }
 
+#start-button {
+    margin-top: 550px;
+}
+
+#pause-button {
+    position: absolute; 
+    top: 80px;
+    background-color: grey; /* Default color */
+    color: white;
+}
+
+#pause-button.paused {
+    background-color: grey;
+}
+
+#pause-button.resumed {
+    background-color: grey;
+}
+
 /* ========================
    HELPER CLASSES
 ======================== */

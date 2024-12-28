@@ -57,6 +57,14 @@ class GameConsumer(AsyncWebsocketConsumer):
         elif action == 'start_game':
             logger.info(f"Starting game for room: {self.room_name}")
             game_manager.set_game_started(self.room_name, True)  # Start the game
+        
+        elif action == 'pause_game':
+            logger.info(f"Pausing game for room: {self.room_name}")
+            game_manager.set_game_paused(self.room_name)
+        
+        elif action == 'resume_game':
+            logger.info(f"Resuming game for room: {self.room_name}")
+            game_manager.set_game_resumed(self.room_name)
 
     async def game_message(self, event):
         # Called by group_send in GameManager

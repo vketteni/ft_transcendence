@@ -5,6 +5,7 @@ import { serverState } from './state.js';
 import { sendInput, sendAlias, sendDimensions } from './sendToBackend.js';
 
 initializeWebSocket();
+let isPaused = false;
 
 DOM.canvas.width = GAME_CONFIG.canvasWidth;
 DOM.canvas.height = GAME_CONFIG.canvasHeight;
@@ -49,9 +50,28 @@ DOM.startButton.addEventListener('click', () => {
     console.log("Start button clicked.");
     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
     DOM.startButton.classList.add('d-none');
+    DOM.pauseButton.classList.remove('d-none'); 
     DOM.canvas.classList.remove('d-none'); 
     resizeCanvas();
 });
+
+DOM.pauseButton.addEventListener('click', () => {
+    isPaused = !isPaused;
+
+    if (isPaused) {
+        DOM.pauseButton.classList.add('paused');
+        DOM.pauseButton.classList.remove('resumed');
+        DOM.pauseButton.textContent = "Resume";
+        socket.send(JSON.stringify({ action: 'pause_game' }));
+    } else {
+        DOM.pauseButton.classList.add('resumed');
+        DOM.pauseButton.classList.remove('paused');
+        DOM.pauseButton.textContent = "Pause";
+        socket.send(JSON.stringify({ action: 'resume_game' }));
+    }
+});
+
+
 
 window.addEventListener('resize', resizeCanvas);
 
