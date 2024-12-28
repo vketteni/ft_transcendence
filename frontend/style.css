@@ -1,51 +1,90 @@
-/* General Styling */
+/* ========================
+   RESET
+======================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ========================
+   BODY
+======================== */
 body {
-    font-family: "Orbitron", sans-serif;
+    font-family: "Roboto", sans-serif;
+    background-color: black;
+    height: 100%;
+    margin: 0;
+    overflow: hidden; /* Ensures no scrolling or whitespace around the canvas */
 }
 
-/* Registration and Game Screens */
-#registration-screen, #game-screen {
-    background-size: cover;
+/* ========================
+   SCREENS
+======================== */
+#registration-screen, 
+#game-screen {
+    display: flex; /* Enables Flexbox */
+    flex-direction: column; /* Ensures children (button and canvas) stack vertically */
+    justify-content: center; /* Centers content vertically */
+    align-items: center; /* Centers content horizontally */
+    width: 100vw; /* Full width */
+    height: 100vh; /* Full height */
+    background-color: black;
 }
 
-/* Form Styling */
-#registration-form {
-    font-family: "Roboto", sans-serif; /* Use a regular font for the form */
-}
-
-/* Game Over Screen */
+/* ========================
+   GAME OVER SCREEN
+======================== */
 #game-over-screen {
     z-index: 10;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
 }
 
-/* Pong Canvas */
+/* ========================
+   PONG CANVAS
+======================== */
 #pong {
+    display: block;
+    margin: auto;
     border-radius: 10px;
+    background-color: black; /* Ensures canvas blends with background */
 }
 
-/* Buttons */
+/* ========================
+   BUTTONS
+======================== */
 .btn-primary {
     color: white;
+    background-color: rgb(100, 100, 100);
     border: none;
     padding: 15px 30px;
     font-size: 1.5rem;
     border-radius: 8px;
-    transition: color 0.3s;
+    transition: color 0.3s, background-color 0.3s;
 }
 
 .btn-primary:hover {
-    color: rgb(170, 170, 170);
+    color: rgb(45, 45, 45);
+    background-color: rgb(100, 100, 100);
 }
 
-/* Helper Classes */
+/* ========================
+   HELPER CLASSES
+======================== */
 .bg-cover {
     background-size: cover;
 }
 
-.font-orbitron {
-    font-family: "Orbitron", sans-serif;
-}
-
-.regular-font {
-    font-family: "Roboto", sans-serif;
+.hidden {
+    visibility: hidden; /* Hides the element while keeping its space */
+    opacity: 0; /* Makes it fully transparent */
+    pointer-events: none; /* Disables interaction */
 }

@@ -1,6 +1,6 @@
 import { GAME_CONFIG, getPlayerAlias, socket } from './config.js';
 // import { DOM } from './dom.js';
-// import { gameState } from './gameState.js';
+// import { clientState } from './state.js';
 
 let lastSentInput = null;
 const INPUT_THROTTLE_INTERVAL = 50; // in milliseconds

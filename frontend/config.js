@@ -11,16 +11,17 @@ export const GAME_CONFIG = {
 export let playerAlias = '';
 export let socket = null;
 
+
 export function initializeWebSocket() {
     if (!socket || socket.readyState === WebSocket.CLOSED) {
         socket = new WebSocket('ws://localhost:8000/ws/game/room1/');
         socket.onclose = () => {
-            console.error("WebSocket closed. Attempting to reconnect...");
+            // console.error("WebSocket closed. Attempting to reconnect...");
             setTimeout(() => initializeWebSocket(), 1000); // Retry after 1 second
         };
-        socket.onerror = (error) => {
-            console.error("WebSocket error:", error);
-        };
+        // socket.onerror = (error) => {
+        //     console.error("WebSocket error:", error);
+        // };
     }
 }
 

@@ -1,15 +1,42 @@
 import { GAME_CONFIG, getPlayerAlias } from './config.js';
 import { DOM } from './dom.js';
-import { gameState } from './gameState.js';
+import { clientState, serverState } from './state.js';
 import { sendDimensions } from './sendToBackend.js';
+
+const EXTRAPOLATION_FACTOR = 0.2;
+const SERVER_UPDATE_INTERVAL = 0.05;
+
+export function renderLoop() {
+    extrapolateState();
+    render();
+    requestAnimationFrame(renderLoop);
+};
+
+function extrapolateState() {
+    const serverBall = serverState.ball;
+    const clientBall = clientState.ball;
+
+    const predictedX = serverBall.x + (serverBall.vx) * SERVER_UPDATE_INTERVAL;
+    const predictedY = serverBall.y + (serverBall.vy) * SERVER_UPDATE_INTERVAL;
+
+    clientBall.x += (predictedX - clientBall.x) * EXTRAPOLATION_FACTOR;
+    clientBall.y += (predictedY - clientBall.y) * EXTRAPOLATION_FACTOR;
+
+   
+    const PADDLE_SYNC_FACTOR = 0.2;
+    clientState.paddles.left.y +=
+        (serverState.paddles.left.y - clientState.paddles.left.y) * PADDLE_SYNC_FACTOR;
+    clientState.paddles.right.y +=
+        (serverState.paddles.right.y - clientState.paddles.right.y) * PADDLE_SYNC_FACTOR;
+}
 
 export function render() {
     clearCanvas();
 
-    drawRect(8, gameState.paddles.left.y, GAME_CONFIG.paddleWidth, GAME_CONFIG.paddleHeight, GAME_CONFIG.paddleColor);
-    drawRect(GAME_CONFIG.canvasWidth - GAME_CONFIG.paddleWidth - 8, gameState.paddles.right.y, GAME_CONFIG.paddleWidth, GAME_CONFIG.paddleHeight, GAME_CONFIG.paddleColor);
+    drawRect(0, clientState.paddles.left.y, GAME_CONFIG.paddleWidth, GAME_CONFIG.paddleHeight, GAME_CONFIG.paddleColor);
+    drawRect(GAME_CONFIG.canvasWidth - GAME_CONFIG.paddleWidth, clientState.paddles.right.y, GAME_CONFIG.paddleWidth, GAME_CONFIG.paddleHeight, GAME_CONFIG.paddleColor);
     
-    drawBall(gameState.ball.x, gameState.ball.y, GAME_CONFIG.ballDiameter / 2, GAME_CONFIG.ballColor);
+    drawBall(clientState.ball.x, clientState.ball.y, GAME_CONFIG.ballDiameter / 2, GAME_CONFIG.ballColor);
 
     const fontSize = Math.floor(GAME_CONFIG.canvasHeight * 0.05);
     DOM.ctx.font = `${fontSize}px "Arial", sans-serif`;
@@ -32,13 +59,13 @@ export function render() {
     );
 
     DOM.ctx.fillText(
-        gameState.paddles.left.score,
+        serverState.paddles.left.score,
         GAME_CONFIG.canvasWidth * 0.2,
         scoreOffsetY
     );
 
     DOM.ctx.fillText(
-        gameState.paddles.right.score,
+        serverState.paddles.right.score,
         GAME_CONFIG.canvasWidth * 0.8,
         scoreOffsetY
     );
@@ -61,7 +88,6 @@ export function drawBall(x, y, radius, color) {
     DOM.ctx.closePath();
     DOM.ctx.fill();
 }
-
 
 export function resizeCanvas() {
     const windowWidth = window.innerWidth * 0.6;
@@ -86,10 +112,10 @@ export function resizeCanvas() {
     GAME_CONFIG.paddleHeight = canvasHeight * 0.2;
     GAME_CONFIG.ballDiameter = canvasWidth * 0.025;
 
-    gameState.paddles.left.y = canvasHeight / 2 - GAME_CONFIG.paddleHeight / 2;
-    gameState.paddles.right.y = canvasHeight / 2 - GAME_CONFIG.paddleHeight / 2;
-    gameState.ball.x = canvasWidth / 2;
-    gameState.ball.y = canvasHeight / 2;
+    clientState.paddles.left.y = canvasHeight / 2 - GAME_CONFIG.paddleHeight / 2;
+    clientState.paddles.right.y = canvasHeight / 2 - GAME_CONFIG.paddleHeight / 2;
+    clientState.ball.x = canvasWidth / 2;
+    clientState.ball.y = canvasHeight / 2;
 
     sendDimensions();
     render();

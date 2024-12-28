@@ -8,7 +8,11 @@ export const DOM = {
     startButton: document.getElementById('start-button'),
     canvasImg: (() => {
         const img = new Image();
-        img.src = './canvas.jpg';
+        img.src = './canvas.png';
         return img;
     })(),
+};
+
+DOM.canvasImg.onerror = () => {
+    console.error('Image failed to load. Check the file path.');
 };

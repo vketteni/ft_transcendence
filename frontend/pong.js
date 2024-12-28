@@ -1,11 +1,8 @@
 import { GAME_CONFIG, setPlayerAlias, getPlayerAlias, socket, initializeWebSocket } from './config.js';
-import { render, resizeCanvas } from './render.js';
+import { resizeCanvas, renderLoop } from './render.js';
 import { DOM } from './dom.js';
-import { gameState } from './gameState.js';
+import { serverState } from './state.js';
 import { sendInput, sendAlias, sendDimensions } from './sendToBackend.js';
-
-let isSocketOpen = false;
-let gameStarted = false;
 
 initializeWebSocket();
 
@@ -13,63 +10,64 @@ DOM.canvas.width = GAME_CONFIG.canvasWidth;
 DOM.canvas.height = GAME_CONFIG.canvasHeight;
 
 socket.onopen = () => {
-    isSocketOpen = true;
     console.log("WebSocket connection established.");
-    if (getPlayerAlias) {
-        sendAlias();
-    }
     sendDimensions();
 };
 
 socket.onmessage = function (event) {
     const data = JSON.parse(event.data);
-    console.log("State update received:", data);
+    // console.log("State update received from server:", data);
 
     if (data.type === 'state_update') {
-        gameState.ball = data.ball;
-        gameState.paddles = data.paddles;
-        if (gameStarted)
-            render();
+        serverState.paddles.left.y = data.paddles.left.y;
+        serverState.paddles.left.score = data.paddles.left.score;
+        serverState.paddles.right.y = data.paddles.right.y;
+        serverState.paddles.right.score = data.paddles.right.score;
+        serverState.ball = data.ball;
     }
 };
 
 DOM.registrationForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const alias = DOM.aliasInput.value.trim();
+    if (!alias) {
+        alert("Please register first.");
+        return;
+    }
     if (alias) {
         setPlayerAlias(alias);
-        localStorage.setItem('playerAlias', alias); // Save alias locally
+        sendAlias();
         DOM.registrationScreen.classList.add('d-none');
-        DOM.gameScreen.classList.remove('d-none'); // Show game screen
-        DOM.startButton.classList.remove('d-none'); // Show Start Game button
+        DOM.gameScreen.classList.remove('d-none');
+        DOM.startButton.classList.remove('hidden');
     } else {
         alert("Please enter a valid alias!");
     }
 });
 
 DOM.startButton.addEventListener('click', () => {
-    if (!getPlayerAlias()) {
-        alert("Please register first.");
-        return;
-    }
-
     console.log("Start button clicked.");
-    gameStarted = true;
-
     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
     DOM.startButton.classList.add('d-none');
-    DOM.canvas.classList.remove('d-none');
-    if (gameStarted) 
-        resizeCanvas();
+    DOM.canvas.classList.remove('d-none'); 
+    resizeCanvas();
+    renderLoop(); 
 });
 
 window.addEventListener('resize', resizeCanvas);
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowUp') {
-        sendInput(true, false);
-    } else if (e.key === 'ArrowDown') {
-        sendInput(false, true);
+document.addEventListener("keydown", (e) => {
+    if (socket.readyState === WebSocket.OPEN) {
+        const up = e.key === "ArrowUp";
+        const down = e.key === "ArrowDown";
+
+        if (up || down) {
+            socket.send(JSON.stringify({
+                action: "input",
+                up: up,
+                down: down
+            }));
+        }
     }
 });
 
@@ -78,7 +76,3 @@ document.addEventListener('keyup', (e) => {
         sendInput(false, false);
     }
 });
-
-DOM.canvasImg.onerror = () => {
-    console.error('Image failed to load. Check the file path.');
-};

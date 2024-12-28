@@ -33,7 +33,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
-        logger.info(f"WebSocket receive: room={self.room_name}, data={text_data}")
+        # logger.info(f"WebSocket receive: room={self.room_name}, data={text_data}")
         data = json.loads(text_data)
         action = data.get('action')
         player_alias = data.get('player')
@@ -42,15 +42,14 @@ class GameConsumer(AsyncWebsocketConsumer):
             if player_alias:
                 game_manager.set_player_alias(self.room_name, self.channel_name, player_alias)
 
-        if action == 'canvas_and_game_config':
+        elif action == 'canvas_and_game_config':
             canvas = data.get('canvas')
             paddle = data.get('paddle')
             ball = data.get('ball')
             logger.info(f"Received canvas and game config: canvas={canvas}, paddle={paddle}, ball={ball}")
             game_manager.set_game_config(self.room_name, canvas, paddle, ball)
 
-
-        if action == 'input':
+        elif action == 'input':
             up = data.get('up', False)
             down = data.get('down', False)
             game_manager.update_player_input(self.room_name, self.channel_name, up, down)
