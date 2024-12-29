@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
     python3-dev \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy and install Python dependencies
@@ -29,5 +30,6 @@ RUN chown -R appuser:appuser /app
 
 USER appuser
 
-# Command to run the application
-# CMD ["daphne", "-b", "0.0.0.0"`, "-p", "8000", "config.asgi:application"]
+EXPOSE 8000
+
+CMD ["sh", "tools/script.sh"]

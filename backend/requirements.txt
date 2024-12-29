@@ -55,3 +55,5 @@ starlette==0.45.2
 djangorestframework-simplejwt
 django-allauth
 requests
+psycopg>=3.1.8
+python-decouple

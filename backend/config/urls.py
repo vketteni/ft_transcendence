@@ -16,12 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.conf.urls.static import static
-from django.conf import settings
+from apps.accounts import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('apps.accounts.urls')),
+    path('accounts', views.home, name='oauth2'),
+    path('account/login', views.login_42, name='oauth2_login'),
+    path('account/login/redirect', views.login_42_redirect, name='oauth2_login_redirect'),
     path('game/', include('apps.game.urls')),
     path('matchmaking/', include('apps.matchmaking.urls')),
 ]

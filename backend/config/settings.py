@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'apps.matchmaking',
 
     # Required by allauth
-    'django.contrib.sites',
+    # 'django.contrib.sites',
     # OAuth Library
     'allauth',
     'allauth.account',
@@ -103,6 +103,10 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # DRF Basic Setup
