@@ -68,13 +68,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
-# Database (use Postgres in production)
+import os
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # For dev purposes
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': 'postgres',  # This should match the service name in docker-compose.yaml
+        'PORT': 5432,        # Default PostgreSQL port
     }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -118,6 +124,11 @@ CSP_CONNECT_SRC = [
 CSP_DEFAULT_SRC = ["'self'"]
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+]
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -141,3 +152,7 @@ LOGGING = {
         },
     },
 }
+
+# backend/config/settings.py
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
