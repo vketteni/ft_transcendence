@@ -7,6 +7,7 @@ from django.shortcuts import redirect
 import requests
 import logging
 from decouple import config
+from django.contrib.auth import authenticate, login
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ def login_42_redirect(request: HttpRequest):
     code = request.GET.get("code")
     logger.info(f"Code received: {code}")
     user = exchange_code(code)
+    authenticate(request, user=user)
     return JsonResponse({ "user": user })
 
 def exchange_code(code: str):
