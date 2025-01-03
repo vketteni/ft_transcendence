@@ -12,7 +12,7 @@
 ======================== */
 body {
     font-family: "Roboto", sans-serif;
-    background-color: black;
+    background-color: rgb(18, 10, 95);
     height: 100%;
     margin: 0;
     overflow: hidden; /* Ensures no scrolling or whitespace around the canvas */
@@ -29,7 +29,7 @@ body {
     align-items: center; /* Centers content horizontally */
     width: 100vw; /* Full width */
     height: 100vh; /* Full height */
-    background-color: black;
+    background-color: rgb(21, 19, 48);
 }
 
 /* ========================
@@ -106,4 +106,21 @@ body {
     visibility: hidden; /* Hides the element while keeping its space */
     opacity: 0; /* Makes it fully transparent */
     pointer-events: none; /* Disables interaction */
+}
+
+#background-video {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	z-index: -1;
+}
+
+.font-orbitron {
+	font-family: 'Orbitron', sans-serif;
+}
+.regular-font {
+	font-family: 'Roboto', sans-serif;
 }
