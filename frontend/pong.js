@@ -133,3 +133,4 @@ document.addEventListener('keyup', (e) => {
         sendInput(false, false);
     }
 });
+
