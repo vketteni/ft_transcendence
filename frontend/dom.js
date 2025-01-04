@@ -1,11 +1,17 @@
 export const DOM = {
     canvas: document.getElementById('pong'),
     ctx: document.getElementById('pong').getContext('2d'),
+
+    backgroundCanvas: document.getElementById('background-animation'), // Add this
+    backgroundCtx: document.getElementById('background-animation').getContext('2d'), // And this
+    
     registrationScreen: document.getElementById('registration-screen'),
+
+
     loginScreen: document.getElementById('login-screen'),
     signupScreen: document.getElementById('signup-screen'),
     gameScreen: document.getElementById('game-screen'),
-    
+
     loginButton: document.getElementById('login-button'),
     signupButton: document.getElementById('signup-button'),
 

@@ -11,11 +11,23 @@
    BODY
 ======================== */
 body {
-    font-family: "Roboto", sans-serif;
+    font-family: "Jacquard 24", serif;
     background-color: rgb(18, 10, 95);
     height: 100%;
     margin: 0;
     overflow: hidden; /* Ensures no scrolling or whitespace around the canvas */
+}
+
+/* Specific styles for buttons or headings */
+h1, h2, h3, .btn, #login-button, #signup-button {
+    font-family: "Jacquard 24", serif;
+    font-weight: 400; /* Adjust weight for readability */
+}
+
+/* For the game title */
+#home-screen img {
+    font-family: "Jacquard 24", serif;
+    font-size: 2rem;
 }
 
 /* ========================
@@ -123,4 +135,12 @@ body {
 }
 .regular-font {
 	font-family: 'Roboto', sans-serif;
+}
+
+#background-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1; /* Ensure it stays in the background */
+    pointer-events: none; /* Prevent blocking clicks on other elements */
 }
