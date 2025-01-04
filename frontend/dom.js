@@ -2,8 +2,8 @@ export const DOM = {
     canvas: document.getElementById('pong'),
     ctx: document.getElementById('pong').getContext('2d'),
 
-    backgroundCanvas: document.getElementById('background-animation'), // Add this
-    backgroundCtx: document.getElementById('background-animation').getContext('2d'), // And this
+    backgroundCanvas: document.getElementById('background-animation'),
+    backgroundCtx: document.getElementById('background-animation').getContext('2d'), 
     
     registrationScreen: document.getElementById('registration-screen'),
 
