@@ -24,6 +24,7 @@ urlpatterns = [
     path('accounts', views.home, name='oauth2'),
     path('account/login', views.login_42, name='oauth2_login'),
     path('account/login/redirect', views.login_42_redirect, name='oauth2_login_redirect'),
+    path('account/user', views.get_authenticated_user, name='get_authenticated_user'),
     path('game/', include('apps.game.urls')),
     path('matchmaking/', include('apps.matchmaking.urls')),
 ]

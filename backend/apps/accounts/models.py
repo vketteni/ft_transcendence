@@ -1,6 +1,7 @@
 # accounts/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from .managers import UserOAuth2Manager
 import hashlib
 from django.conf import settings
 
@@ -9,8 +10,13 @@ class User(AbstractUser):
     Custom user model extending AbstractUser.
     Add additional fields specific to your game here.
     """
+    # Add any additional fields if needed
+    objects = UserOAuth2Manager()
     skill_level = models.IntegerField(default=0)  # Example: Player skill level
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)  # Example: Profile picture
+
+    def is_authenticated(self, request):
+        return True
 
     def __str__(self):
         return self.username

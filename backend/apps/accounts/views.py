@@ -8,6 +8,7 @@ import requests
 import logging
 from decouple import config
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,11 @@ auth_url_42 = (
 def home(request: HttpRequest) -> HttpResponse:
     return JsonResponse({ "msg": "Hello World" })
 
+@login_required(login_url="/account/login") #route if the user is not logged-in
+def get_authenticated_user(request: HttpRequest):
+    logger.info(request.user)
+    return JsonResponse({ "msg": "Authenticated" })
+
 def login_42(request: HttpRequest):
     return redirect(auth_url_42)
 
@@ -29,8 +35,11 @@ def login_42_redirect(request: HttpRequest):
     code = request.GET.get("code")
     logger.info(f"Code received: {code}")
     user = exchange_code(code)
-    authenticate(request, user=user)
-    return JsonResponse({ "user": user })
+    user_42 = authenticate(request, user=user)
+    user_42 = list(user_42).pop()
+    logger.info(f"user_42: {user_42}")
+    login(request, user_42)
+    return redirect("/account/user")
 
 def exchange_code(code: str):
     data = {

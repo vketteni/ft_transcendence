@@ -11,8 +11,8 @@ services:
     # command: ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
     # environment:
     #   - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres_db:5432/${POSTGRES_DB}
-    # depends_on:
-    #   - postgres_db
+    depends_on:
+      - postgres_db
     env_file:
       - .env
     environment:
