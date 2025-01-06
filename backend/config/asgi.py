@@ -2,10 +2,13 @@
 import os
 import django
 import asyncio
-
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
-from apps.game.gamemanager import game_manager  # Import GameManager instance
+from channels.auth import AuthMiddlewareStack
+
+from backend.apps.game.manager import game_manager  # Import GameManager instance
+import apps.game.routing
+import apps.matchmaking.routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
@@ -13,12 +16,14 @@ django.setup()
 # Create HTTP ASGI application
 django_asgi_app = get_asgi_application()
 
-
-import apps.game.routing
-# Wrap with ProtocolTypeRouter to handle different protocols
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    "websocket": URLRouter(apps.game.routing.websocket_urlpatterns),
+    "websocket": AuthMiddlewareStack(
+        URLRouter(
+            apps.matchmaking.routing.websocket_urlpatterns +
+            apps.game.routing.websocket_urlpatterns
+        )
+    ),
 })
 
 # Start GameManager's main loop at ASGI startup
