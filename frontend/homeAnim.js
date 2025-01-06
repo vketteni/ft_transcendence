@@ -1,15 +1,8 @@
-export const DOM = {
-    backgroundCanvas: document.getElementById('background-animation'),
-    backgroundCtx: document.getElementById('background-animation').getContext('2d'),
-};
-
-// Resize the canvas to fill the entire viewport
-function resizeCanvas() {
-    DOM.backgroundCanvas.width = window.innerWidth;
-    DOM.backgroundCanvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+import { GAME_CONFIG, setPlayerAlias, getPlayerAlias, socket, initializeWebSocket } from './config.js';
+import { resizeCanvas } from './render.js';
+import { DOM } from './dom.js';
+import { serverState } from './state.js';
+import { sendInput, sendAlias, sendDimensions } from './sendToBackend.js';
 
 // Animation setup
 const balls = [];
