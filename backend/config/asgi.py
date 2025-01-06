@@ -6,7 +6,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
 
-from backend.apps.game.manager import game_manager  # Import GameManager instance
+from apps.game.manager import game_manager  # Import GameManager instance
 import apps.game.routing
 import apps.matchmaking.routing
 
