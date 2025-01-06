@@ -5,7 +5,7 @@ import { serverState } from './state.js';
 import { sendInput, sendAlias, sendDimensions } from './sendToBackend.js';
 import { Timer } from './timer.js';
 
-initializeWebSocket();
+// initializeWebSocket();
 let isPaused = false;
 
 DOM.canvas.width = GAME_CONFIG.canvasWidth;
@@ -27,7 +27,7 @@ socket.onmessage = function (event) {
         serverState.ball = data.ball;
     }
 	else if (data.type === 'queue_joined') {
-        socket = new WebSocket(`ws://localhost:8000/ws/game/${data.room_id}/`);
+        socket = new WebSocket(`ws://localhost:8000/ws/matchmaking/${data.queue_id}/`);
 	}
 	else if (data.type === 'game_start') {
         // If the game started, stop and reset the timer
