@@ -7,7 +7,7 @@ from django.shortcuts import redirect
 import requests
 import logging
 from decouple import config
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
 logger = logging.getLogger(__name__)
@@ -36,10 +36,17 @@ def login_42_redirect(request: HttpRequest):
     logger.info(f"Code received: {code}")
     user = exchange_code(code)
     user_42 = authenticate(request, user=user)
+
     user_42 = list(user_42).pop()
     logger.info(f"user_42: {user_42}")
+    
     login(request, user_42)
     return redirect("/account/user")
+
+def logout_user(request: HttpRequest):
+    logger.info(f"User {request.user} logged out.")
+    logout(request)
+    return JsonResponse({ "msg": "Logged out" })
 
 def exchange_code(code: str):
     data = {
