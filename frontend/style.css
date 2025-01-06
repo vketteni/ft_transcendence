@@ -80,6 +80,10 @@ body {
     margin-top: 550px;
 }
 
+#matchmaking-button {
+    margin-top: 550px;
+}
+
 #pause-button {
     position: absolute; 
     top: 80px;

@@ -6,6 +6,7 @@ export const DOM = {
     registrationForm: document.getElementById('registration-form'),
     aliasInput: document.getElementById('alias-input'),
     startButton: document.getElementById('start-button'),
+    matchmakingButton: document.getElementById('matchmaking-button'),
     pauseButton: document.getElementById('pause-button'),
     canvasImg: (() => {
         const img = new Image();
