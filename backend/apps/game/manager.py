@@ -54,6 +54,7 @@ class GameManager:
  
     def create_or_get_game(self, room_name):
         if room_name not in self.games:
+            
             self.games[room_name] = self.initial_game_state()
             logger.info(f"Created new game state for room: {room_name}")
         return self.games[room_name]

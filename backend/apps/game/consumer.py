@@ -3,13 +3,9 @@ import asyncio
 import json
 import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .gamemanager import GameManager
+from .manager import game_manager
 
 logger = logging.getLogger(__name__)
-
-# Create a global instance of GameManager
-# In a production setting, you might start it elsewhere and import that instance.
-game_manager = GameManager()
 
 class GameConsumer(AsyncWebsocketConsumer):
 
