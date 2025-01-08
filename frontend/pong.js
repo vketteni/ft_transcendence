@@ -56,7 +56,7 @@ DOM.loginForm.addEventListener('submit', (e) => {
     DOM.loginScreen.classList.add('d-none');
     DOM.gameScreen.classList.remove('d-none');
     setPlayerAlias(alias);
-    sendAlias();
+    sendAlias(); // send paasword as well
 });
 
 // Handle "Login with 42"
@@ -81,7 +81,7 @@ DOM.signupForm.addEventListener('submit', (e) => {
     DOM.signupScreen.classList.add('d-none');
     DOM.gameScreen.classList.remove('d-none');
     setPlayerAlias(alias);
-    sendAlias();
+    sendAlias();// send paasword as well
 });
 
 DOM.startButton.addEventListener('click', () => {
