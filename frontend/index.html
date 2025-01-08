@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Jacquard+24&display=swap" rel="stylesheet">    
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    
+<body class="vh-100 d-flex align-items-center justify-content-center">
+    <!-- Ball Animation Background -->
+    <canvas id="background-animation" class="position-fixed top-0 start-0 w-100 h-100"></canvas>
+
+    
+    <!-- registration -->
+    <div id="registration-screen" class="d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
+		<img src="title.png" alt="Game Title" class="img-fluid mb-4" style="max-width: 400px;">
+		<button id="login-button" class="btn btn-lg btn-primary mb-3">Login</button>
+        <button id="signup-button" class="btn btn-lg btn-primary mb-3">Sign Up</button>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="d-none d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
+        <h1>Login</h1>
+        <form id="login-form" class="text-center w-25 regular-font">
+            <input type="text" id="login-alias" class="form-control mb-3" placeholder="Enter your alias" required maxlength="20">
+            <input type="password" id="login-password" class="form-control mb-3" placeholder="Enter your password" required>
+            <button type="submit" class="btn btn-lg btn-primary mb-3">Login</button>
+            <button id="login-42-button" class="btn btn-lg btn-outline-primary">Login with 42</button>
+        </form>
+    </div>
+
+    <!-- Sign Up Screen -->
+    <div id="signup-screen" class="d-none d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
+        <h1>Sign Up</h1>
+        <form id="signup-form" class="text-center w-25 regular-font">
+            <input type="text" id="signup-alias" class="form-control mb-3" placeholder="Create your alias" required maxlength="20">
+            <input type="password" id="signup-password" class="form-control mb-3" placeholder="Create a secure password" required>
+            <button type="submit" class="btn btn-lg btn-primary">Sign Up</button>
+        </form>
+    </div>
+
+    <!-- category screen-->
+	<div id="category-screen" class="d-none d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
+        <!-- <div class="d-flex flex-column flex-row justify-content-center align-items-center"> -->
+            <button id="PvP-button" class="btn btn-lg btn-primary mb-3">Player vs Player</button>
+			<button id="PvC-button" class="btn btn-lg btn-primary mb-3">Player vs Computer</button>
+			<button id="Tournament-button" class="btn btn-lg btn-primary">Tournament</button>
+            <canvas id="pong"></canvas>
+        <!-- </div> -->
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex flex-column justify-content-center align-items-center">
+        <h1>Game Over</h1>
+        <p id="winner"></p>
+        <button id="restart-game-button" class="btn btn-lg btn-primary">Restart</button>
+    </div>
+
+    <script type="module" src="pong.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* BODY */
+body {
+    font-family: "Jacquard 24", serif;
+    color: white;
+    background-color: black;
+    height: 100%;
+    margin: 0;
+    overflow: hidden; /* Prevents scrolling */
+}
+
+/* BUTTONS */
+.btn-primary {
+    color: white; /* Text color */
+    border-color: white; /* Outline color */
+    background-color: transparent; /* Transparent background */
+    padding: 15px 30px;
+    font-size: 1.5rem;
+    border-radius: 8px;
+    transition: color 0.3s, background-color 0.3s;
+}
+
+.btn-primary:hover {
+    color: black; /* Change text to white */
+    background-color: white; /* Red background on hover */
+}
+
+/* SCREENS */
+#registration-screen,
+#category-screen {
+    /* display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh; */
+    background-color: transparent; /* Ensure transparency */
+}
+
+/* BACKGROUND ANIMATION */
+#background-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1; /* Keep it behind other elements */
+    background-color: transparent;
+    pointer-events: none; /* Allow interactions with other elements */
+}
