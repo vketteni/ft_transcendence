@@ -10,7 +10,7 @@ export const DOM = {
 
     loginScreen: document.getElementById('login-screen'),
     signupScreen: document.getElementById('signup-screen'),
-    gameScreen: document.getElementById('game-screen'),
+    categoryScreen: document.getElementById('category-screen'),
 
     loginButton: document.getElementById('login-button'),
     signupButton: document.getElementById('signup-button'),
@@ -25,7 +25,9 @@ export const DOM = {
     signupAlias: document.getElementById('signup-alias'),
     signupPassword: document.getElementById('signup-password'),
 
-    startButton: document.getElementById('start-button'),
+    PvPButton: document.getElementById('PVP-button'),
+	PvCButton: document.getElementById('PVC-button'),
+	TournamentButton: document.getElementById('Tournament-button'),
     pauseButton: document.getElementById('pause-button'),
     canvasImg: (() => {
         const img = new Image();

@@ -54,7 +54,7 @@ DOM.loginForm.addEventListener('submit', (e) => {
     console.log("Login:", { alias, password });
 
     DOM.loginScreen.classList.add('d-none');
-    DOM.gameScreen.classList.remove('d-none');
+    DOM.categoryScreen.classList.remove('d-none');
     setPlayerAlias(alias);
     sendAlias(); // send paasword as well
 });
@@ -79,19 +79,37 @@ DOM.signupForm.addEventListener('submit', (e) => {
     console.log("Sign Up:", { alias, password });
 
     DOM.signupScreen.classList.add('d-none');
-    DOM.gameScreen.classList.remove('d-none');
+    DOM.categoryScreen.classList.remove('d-none');
     setPlayerAlias(alias);
     sendAlias();// send paasword as well
 });
 
-DOM.startButton.addEventListener('click', () => {
-    console.log("Start button clicked.");
+DOM.PvCButton.addEventListener('click', () => {
+    console.log("PvC button clicked.");
     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
-    DOM.startButton.classList.add('d-none');
+    DOM.PvCButton.classList.add('d-none');
     DOM.pauseButton.classList.remove('d-none'); 
     DOM.canvas.classList.remove('d-none'); 
     resizeCanvas();
 });
+
+// DOM.PvPButton.addEventListener('click', () => {
+//     console.log("PvP button clicked.");
+//     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
+//     DOM.PvPButton.classList.add('d-none');
+//     DOM.pauseButton.classList.remove('d-none'); 
+//     DOM.canvas.classList.remove('d-none'); 
+//     resizeCanvas();
+// });
+
+// DOM.TournamentButton.addEventListener('click', () => {
+//     console.log("tournament button clicked.");
+//     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
+//     DOM.TournamentButton.classList.add('d-none');
+//     DOM.pauseButton.classList.remove('d-none'); 
+//     DOM.canvas.classList.remove('d-none'); 
+//     resizeCanvas();
+// });
 
 DOM.pauseButton.addEventListener('click', () => {
     isPaused = !isPaused;

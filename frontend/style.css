@@ -33,7 +33,7 @@ body {
 
 /* SCREENS */
 #registration-screen,
-#game-screen {
+#category-screen {
     display: flex;
     flex-direction: column;
     justify-content: center;
