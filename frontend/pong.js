@@ -71,8 +71,6 @@ DOM.pauseButton.addEventListener('click', () => {
     }
 });
 
-
-
 window.addEventListener('resize', resizeCanvas);
 
 document.addEventListener("keydown", (e) => {
