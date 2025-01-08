@@ -28,22 +28,60 @@ socket.onmessage = function (event) {
     
 };
 
-DOM.registrationForm.addEventListener('submit', (e) => {
+// Navigation between screens
+DOM.loginButton.addEventListener('click', () => {
+    DOM.registrationScreen.classList.add('d-none');
+    DOM.loginScreen.classList.remove('d-none');
+});
+
+DOM.signupButton.addEventListener('click', () => {
+    DOM.registrationScreen.classList.add('d-none');
+    DOM.signupScreen.classList.remove('d-none');
+});
+
+// Handle login form submission
+DOM.loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const alias = DOM.aliasInput.value.trim();
-    if (!alias) {
-        alert("Please register first.");
+    const alias = DOM.loginAlias.value.trim();
+    const password = DOM.loginPassword.value.trim();
+
+    if (!alias || !password) {
+        alert("Please enter both alias and password.");
         return;
     }
-    if (alias) {
-        setPlayerAlias(alias);
-        sendAlias();
-        DOM.registrationScreen.classList.add('d-none');
-        DOM.gameScreen.classList.remove('d-none');
-        DOM.startButton.classList.remove('hidden');
-    } else {
-        alert("Please enter a valid alias!");
+
+    // Send login request to the server
+    console.log("Login:", { alias, password });
+
+    DOM.loginScreen.classList.add('d-none');
+    DOM.gameScreen.classList.remove('d-none');
+    setPlayerAlias(alias);
+    sendAlias(); // send paasword as well
+});
+
+// Handle "Login with 42"
+DOM.login42Button.addEventListener('click', () => {
+    window.location.href = "https://signin.intra.42.fr";
+});
+
+// Handle sign-up form submission
+DOM.signupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const alias = DOM.signupAlias.value.trim();
+    const password = DOM.signupPassword.value.trim();
+
+    if (!alias || !password) {
+        alert("Please create both alias and password.");
+        return;
     }
+
+    // Send sign-up request to the server
+    console.log("Sign Up:", { alias, password });
+
+    DOM.signupScreen.classList.add('d-none');
+    DOM.gameScreen.classList.remove('d-none');
+    setPlayerAlias(alias);
+    sendAlias();// send paasword as well
 });
 
 DOM.startButton.addEventListener('click', () => {
@@ -71,6 +109,8 @@ DOM.pauseButton.addEventListener('click', () => {
     }
 });
 
+
+
 window.addEventListener('resize', resizeCanvas);
 
 document.addEventListener("keydown", (e) => {
@@ -93,3 +133,4 @@ document.addEventListener('keyup', (e) => {
         sendInput(false, false);
     }
 });
+
