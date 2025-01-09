@@ -17,8 +17,8 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
-        # Ensure the GameManager is running
-        asyncio.get_event_loop().create_task(game_manager.start())
+        # # Ensure the GameManager is running
+        # asyncio.get_event_loop().create_task(game_manager.start())
 
         # Add player to the room via the GameManager
         game_manager.add_player(self.room_name, self.channel_name)
@@ -42,12 +42,13 @@ class GameConsumer(AsyncWebsocketConsumer):
             canvas = data.get('canvas')
             paddle = data.get('paddle')
             ball = data.get('ball')
-            logger.info(f"Received canvas and game config: canvas={canvas}, paddle={paddle}, ball={ball}")
+            logger.debug(f"Received canvas and game config: canvas={canvas}, paddle={paddle}, ball={ball}")
             game_manager.set_game_config(self.room_name, canvas, paddle, ball)
 
         elif action == 'input':
             up = data.get('up', False)
             down = data.get('down', False)
+            # logger.debug(f"Received input: up:{up} down:{down}")
             game_manager.update_player_input(self.room_name, self.channel_name, up, down)
 
         elif action == 'start_game':

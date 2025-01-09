@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'channels',
 	'csp',
-
+	'django_celery_beat',
 
     # Local Apps
     'apps.accounts',
@@ -144,15 +144,26 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console', 'file'],
-            'level': 'INFO',
+            'level': 'DEBUG',  # Enable DEBUG level logs
+            'propagate': True,
         },
-        'backend': {
+        '__main__': {  # For your custom application logs
             'handlers': ['console', 'file'],
-            'level': 'INFO',
+            'level': 'DEBUG',  # Enable DEBUG level logs
         },
     },
 }
 
+
 # backend/config/settings.py
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+STATIC_URL = '/static/'
+STATIC_ROOT = '/app/static/'
+
+
+# settings.py
+CELERY_BROKER_URL = 'redis://redis:6379/0'  # Use the Redis service from Docker Compose
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'

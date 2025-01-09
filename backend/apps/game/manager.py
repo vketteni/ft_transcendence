@@ -19,20 +19,29 @@ class GameManager:
             return
         self.running = True
         logger.info("GameManager started.")
-        
+        print("DEBUG : GameManager started.")
         # Initialize channel layer here
         if not self.channel_layer:
             self.channel_layer = get_channel_layer()
         
-        await self.game_loop()
+        await self.server_loop()
 
-    async def game_loop(self):
+    async def stop(self):
+        """Stop the game loop gracefully."""
+        self.running = False
+        logger.info("GameManager stopped.")
+
+
+    async def server_loop(self):
         """Run a central loop that updates all active games."""
+        logger.info("server_loop()")
         next_frame_time = time.perf_counter()
         frame_duration = 1.0 / self.TICK_RATE
         broadcast_interval = 0.05
         last_broadcast_time = 0
         while self.running:
+            logger.info("server_loop() iteration starts.")
+
             start = time.perf_counter()
             dt = start - next_frame_time + frame_duration
 
@@ -44,13 +53,17 @@ class GameManager:
                     self.update_game_state(game_state, dt)
 
             if start - last_broadcast_time >= broadcast_interval:
+                logger.info("broadcasting state in 3 2 1 . .")
                 await self.broadcast_all_states()
+                logger.info("broadcasting state has finished")
                 last_broadcast_time = start
 
             next_frame_time += frame_duration
             sleep_duration = next_frame_time - time.perf_counter()
             if sleep_duration > 0:
+                logger.info("asyncio.sleep() before")
                 await asyncio.sleep(sleep_duration)
+            logger.info("server_loop() iteration ends (never reaches here)")
  
     def create_or_get_game(self, room_name):
         if room_name not in self.games:
@@ -294,7 +307,9 @@ class GameManager:
         ball['render'] = True
 
     async def broadcast_all_states(self):
+        logger.info("broadcast_all_states() called")
         for room_name, game_state in self.games.items():
+            logger.info("broadcast room: " + room_name)
             if not game_state.get('game_started'):
                 continue
             message = {
@@ -318,6 +333,7 @@ class GameManager:
                     'data': message,
                 }
             )
+        logger.info("broadcast_all_states() finsihed")
 
 # Export a singleton instance of GameManager
 game_manager = GameManager()

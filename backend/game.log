@@ -1,0 +1,78 @@
+Not Found: /static/admin/css/base.css
+Not Found: /static/admin/css/responsive.css
+Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/css/dark_mode.css
+Not Found: /static/admin/js/theme.js
+Not Found: /static/admin/css/login.css
+Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/css/responsive.css
+Not Found: /static/admin/js/nav_sidebar.js
+Not Found: /static/admin/css/login.css
+Not Found: /static/admin/css/base.css
+Not Found: /static/admin/css/responsive.css
+Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/css/dark_mode.css
+Not Found: /static/admin/js/theme.js
+Not Found: /static/admin/css/login.css
+Not Found: /static/admin/js/nav_sidebar.js
+Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/css/login.css
+Not Found: /static/admin/css/responsive.css
+Not Found: /static/admin/css/login.css
+Not Found: /static/admin/css/responsive.css
+Not Found: /static/admin/css/base.css
+Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/css/dark_mode.css
+Not Found: /static/admin/js/theme.js
+Not Found: /static/admin/js/nav_sidebar.js
+Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/css/responsive.css
+Not Found: /static/admin/css/login.css
+Not Found: /static/admin/css/responsive.css
+Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/css/base.css
+Not Found: /static/admin/css/dark_mode.css
+Not Found: /static/admin/js/theme.js
+Not Found: /static/admin/css/dashboard.css
+Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/js/nav_sidebar.js
+Not Found: /static/admin/css/responsive.css
+Not Found: /static/admin/css/base.css
+Not Found: /static/admin/js/theme.js
+Not Found: /static/admin/css/dark_mode.css
+Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/css/changelists.css
+Not Found: /static/admin/css/responsive.css
+Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/js/jquery.init.js
+Not Found: /static/admin/js/vendor/jquery/jquery.js
+Not Found: /static/admin/js/core.js
+Not Found: /static/admin/js/admin/RelatedObjectLookups.js
+Not Found: /static/admin/js/actions.js
+Not Found: /static/admin/js/urlify.js
+Not Found: /static/admin/js/prepopulate.js
+Not Found: /static/admin/img/search.svg
+Not Found: /static/admin/js/vendor/xregexp/xregexp.js
+Not Found: /static/admin/js/nav_sidebar.js
+Not Found: /static/admin/css/responsive.css
+Not Found: /static/admin/js/filters.js
+Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/css/responsive.css
+Not Found: /static/admin/js/theme.js
+Not Found: /static/admin/css/dark_mode.css
+Not Found: /static/admin/css/dashboard.css
+Not Found: /static/admin/css/base.css
+Not Found: /static/admin/css/dashboard.css
+Not Found: /static/admin/js/nav_sidebar.js
+Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/css/responsive.css
+(0.034) SELECT "accounts_user"."id", "accounts_user"."password", "accounts_user"."last_login", "accounts_user"."is_superuser", "accounts_user"."username", "accounts_user"."first_name", "accounts_user"."last_name", "accounts_user"."email", "accounts_user"."is_staff", "accounts_user"."is_active", "accounts_user"."date_joined", "accounts_user"."skill_level", "accounts_user"."avatar" FROM "accounts_user" WHERE "accounts_user"."username" = 'v' LIMIT 21; args=('v',); alias=default
+(0.004) SELECT "accounts_player"."id", "accounts_player"."user_id", "accounts_player"."name", "accounts_player"."identifier" FROM "accounts_player" WHERE "accounts_player"."user_id" = 6 LIMIT 21; args=(6,); alias=default
+(0.000) SELECT "accounts_user"."id", "accounts_user"."password", "accounts_user"."last_login", "accounts_user"."is_superuser", "accounts_user"."username", "accounts_user"."first_name", "accounts_user"."last_name", "accounts_user"."email", "accounts_user"."is_staff", "accounts_user"."is_active", "accounts_user"."date_joined", "accounts_user"."skill_level", "accounts_user"."avatar" FROM "accounts_user" WHERE "accounts_user"."username" = 'Vincent' LIMIT 21; args=('Vincent',); alias=default
+(0.000) SELECT "accounts_player"."id", "accounts_player"."user_id", "accounts_player"."name", "accounts_player"."identifier" FROM "accounts_player" WHERE "accounts_player"."user_id" = 3 LIMIT 21; args=(3,); alias=default
+(0.035) INSERT INTO "matchmaking_match" ("player1_id", "player2_id", "start_time", "end_time", "winner_id", "score_player1", "score_player2", "duration") VALUES (5, 2, '2025-01-09T11:40:31.802705+00:00'::timestamptz, NULL, NULL, 0, 0, NULL) RETURNING "matchmaking_match"."id"; args=(5, 2, datetime.datetime(2025, 1, 9, 11, 40, 31, 802705, tzinfo=datetime.timezone.utc), None, None, 0, 0, None); alias=default
+(0.001) SELECT "accounts_user"."id", "accounts_user"."password", "accounts_user"."last_login", "accounts_user"."is_superuser", "accounts_user"."username", "accounts_user"."first_name", "accounts_user"."last_name", "accounts_user"."email", "accounts_user"."is_staff", "accounts_user"."is_active", "accounts_user"."date_joined", "accounts_user"."skill_level", "accounts_user"."avatar" FROM "accounts_user" WHERE "accounts_user"."username" = 'v' LIMIT 21; args=('v',); alias=default
+(0.000) SELECT "accounts_player"."id", "accounts_player"."user_id", "accounts_player"."name", "accounts_player"."identifier" FROM "accounts_player" WHERE "accounts_player"."user_id" = 6 LIMIT 21; args=(6,); alias=default
+(0.000) SELECT "accounts_user"."id", "accounts_user"."password", "accounts_user"."last_login", "accounts_user"."is_superuser", "accounts_user"."username", "accounts_user"."first_name", "accounts_user"."last_name", "accounts_user"."email", "accounts_user"."is_staff", "accounts_user"."is_active", "accounts_user"."date_joined", "accounts_user"."skill_level", "accounts_user"."avatar" FROM "accounts_user" WHERE "accounts_user"."username" = 'Vincent' LIMIT 21; args=('Vincent',); alias=default
+(0.000) SELECT "accounts_player"."id", "accounts_player"."user_id", "accounts_player"."name", "accounts_player"."identifier" FROM "accounts_player" WHERE "accounts_player"."user_id" = 3 LIMIT 21; args=(3,); alias=default
+(0.012) INSERT INTO "matchmaking_match" ("player1_id", "player2_id", "start_time", "end_time", "winner_id", "score_player1", "score_player2", "duration") VALUES (5, 2, '2025-01-09T11:49:51.771801+00:00'::timestamptz, NULL, NULL, 0, 0, NULL) RETURNING "matchmaking_match"."id"; args=(5, 2, datetime.datetime(2025, 1, 9, 11, 49, 51, 771801, tzinfo=datetime.timezone.utc), None, None, 0, 0, None); alias=default

@@ -1,15 +1,20 @@
 # apps/matchmaking/consumers.py
 from channels.generic.websocket import JsonWebsocketConsumer
 from asgiref.sync import async_to_sync
-from .manager import MatchmakingManager
+from .manager import matchmaking_manager
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 
 class MatchmakingConsumer(JsonWebsocketConsumer):
     def connect(self):
         self.accept()
-        self.group_name = f"queue_{self.scope['user'].id}"
+        self.group_name = f"queue_{123}"
+        # logger.info(f"{self.group_name}")
         async_to_sync(self.channel_layer.group_add)(self.group_name, self.channel_name)
-        self.manager = MatchmakingManager()
+        self.manager = matchmaking_manager
 
     def disconnect(self, close_code):
         async_to_sync(self.channel_layer.group_discard)(self.group_name, self.channel_name)
@@ -60,8 +65,15 @@ class MatchmakingConsumer(JsonWebsocketConsumer):
         })
         
     def send_server_event(self, event):
-        """Receive server-initiated events and send them to the client."""
-        self.send_json(event)
+        """
+        Receive server-initiated events and send them to the client,
+        transforming 'event_type' to 'type' for the frontend.
+        """
+        self.send_json({
+            "type": event["event_type"],  # Use event_type as the frontend's type
+            "data": event["data"],        # Pass the rest of the data
+        })
+
 
     def handle_ping(self):
         self.send_json({"type": "pong"})

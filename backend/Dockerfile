@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11-slim 
 
 # Set working directory
 WORKDIR /app
@@ -16,8 +16,17 @@ RUN apt-get update && apt-get install -y \
 COPY backend/requirements.txt /app/
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
+
 # Copy the application code
 COPY backend /app/
 
+# Add a non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Set default permissions for the app directory
+RUN chown -R appuser:appuser /app
+
+USER appuser
+
 # Command to run the application
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
+# CMD ["daphne", "-b", "0.0.0.0"`, "-p", "8000", "config.asgi:application"]

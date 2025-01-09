@@ -1,23 +1,35 @@
-import { GAME_CONFIG, getPlayerAlias, socket } from './config.js';
+import { GAME_CONFIG, getPlayerAlias } from './config.js';
+import { wsManager } from './WebSocketManager.js';
 // import { DOM } from './dom.js';
 // import { clientState } from './state.js';
 
 let lastSentInput = null;
-const INPUT_THROTTLE_INTERVAL = 50; // in milliseconds
+const INPUT_THROTTLE_INTERVAL = 50; // milliseconds
 
-export function sendInput( up, down) {
+export function sendInput(up, down) {
     const now = Date.now();
     if (lastSentInput && now - lastSentInput < INPUT_THROTTLE_INTERVAL) {
         return; // Skip sending if throttled
     }
     lastSentInput = now;
-    socket.send(JSON.stringify({ action: 'input', player: getPlayerAlias, up, down }));
+
+    // Use WebSocketManager for sending input
+    wsManager.send('game', {
+        action: 'input',
+        player: getPlayerAlias(),
+        up,
+        down
+    });
 }
 
 export function sendAlias() {
-    console.log(`Sending alias "${getPlayerAlias}" to backend.`);
-    socket.send(JSON.stringify({ action: 'alias', player: getPlayerAlias() }));
+    console.log(`Sending alias "${getPlayerAlias()}" to backend.`);
+    wsManager.send('game', {
+        action: 'alias',
+        player: getPlayerAlias()
+    });
 }
+
 
 export function sendDimensions() {
     const canvasConfig = {
@@ -27,6 +39,9 @@ export function sendDimensions() {
         ball: { diameter: GAME_CONFIG.ballDiameter },
     };
     console.log("RESIZE: sending canvas and game config:", canvasConfig);
-    socket.send(JSON.stringify(canvasConfig));
+
+    // Use WebSocketManager for sending game dimensions
+    wsManager.send('game', canvasConfig);
 }
+
 

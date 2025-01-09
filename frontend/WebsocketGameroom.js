@@ -1,0 +1,40 @@
+import { serverState } from './state.js';
+import { wsManager } from './WebSocketManager.js';
+
+export function connectToGame(gameRoomUrl) {
+    wsManager.connect(
+        'game',
+        gameRoomUrl,
+        handleGameMessage,
+        handleGameClose
+    );
+	
+}
+
+function handleGameMessage(event) {
+    const data = JSON.parse(event.data);
+
+    switch (data.type) {
+        case 'state_update':
+			console.log("received state");
+            updateGameState(data);
+            break;
+
+        default:
+            console.warn('Unknown game message type:', data.type);
+    }
+}
+
+function handleGameClose(event) {
+    console.warn('Game WebSocket closed.');
+}
+
+// Update game state
+function updateGameState(data) {
+	serverState.paddles.left.y = data.paddles.left.y;
+	serverState.paddles.left.score = data.paddles.left.score;
+	serverState.paddles.right.y = data.paddles.right.y;
+	serverState.paddles.right.score = data.paddles.right.score;
+	serverState.ball = data.ball;
+}
+
