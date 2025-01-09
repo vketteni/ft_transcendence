@@ -1,5 +1,6 @@
 import { wsManager } from './WebSocketManager.js';
 import { connectToMatchmaking } from './WebsocketMatchmaking.js';
+import { connectToGame } from './WebsocketGameroom.js';
 import { GAME_CONFIG, setPlayerAlias, getPlayerAlias } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
@@ -39,7 +40,7 @@ DOM.registrationForm.addEventListener('submit', (e) => {
 
 DOM.matchmakingButton.addEventListener('click', () => {
     console.log("Matchmaking button clicked.");
-
+	connectToGame("ws://localhost:8000/ws/game/0/");
     wsManager.send('game', { action: 'start_game', player: getPlayerAlias() });
     DOM.pauseButton.classList.remove('d-none');
     DOM.canvas.classList.remove('d-none');
