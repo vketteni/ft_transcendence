@@ -1,9 +1,11 @@
 import asyncio
+from asyncio import Lock
 import logging
 import time
 from channels.layers import get_channel_layer
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 class GameManager:
     TICK_RATE = 60  # 60 updates per second
@@ -11,27 +13,26 @@ class GameManager:
     def __init__(self):
         self.games = {}  # {room_name: game_state_dict}
         self.running = False
-        self.channel_layer = None  # Initialize as None
-
-    async def start(self):
-        """Start the main game loop."""
-        if self.running:
-            return
-        self.running = True
-        logger.info("GameManager started.")
-        print("DEBUG : GameManager started.")
-        # Initialize channel layer here
-        if not self.channel_layer:
-            self.channel_layer = get_channel_layer()
+        self.channel_layer = self.channel_layer = get_channel_layer()
+        self.lock = Lock()
         
-        await self.server_loop()
+    async def start(self):
+        try:
+            if self.running:
+                return
+            if not self.games:
+                logger.warning("No games to manage. Delaying server_loop start.")
+                return
+            self.running = True
+            await self.server_loop()
+        except Exception as e:
+            logger.error(f"Error in GameManager start: {e}")
 
     async def stop(self):
         """Stop the game loop gracefully."""
         self.running = False
         logger.info("GameManager stopped.")
-
-
+   
     async def server_loop(self):
         """Run a central loop that updates all active games."""
         logger.info("server_loop()")
@@ -39,72 +40,87 @@ class GameManager:
         frame_duration = 1.0 / self.TICK_RATE
         broadcast_interval = 0.05
         last_broadcast_time = 0
-        while self.running:
-            logger.info("server_loop() iteration starts.")
-
-            start = time.perf_counter()
-            dt = start - next_frame_time + frame_duration
-
-            for room_name, game_state in self.games.items():
-                if game_state.get('paused', False):
-                    continue
-
-                if game_state.get('game_started'):
-                    self.update_game_state(game_state, dt)
-
-            if start - last_broadcast_time >= broadcast_interval:
-                logger.info("broadcasting state in 3 2 1 . .")
-                await self.broadcast_all_states()
-                logger.info("broadcasting state has finished")
-                last_broadcast_time = start
-
-            next_frame_time += frame_duration
-            sleep_duration = next_frame_time - time.perf_counter()
-            if sleep_duration > 0:
-                logger.info("asyncio.sleep() before")
-                await asyncio.sleep(sleep_duration)
-            logger.info("server_loop() iteration ends (never reaches here)")
+        try:
+            while self.running:
+                logger.info("server_loop() iteration starts.")
+    
+                start = time.perf_counter()
+                dt = start - next_frame_time + frame_duration
+    
+                for room_name, game_state in self.games.items():
+                    if game_state.get('paused', False):
+                        continue
+    
+                    if game_state.get('game_started'):
+                        self.update_game_state(game_state, dt)
+    
+                if start - last_broadcast_time >= broadcast_interval:
+                    logger.info("broadcasting state in 3 2 1 . .")
+                    await self.broadcast_all_states()
+                    logger.info("broadcasting state has finished")
+                    last_broadcast_time = start
+    
+                next_frame_time += frame_duration
+                sleep_duration = next_frame_time - time.perf_counter()
+                if sleep_duration > 0:
+                    logger.info("asyncio.sleep() before")
+                    await asyncio.sleep(sleep_duration)
+                logger.info("server_loop() iteration ends (never reaches here)")
+        except Exception as e:
+            logger.error(f"Error in server_loop: {e}")
+        finally:
+            logger.info("Exiting server_loop. Cleaning up.")
+            self.running = False
  
-    def create_or_get_game(self, room_name):
-        if room_name not in self.games:
-            
-            self.games[room_name] = self.initial_game_state()
-            logger.info(f"Created new game state for room: {room_name}")
-        return self.games[room_name]
+    async def create_or_get_game(self, room_name):
+        async with self.lock:
+            if room_name not in self.games:
+                self.games[room_name] = self.initial_game_state()
+                logger.info(f"Created new game state for room: {room_name}")
+                # Start the server loop only when the first game is created
+                if not self.running:
+                    await self.start()
+            return self.games[room_name]
 
-    def remove_game(self, room_name):
-        if room_name in self.games:
-            del self.games[room_name]
-            logger.info(f"Removed game state for room: {room_name}")
 
-    def add_player(self, room_name, channel_name):
-        game = self.create_or_get_game(room_name)
-        players = game['players']
-        side = 'left' if len(players) == 0 else 'right'
-        players[channel_name] = {
-            'side': side,
-            'input': {'up': False, 'down': False},
-            'alias': None
-        }
-        logger.info(f"Player {channel_name} joined room {room_name} as {side}")
+    async def remove_game(self, room_name):
+        async with self.lock:
+            if room_name in self.games:
+                del self.games[room_name]
+                logger.info(f"Removed game state for room: {room_name}")
 
-    def remove_player(self, room_name, channel_name):
-        game = self.games.get(room_name)
-        if not game:
-            return
-        if channel_name in game['players']:
-            del game['players'][channel_name]
-            logger.info(f"Player {channel_name} left room {room_name}")
+    async def add_player(self, room_name, channel_name):
+        async with self.lock:
+            logger.info(f"add_player() called. ")
+            game = await self.create_or_get_game(room_name)
+            players = game['players']
+            side = 'left' if len(players) == 0 else 'right'
+            players[channel_name] = {
+                'side': side,
+                'input': {'up': False, 'down': False},
+                'alias': None
+            }
+            logger.info(f"Player {channel_name} joined room {room_name} as {side}")
 
-        # Optional: If no players left, you can remove the game from memory
-        if len(game['players']) == 0:
-            self.remove_game(room_name)
+    async def remove_player(self, room_name, channel_name):
+        async with self.lock:
+            game = self.games.get(room_name)
+            if not game:
+                return
+            if channel_name in game['players']:
+                del game['players'][channel_name]
+                logger.info(f"Player {channel_name} left room {room_name}")
+    
+            # Optional: If no players left, you can remove the game from memory
+            if len(game['players']) == 0:
+                await self.remove_game(room_name)
 
-    def update_player_input(self, room_name, channel_name, up, down):
-        game = self.games.get(room_name)
-        if game and channel_name in game['players']:
-            game['players'][channel_name]['input']['up'] = up
-            game['players'][channel_name]['input']['down'] = down
+    async def update_player_input(self, room_name, channel_name, up, down):
+        async with self.lock:
+            game = self.games.get(room_name)
+            if game and channel_name in game['players']:
+                game['players'][channel_name]['input']['up'] = up
+                game['players'][channel_name]['input']['down'] = down
 
     def set_player_alias(self, room_name, channel_name, alias):
         game = self.games.get(room_name)
@@ -133,27 +149,35 @@ class GameManager:
             'paused': False,
         }
 
-    def set_game_started(self, room_name, started):
-        game = self.games.get(room_name)
-        if game:
-            game['game_started'] = started
+    async def set_game_started(self, room_name, started):
+        """Set the game_started flag for the room."""
+        async with self.lock:
+            game = self.games.get(room_name)
+            logger.info(f"Attempting to start game: {game}")
+            if game:
+                game['game_started'] = started
+                logger.info(f"Game in room '{room_name}' started: {started}")
 
-    def set_game_paused(self, room_name, paused=True):
-        game = self.games.get(room_name)
-        if game:
-            game['paused'] = paused
-            # game['ball']['render'] = not paused
+    async def set_game_paused(self, room_name, paused=True):
+        async with self.lock:
+            game = self.games.get(room_name)
+            if game:
+                game['paused'] = paused
+                # game['ball']['render'] = not paused
 
-    def set_game_resumed(self, room_name):
-        self.set_game_paused(room_name, paused=False)
+    async def set_game_resumed(self, room_name):
+        await self.set_game_paused(room_name, paused=False)
 
     def update_all_games(self, dt):
         for room_name, game_state in self.games.items():
             if game_state.get('game_started'):
                 self.update_game_state(game_state, dt)
 
-    def set_game_config(self, room_name, canvas, paddle, ball):
-        game = self.create_or_get_game(room_name)
+    async def set_game_config(self, room_name, canvas, paddle, ball):
+        game = await self.create_or_get_game(room_name)
+        if not game:
+            logger.warning(f"Game not found for room {room_name}")
+            return
         game['canvas'] = canvas
         game['config'] = {
                 'paddle': paddle,
@@ -283,57 +307,91 @@ class GameManager:
             ball['vx'] = -ball['vx'] 
             ball['vy'] = 4 * relative_hit
 
-    def handle_scoring(self, game_state):
+    async def handle_scoring(self, game_state):
         ball_state = game_state['ball']
         canvas = game_state['canvas']
 
         if ball_state['x'] < 0:
             game_state['paddles']['right']['score'] += 1
-            asyncio.create_task(self.reset_ball(ball_state, canvas))
+            await self.reset_ball(ball_state, canvas)
         elif ball_state['x'] > canvas['width']:
             game_state['paddles']['left']['score'] += 1
-            asyncio.create_task(self.reset_ball(ball_state, canvas))
+            await self.reset_ball(ball_state, canvas)
             
     async def reset_ball(self, ball, canvas):
-        ball['render'] = False
-        
-        ball['x'] = canvas['width'] // 2
-        ball['y'] = canvas['height'] // 2
-        ball['vx'] = 4 * (-1 if ball['vx'] > 0 else 1)
-        ball['vy'] = 4 * (-1 if ball['vy'] > 0 else 1)
+        try:
+            ball['render'] = False
+            ball['x'] = canvas['width'] // 2
+            ball['y'] = canvas['height'] // 2
+            ball['vx'] = 4 * (-1 if ball['vx'] > 0 else 1)
+            ball['vy'] = 4 * (-1 if ball['vy'] > 0 else 1)
+            await asyncio.sleep(0.05)
+            ball['render'] = True
+        except Exception as e:
+            logger.error(f"Error resetting ball: {e}")
 
-        # Wait for one broadcast cycle (50ms by default)
-        await asyncio.sleep(0.05) 
-        ball['render'] = True
+
+
 
     async def broadcast_all_states(self):
         logger.info("broadcast_all_states() called")
+        logger.info(f"Current games in manager: {self.games}")
         for room_name, game_state in self.games.items():
-            logger.info("broadcast room: " + room_name)
+            logger.info(f"Processing room: {room_name}")
             if not game_state.get('game_started'):
+                logger.info(f"Skipping room {room_name} as game is not started.")
                 continue
+
+            logger.info(f"Broadcasting state for room {room_name}: {game_state}")
             message = {
-                'type': 'state_update',
-                'ball': game_state['ball'],
-                'paddles': {
-                    'left': {
-                        'y': game_state['paddles']['left']['y'],
-                        'score': game_state['paddles']['left']['score'],
+                    'type': 'state_update',
+                    'ball': game_state['ball'],
+                    'paddles': {
+                        'left': {
+                            'y': game_state['paddles']['left']['y'],
+                            'score': game_state['paddles']['left']['score'],
+                        },
+                        'right': {
+                            'y': game_state['paddles']['right']['y'],
+                            'score': game_state['paddles']['right']['score'],
+                        },
                     },
-                    'right': {
-                        'y': game_state['paddles']['right']['y'],
-                        'score': game_state['paddles']['right']['score'],
-                    },
-                },
             }
             await self.channel_layer.group_send(
-                f"game_{room_name}",
+                f"game_{0}",
                 {
                     'type': 'game_message',
                     'data': message,
                 }
             )
-        logger.info("broadcast_all_states() finsihed")
+        logger.info("broadcast_all_states() finished")
+
+    async def test_broadcast(self, room_name):
+        game_state = self.initial_game_state()
+        message = {
+                    'type': 'state_update',
+                    'ball': game_state['ball'],
+                    'paddles': {
+                        'left': {
+                            'y': game_state['paddles']['left']['y'],
+                            'score': game_state['paddles']['left']['score'],
+                        },
+                        'right': {
+                            'y': game_state['paddles']['right']['y'],
+                            'score': game_state['paddles']['right']['score'],
+                        },
+                    },
+            }
+        await self.channel_layer.group_send(
+            'game_0',
+            {
+                'type': 'game_message',
+                'data': message,
+            }
+        )
+        logger.info("Test broadcast sent.")
+
+
 
 # Export a singleton instance of GameManager
 game_manager = GameManager()
