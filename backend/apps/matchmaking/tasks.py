@@ -25,11 +25,11 @@ def run_matchmaking():
                 player2=player2,
             )
 
-            logger.info(f"Match created: {match}")
+            logger.debug(f"Match created: {match}")
         except Exception as e:
             logger.error(f"Error during matchmaking: {e}")
     else:
-        logger.info("No matches found.")
+        logger.debug("No matches found.")
 
 
 def get_or_create_user_and_player(player_name):
@@ -50,7 +50,7 @@ def get_or_create_user_and_player(player_name):
         defaults={"email": f"{player_name.lower()}@example.com"}  # Provide a default email
     )
     if user_created:
-        logger.info(f"User created: {user}")
+        logger.debug(f"User created: {user}")
 
     # Get or create the Player associated with the User
     player, player_created = Player.objects.get_or_create(
@@ -58,6 +58,6 @@ def get_or_create_user_and_player(player_name):
         defaults={"name": player_name}
     )
     if player_created:
-        logger.info(f"Player created: {player}")
+        logger.debug(f"Player created: {player}")
 
     return user, player

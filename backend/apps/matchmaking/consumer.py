@@ -12,7 +12,7 @@ class MatchmakingConsumer(JsonWebsocketConsumer):
     def connect(self):
         self.accept()
         self.group_name = f"queue_{123}"
-        # logger.info(f"{self.group_name}")
+        # logger.debug(f"{self.group_name}")
         async_to_sync(self.channel_layer.group_add)(self.group_name, self.channel_name)
         self.manager = matchmaking_manager
 

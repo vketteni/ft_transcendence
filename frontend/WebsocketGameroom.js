@@ -8,7 +8,7 @@ export function connectToGame(gameRoomUrl) {
         handleGameMessage,
         handleGameClose
     );
-	
+	console.log("wsManager.connect called");
 }
 
 function handleGameMessage(event) {

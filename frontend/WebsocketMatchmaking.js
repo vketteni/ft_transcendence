@@ -46,15 +46,15 @@ function handleMatchmakingClose(event) {
 
 function promptForGameConnection(matchData) {
 	const url = "ws://localhost:8000/ws" + matchData.game_room_url + "/"
-
 	console.log(url)
+	
+	stopAndResetTimer();
     const accept = confirm(`Match found. Join game?`);
     if (accept) {
         wsManager.close('matchmaking');
         connectToGame(url);
-		// stopAndResetTimer();
-		DOM.matchmakingTimer.classList.add('hidden');
-		DOM.gameScreen.classList.remove('d-none');
+		DOM.matchmakingTimer.classList.add('d-none');
+		// DOM.gameScreen.classList.remove('d-none');
 		DOM.canvas.classList.remove('d-none');
 		resizeCanvas();
 		wsManager.send('game', { action: 'start_game', player: getPlayerAlias() });

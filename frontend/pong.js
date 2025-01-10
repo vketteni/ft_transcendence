@@ -40,16 +40,22 @@ DOM.registrationForm.addEventListener('submit', (e) => {
 
 DOM.matchmakingButton.addEventListener('click', () => {
     console.log("Matchmaking button clicked.");
-	connectToGame("ws://localhost:8000/ws/game/0/");
-    wsManager.send('game', { action: 'start_game', player: getPlayerAlias() });
-    DOM.pauseButton.classList.remove('d-none');
-    DOM.canvas.classList.remove('d-none');
-    resizeCanvas();
-
-    // connectToMatchmaking();
-    // wsManager.send('matchmaking', { type: 'join_queue', data: { player_id: getPlayerAlias() } });
-    // matchmakingTimer.start();
-    DOM.matchmakingButton.classList.add('d-none');
+    // try {
+    //     connectToGame("ws://localhost:8000/ws/game/0/");
+    //     console.log("After connectToGame");
+    //     wsManager.send('game', { action: 'start_game', player: getPlayerAlias() });
+    //     console.log("After wsManager.send('game', ..)");
+    //     DOM.pauseButton.classList.remove('d-none');
+    //     DOM.canvas.classList.remove('d-none');
+    //     resizeCanvas();
+    // } catch (error) {
+		//     console.error("Error during matchmaking button handler:", error);
+		// }
+		
+	DOM.matchmakingButton.classList.add('d-none');
+    connectToMatchmaking();
+    wsManager.send('matchmaking', { type: 'join_queue', data: { player_id: getPlayerAlias() } });
+    matchmakingTimer.start();
 });
 
 DOM.pauseButton.addEventListener('click', () => {

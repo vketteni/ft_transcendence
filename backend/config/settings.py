@@ -135,24 +135,18 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': 'game.log',
+            'level': 'DEBUG',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',  # Enable DEBUG level logs
+            'handlers': ['console'],  # Attach the console handler
+            'level': 'DEBUG',
             'propagate': True,
-        },
-        '__main__': {  # For your custom application logs
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',  # Enable DEBUG level logs
         },
     },
 }
+
 
 
 # backend/config/settings.py

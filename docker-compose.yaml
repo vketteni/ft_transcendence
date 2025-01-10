@@ -34,37 +34,37 @@ services:
     ports:
       - "6380:6379"
 
-  # celery-worker:
-  #   build:
-  #     context: .
-  #     dockerfile: backend/Dockerfile
-  #   command: ["celery", "-A", "config", "worker", "--loglevel=warning"]
-  #   depends_on:
-  #     - redis
-  #     - web
-  #   environment:
-  #     - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-  #     - DJANGO_SETTINGS_MODULE=config.settings
-  #   env_file:
-  #     - .env
-  #   volumes:
-  #     - ./backend:/app
+  celery-worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["celery", "-A", "config", "worker", "--loglevel=warning"]
+    depends_on:
+      - redis
+      - web
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - DJANGO_SETTINGS_MODULE=config.settings
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
 
-  # celery-beat:
-  #   build:
-  #     context: .
-  #     dockerfile: backend/Dockerfile
-  #   command: ["celery", "-A", "config", "beat", "--loglevel=warning"]
-  #   depends_on:
-  #     - redis
-  #     - web
-  #   environment:
-  #     - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-  #     - DJANGO_SETTINGS_MODULE=config.settings
-  #   env_file:
-  #     - .env
-  #   volumes:
-  #     - ./backend:/app
+  celery-beat:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["celery", "-A", "config", "beat", "--loglevel=warning"]
+    depends_on:
+      - redis
+      - web
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - DJANGO_SETTINGS_MODULE=config.settings
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
       
   postgres:
     image: postgres:latest

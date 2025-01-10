@@ -36,7 +36,7 @@ class MatchmakingManager:
 
     def find_match(self):
         """Find the next pair of players for matchmaking."""
-        logger.info("find match called")
+        logger.debug("find match called")
         players = self.redis_client.zrange(self.QUEUE_KEY, 0, 1)
         if len(players) == 2:
             # Remove matched players atomically
