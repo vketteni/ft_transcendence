@@ -58,7 +58,6 @@ function promptForGameConnection(matchData) {
 		DOM.canvas.classList.remove('d-none');
 		resizeCanvas();
 		wsManager.send('game', { action: 'start_game', player: getPlayerAlias() });
-
     } else {
         console.log('Game declined.');
     }

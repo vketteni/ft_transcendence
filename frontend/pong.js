@@ -101,6 +101,6 @@ window.addEventListener('resize', resizeCanvas);
 export function stopAndResetTimer() {
     matchmakingTimer.stop();
     matchmakingTimer.reset();
-    DOM.matchmakingButton.classList.remove('d-none');
-    DOM.matchmakingButton.textContent = "Try Again";
+    // DOM.matchmakingButton.classList.remove('d-none');
+    // DOM.matchmakingButton.textContent = "Try Again";
 }
