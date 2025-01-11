@@ -17,13 +17,19 @@ socket.onopen = () => {
 
 socket.onmessage = function (event) {
     const data = JSON.parse(event.data);
-    // console.log("State update received from server:", data);
+
     if (data.type === 'state_update') {
         serverState.paddles.left.y = data.paddles.left.y;
         serverState.paddles.left.score = data.paddles.left.score;
         serverState.paddles.right.y = data.paddles.right.y;
         serverState.paddles.right.score = data.paddles.right.score;
         serverState.ball = data.ball;
+    } else if (data.type === 'game_over') {
+        console.log("Game Over!", data);
+        const winner = data.winner;
+        const gameOverMessage = `Game Over! ${winner} wins!`;
+        document.getElementById('game-over-message').textContent = gameOverMessage;
+        showScreen('game-over-screen');
     }
 };
 
@@ -34,6 +40,7 @@ function showScreen(screenId) {
         DOM.signupScreen,
         DOM.categoryScreen,
         DOM.gameScreen,
+        DOM.gameOverScreen
     ];
 
     screens.forEach(screen => {
@@ -59,7 +66,6 @@ DOM.loginButton.addEventListener('click', () => {
 DOM.signupButton.addEventListener('click', () => {
     showScreen('signup-screen'); // Navigate to sign-up screen
 });
-
 
 DOM.loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -125,6 +131,14 @@ DOM.pauseButton.addEventListener('click', () => {
         socket.send(JSON.stringify({ action: 'resume_game' }));
     }
 });
+
+DOM.playAgainButton.addEventListener('click', () => {
+    if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
+    }
+    showScreen('game-screen');
+});
+
 
 window.addEventListener('resize', resizeCanvas);
 

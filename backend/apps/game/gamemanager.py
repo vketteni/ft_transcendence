@@ -82,11 +82,18 @@ class GameManager:
     def initial_game_state(self):
         paddle_width = 15
         canvas_width = 800
-        canvas_height = 400 
+        canvas_height = 400
+        ball_speed_ratio = 0.005
 
         return {
             'players': {},
-            'ball': {'x': canvas_width / 2, 'y': canvas_height / 2, 'vx': 4, 'vy': 4, 'render': True},
+            'ball': {
+                'x': canvas_width / 2,
+                'y': canvas_height / 2,
+                'vx': canvas_width * ball_speed_ratio,
+                'vy': canvas_height * ball_speed_ratio,
+                'render': True
+            },
             'paddles': {
                 'left': {'x': 0, 'y': 150, 'score': 0},
                 'right': {'x': canvas_width - paddle_width, 'y': 150, 'score': 0},
@@ -104,6 +111,7 @@ class GameManager:
         game = self.games.get(room_name)
         if game:
             game['game_started'] = started
+            game['paused'] = not started
 
     def set_game_paused(self, room_name, paused=True):
         game = self.games.get(room_name)
@@ -116,6 +124,9 @@ class GameManager:
 
     def set_game_config(self, room_name, canvas, paddle, ball):
         game = self.create_or_get_game(room_name)
+        old_canvas = game['canvas']
+        width_scale = canvas['width'] / old_canvas['width']
+        height_scale = canvas['height'] / old_canvas['height']
         game['canvas'] = canvas
         game['config'] = {
                 'paddle': paddle,
@@ -131,12 +142,60 @@ class GameManager:
             'y': canvas['height'] / 2 - paddle['height'] / 2,
             'score': game['paddles'].get('right', {}).get('score', 0)
         }
+        ball_state = game['ball']
+        ball_state['vx'] *= width_scale
+        ball_state['vy'] *= height_scale
         logger.info(f"Game config set for room '{room_name}': canvas={canvas}, paddle={paddle}, ball={ball}")
+
+    def reset_game(self, game_state):
+        canvas = game_state['canvas']
+        paddle_config = game_state['config']['paddle']
+
+        # Reset scores
+        game_state['paddles']['left']['score'] = 0
+        game_state['paddles']['right']['score'] = 0
+
+        # Reset paddle positions
+        game_state['paddles']['left']['y'] = canvas['height'] / 2 - paddle_config['height'] / 2
+        game_state['paddles']['right']['y'] = canvas['height'] / 2 - paddle_config['height'] / 2
+
+        # Reset ball position and velocity
+        game_state['ball']['x'] = canvas['width'] / 2
+        game_state['ball']['y'] = canvas['height'] / 2
+        speed_ratio = 0.005  # Ball speed as a fraction of canvas dimensions
+        game_state['ball']['vx'] = canvas['width'] * speed_ratio * (-1 if random.random() < 0.5 else 1)
+        game_state['ball']['vy'] = canvas['height'] * speed_ratio * (-1 if random.random() < 0.5 else 1)
+
+        # Reset game state flags
+        game_state['game_started'] = False
+        game_state['paused'] = True
 
     async def broadcast_all_states(self):
         for room_name, game_state in self.games.items():
-            if not game_state.get('game_started'):
+            if not game_state.get('game_started') and not game_state.get('paused'):
                 continue
+
+            # Check for game over condition
+            if game_state['paddles']['right']['score'] >= 5 or game_state['paddles']['left']['score'] >= 5:
+                winner = "Right Player" if game_state['paddles']['right']['score'] >= 5 else "Left Player"
+
+                # Send Game Over Message
+                await self.channel_layer.group_send(
+                    f"game_{room_name}",
+                    {
+                        'type': 'game_message',
+                        'data': {
+                            'type': 'game_over',
+                            'message': f"Game Over! {winner} wins!",
+                            'winner': winner
+                        },
+                    }
+                )
+                # Reset game state
+                self.reset_game(game_state)
+                continue
+
+            # Regular game state broadcast
             message = {
                 'type': 'state_update',
                 'ball': game_state['ball'],
@@ -145,7 +204,7 @@ class GameManager:
                         'y': game_state['paddles']['left']['y'],
                         'score': game_state['paddles']['left']['score'],
                     },
-                    'right': {
+                        'right': {
                         'y': game_state['paddles']['right']['y'],
                         'score': game_state['paddles']['right']['score'],
                     },
@@ -158,5 +217,6 @@ class GameManager:
                     'data': message,
                 }
             )
+
 # Export a singleton instance of GameManager
 game_manager = GameManager()

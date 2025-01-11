@@ -42,6 +42,11 @@ export const DOM = {
 
     // Game screen
     pauseButton: document.getElementById('pause-button'),
+
+    // Game over screen
+    gameOverScreen: document.getElementById('game-over-screen'),
+    gameOverMessage: document.getElementById('game-over-message'),
+    playAgainButton: document.getElementById('play-again-button'),
 };
 
 DOM.canvasImg.onerror = () => {

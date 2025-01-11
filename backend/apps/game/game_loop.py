@@ -160,15 +160,17 @@ class GameLoop:
         elif ball_state['x'] > canvas['width']:
             game_state['paddles']['left']['score'] += 1
             asyncio.create_task(self.reset_ball(ball_state, canvas))
-            
+
     async def reset_ball(self, ball, canvas):
         ball['render'] = False
-        
+
         ball['x'] = canvas['width'] // 2
         ball['y'] = canvas['height'] // 2
-        ball['vx'] = 4 * (-1 if ball['vx'] > 0 else 1)
-        ball['vy'] = 4 * (-1 if ball['vy'] > 0 else 1)
 
-        # Wait for one broadcast cycle (50ms by default)
+        # Set normalized velocity based on canvas dimensions
+        speed_ratio = 0.005  # Ball speed as a fraction of canvas width
+        ball['vx'] = canvas['width'] * speed_ratio * (-1 if ball['vx'] > 0 else 1)
+        ball['vy'] = canvas['height'] * speed_ratio * (-1 if random.random() < 0.5 else 1)
+
         await asyncio.sleep(0.1) 
         ball['render'] = True

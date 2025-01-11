@@ -49,7 +49,6 @@
         <button id="Tournament" class="btn btn-lg btn-primary w-100">Tournament</button>
     </div>
 
-
     <!-- game screen -->
     <div id="game-screen" class="d-none position-relative vh-100 d-flex flex-column justify-content-center align-items-center">
         <button id="pause-button" class="btn btn-lg btn-primary mb-3">Pause</button>
@@ -57,11 +56,11 @@
     </div>
 
     <!-- Game Over Screen -->
-    <div id="game-over-screen" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex flex-column justify-content-center align-items-center">
-        <h1>Game Over</h1>
-        <p id="winner"></p>
-        <button id="restart-game-button" class="btn btn-lg btn-primary">Restart</button>
+    <div id="game-over-screen" class="d-none">
+        <h1 id="game-over-message">Game Over!</h1>
+        <button id="play-again-button">Play Again</button>
     </div>
+    
 
     <script type="module" src="pong.js"></script>
 </body>
