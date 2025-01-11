@@ -34,13 +34,23 @@ body {
 /* SCREENS */
 #registration-screen,
 #category-screen {
-    /* display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 100vw;
-    height: 100vh; */
     background-color: transparent; /* Ensure transparency */
+}
+
+#game-screen {
+    position: relative;
+    width: 100vw; /* Full width of the viewport */
+    height: 100vh; 
+    background-color: black; /* Optional for better visibility */
+}
+
+
+#pause-button {
+    z-index: 2; /* Optional: Ensure it appears above the canvas */
+}
+
+#pause-button.paused {
+    background-color: grey;
 }
 
 /* BACKGROUND ANIMATION */

@@ -17,7 +17,9 @@ class GameLoop:
             frame_duration = 1.0 / self.game_manager.TICK_RATE
             broadcast_interval = 0.05
             last_broadcast_time = 0
+            logger.info('Starting game loop')
             while self.game_manager.running:
+                logger.debug('Game loop iteration')
                 start = time.perf_counter()
                 dt = start - next_frame_time + frame_duration
 
@@ -168,5 +170,5 @@ class GameLoop:
         ball['vy'] = 4 * (-1 if ball['vy'] > 0 else 1)
 
         # Wait for one broadcast cycle (50ms by default)
-        await asyncio.sleep(0.05) 
+        await asyncio.sleep(0.1) 
         ball['render'] = True

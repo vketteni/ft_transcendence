@@ -7,8 +7,8 @@ import { sendInput, sendAlias, sendDimensions } from './sendToBackend.js';
 initializeWebSocket();
 let isPaused = false;
 
-DOM.canvas.width = GAME_CONFIG.canvasWidth;
-DOM.canvas.height = GAME_CONFIG.canvasHeight;
+DOM.gameScreen.width = GAME_CONFIG.canvasWidth;
+DOM.gameScreen.height = GAME_CONFIG.canvasHeight;
 
 socket.onopen = () => {
     console.log("WebSocket connection established.");
@@ -25,21 +25,42 @@ socket.onmessage = function (event) {
         serverState.paddles.right.score = data.paddles.right.score;
         serverState.ball = data.ball;
     }
-    
 };
 
-// Navigation between screens
+function showScreen(screenId) {
+    const screens = [
+        DOM.registrationScreen,
+        DOM.loginScreen,
+        DOM.signupScreen,
+        DOM.categoryScreen,
+        DOM.gameScreen,
+    ];
+
+    screens.forEach(screen => {
+        if (screen.id === screenId) {
+            screen.classList.remove('d-none');
+
+            // If showing game screen, initialize the canvas
+            if (screenId === 'game-screen') {
+                resizeCanvas();
+                console.log("Game screen initialized");
+            }
+        } else {
+            screen.classList.add('d-none');
+        }
+    });
+}
+
+// Login and sign-up screen navigation
 DOM.loginButton.addEventListener('click', () => {
-    DOM.registrationScreen.classList.add('d-none');
-    DOM.loginScreen.classList.remove('d-none');
+    showScreen('login-screen'); // Navigate to login screen
 });
 
 DOM.signupButton.addEventListener('click', () => {
-    DOM.registrationScreen.classList.add('d-none');
-    DOM.signupScreen.classList.remove('d-none');
+    showScreen('signup-screen'); // Navigate to sign-up screen
 });
 
-// Handle login form submission
+
 DOM.loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const alias = DOM.loginAlias.value.trim();
@@ -50,18 +71,11 @@ DOM.loginForm.addEventListener('submit', (e) => {
         return;
     }
 
-    // Send login request to the server
     console.log("Login:", { alias, password });
-
-    DOM.loginScreen.classList.add('d-none');
-    DOM.categoryScreen.classList.remove('d-none');
     setPlayerAlias(alias);
-    sendAlias(); // send paasword as well
-});
+    sendAlias(); // Send alias to the server
 
-// Handle "Login with 42"
-DOM.login42Button.addEventListener('click', () => {
-    window.location.href = "https://signin.intra.42.fr";
+    showScreen('category-screen'); // Navigate to category screen
 });
 
 // Handle sign-up form submission
@@ -75,41 +89,26 @@ DOM.signupForm.addEventListener('submit', (e) => {
         return;
     }
 
-    // Send sign-up request to the server
     console.log("Sign Up:", { alias, password });
-
-    DOM.signupScreen.classList.add('d-none');
-    DOM.categoryScreen.classList.remove('d-none');
     setPlayerAlias(alias);
-    sendAlias();// send paasword as well
+    sendAlias();
+
+    showScreen('category-screen'); // Navigate to category screen
+});
+
+// Handle "Login with 42"
+DOM.login42Button.addEventListener('click', () => {
+    window.location.href = "https://signin.intra.42.fr";
 });
 
 DOM.PvCButton.addEventListener('click', () => {
-    console.log("PvC button clicked.");
-    socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
-    DOM.PvCButton.classList.add('d-none');
-    DOM.pauseButton.classList.remove('d-none'); 
-    DOM.canvas.classList.remove('d-none'); 
-    resizeCanvas();
+    if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
+    } else {
+        console.error("WebSocket connection is not open.");
+    }
+    showScreen('game-screen');
 });
-
-// DOM.PvPButton.addEventListener('click', () => {
-//     console.log("PvP button clicked.");
-//     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
-//     DOM.PvPButton.classList.add('d-none');
-//     DOM.pauseButton.classList.remove('d-none'); 
-//     DOM.canvas.classList.remove('d-none'); 
-//     resizeCanvas();
-// });
-
-// DOM.TournamentButton.addEventListener('click', () => {
-//     console.log("tournament button clicked.");
-//     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
-//     DOM.TournamentButton.classList.add('d-none');
-//     DOM.pauseButton.classList.remove('d-none'); 
-//     DOM.canvas.classList.remove('d-none'); 
-//     resizeCanvas();
-// });
 
 DOM.pauseButton.addEventListener('click', () => {
     isPaused = !isPaused;
@@ -126,8 +125,6 @@ DOM.pauseButton.addEventListener('click', () => {
         socket.send(JSON.stringify({ action: 'resume_game' }));
     }
 });
-
-
 
 window.addEventListener('resize', resizeCanvas);
 
