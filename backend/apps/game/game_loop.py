@@ -12,39 +12,51 @@ class GameLoop:
         self.game_manager = game_manager
 
     async def run(self):
-            """Run a central loop that updates all active games."""
-            next_frame_time = time.perf_counter()
-            frame_duration = 1.0 / self.game_manager.TICK_RATE
-            broadcast_interval = 0.05
-            last_broadcast_time = 0
-            logger.info('Starting game loop')
+        """Run a central loop that updates all active games."""
+        logger.debug("server_loop()")
+        next_frame_time = time.perf_counter()
+        frame_duration = 1.0 / self.game_manager.TICK_RATE
+        broadcast_interval = 0.05
+        last_broadcast_time = 0
+        try:
             while self.game_manager.running:
-                logger.debug('Game loop iteration')
+                logger.debug("server_loop() iteration starts.")
+    
                 start = time.perf_counter()
                 dt = start - next_frame_time + frame_duration
-
+    
                 for room_name, game_state in self.game_manager.games.items():
                     if game_state.get('paused', False):
                         continue
-
+    
                     if game_state.get('game_started'):
-                        self.update_game_state(game_state, dt)
-
+                        await self.update_game_state(game_state, dt)
+    
                 if start - last_broadcast_time >= broadcast_interval:
+                    logger.debug("Before calling broadcast_all_states()")
                     await self.game_manager.broadcast_all_states()
+                    logger.debug("After calling broadcast_all_states()")
                     last_broadcast_time = start
-
+    
                 next_frame_time += frame_duration
                 sleep_duration = next_frame_time - time.perf_counter()
                 if sleep_duration > 0:
+                    logger.debug("Before calling asyncio.sleep()")
                     await asyncio.sleep(sleep_duration)
+                    logger.debug("After calling asyncio.sleep()")
+                logger.debug("server_loop() iteration ends (never reaches here)")
+        except Exception as e:
+            logger.error(f"Error in server_loop: {e}")
+        finally:
+            logger.debug("Exiting server_loop. Cleaning up.")
+            self.game_manager.running = False
 
-    def update_game_state(self, game_state, dt):
+    async def update_game_state(self, game_state, dt):
         if 'config' not in game_state:
             return
         self.update_ball_position(game_state)
         self.handle_ball_collisions(game_state)
-        self.handle_scoring(game_state)
+        await self.handle_scoring(game_state)
         self.update_paddles(game_state)
         self.update_ai_paddle(game_state)
 
@@ -150,27 +162,59 @@ class GameLoop:
             ball['vx'] = -ball['vx'] 
             ball['vy'] = 4 * relative_hit
 
-    def handle_scoring(self, game_state):
+    async def handle_scoring(self, game_state):
         ball_state = game_state['ball']
         canvas = game_state['canvas']
 
         if ball_state['x'] < 0:
             game_state['paddles']['right']['score'] += 1
-            asyncio.create_task(self.reset_ball(ball_state, canvas))
+            logger.debug("Before calling reset_ball()")
+            await self.reset_ball(ball_state, canvas)
+            logger.debug("After calling reset_ball()")
         elif ball_state['x'] > canvas['width']:
             game_state['paddles']['left']['score'] += 1
-            asyncio.create_task(self.reset_ball(ball_state, canvas))
+            logger.debug("Before calling reset_ball()")
+            await self.reset_ball(ball_state, canvas)
+            logger.debug("After calling reset_ball()")
 
     async def reset_ball(self, ball, canvas):
-        ball['render'] = False
-
-        ball['x'] = canvas['width'] // 2
-        ball['y'] = canvas['height'] // 2
-
-        # Set normalized velocity based on canvas dimensions
-        speed_ratio = 0.005  # Ball speed as a fraction of canvas width
-        ball['vx'] = canvas['width'] * speed_ratio * (-1 if ball['vx'] > 0 else 1)
-        ball['vy'] = canvas['height'] * speed_ratio * (-1 if random.random() < 0.5 else 1)
-
-        await asyncio.sleep(0.1) 
-        ball['render'] = True
+        try:
+            ball['render'] = False
+    
+            ball['x'] = canvas['width'] // 2
+            ball['y'] = canvas['height'] // 2
+    
+            # Set normalized velocity based on canvas dimensions
+            speed_ratio = 0.005  # Ball speed as a fraction of canvas width
+            ball['vx'] = canvas['width'] * speed_ratio * (-1 if ball['vx'] > 0 else 1)
+            ball['vy'] = canvas['height'] * speed_ratio * (-1 if random.random() < 0.5 else 1)
+    
+            await asyncio.sleep(0.1) 
+            ball['render'] = True
+        except Exception as e:
+            logger.error(f"Error resetting ball: {e}")
+    
+    async def test_broadcast(self, room_name):
+        game_state = self.initial_game_state()
+        message = {
+                    'type': 'state_update',
+                    'ball': game_state['ball'],
+                    'paddles': {
+                        'left': {
+                            'y': game_state['paddles']['left']['y'],
+                            'score': game_state['paddles']['left']['score'],
+                        },
+                        'right': {
+                            'y': game_state['paddles']['right']['y'],
+                            'score': game_state['paddles']['right']['score'],
+                        },
+                    },
+            }
+        await self.game_manager.channel_layer.group_send(
+            'game_0',
+            {
+                'type': 'game_message',
+                'data': message,
+            }
+        )
+        logger.debug("Test broadcast sent.")

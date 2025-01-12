@@ -3,6 +3,8 @@ export const DOM = {
     gameScreen: document.getElementById('game-screen'),
     canvas: document.getElementById('canvas'),
     ctx: document.getElementById('canvas').getContext('2d'),
+	matchmakingButton: document.getElementById('matchmaking-button'),
+    matchmakingTimer: document.getElementById('timerDisplay'),
     canvasImg: (() => {
         const img = new Image();
         img.src = './canvas.png';
@@ -36,7 +38,7 @@ export const DOM = {
     signupPassword: document.getElementById('signup-password'),
 
     // Category screen buttons  
-    // PvPButton: document.getElementById('PvP'),
+    PvPButton: document.getElementById('PvP'),
     PvCButton: document.getElementById('PvC'),
     // TournamentButton: document.getElementById('Tournament'),
 
