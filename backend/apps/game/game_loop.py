@@ -2,54 +2,54 @@ import asyncio
 import logging
 import time
 import random
+import asyncio
+
 from channels.layers import get_channel_layer
 
 logger = logging.getLogger(__name__)
 
 class GameLoop:
 
-    def __init__(self, game_manager):
-        self.game_manager = game_manager
+    def __init__(self, manager):
+        self.manager = manager
 
     async def run(self):
-        """Run a central loop that updates all active games."""
-        logger.debug("server_loop()")
+        TICK_RATE = 30
         next_frame_time = time.perf_counter()
-        frame_duration = 1.0 / self.game_manager.TICK_RATE
+        frame_duration = 1.0 / TICK_RATE
         broadcast_interval = 0.05
         last_broadcast_time = 0
         try:
-            while self.game_manager.running:
-                logger.debug("server_loop() iteration starts.")
+            while self.manager.running:
     
                 start = time.perf_counter()
                 dt = start - next_frame_time + frame_duration
     
-                for room_name, game_state in self.game_manager.games.items():
+                for room_name, game_state in self.manager.games.items():
                     if game_state.get('paused', False):
                         continue
-    
+
                     if game_state.get('game_started'):
-                        await self.update_game_state(game_state, dt)
+                        try:
+                            await self.update_game_state(game_state, dt)
+                        except Exception as e:
+                            logger.error(f"Error updating game state for room {room_name}: {e}")
     
                 if start - last_broadcast_time >= broadcast_interval:
-                    logger.debug("Before calling broadcast_all_states()")
-                    await self.game_manager.broadcast_all_states()
-                    logger.debug("After calling broadcast_all_states()")
+                    await self.manager.broadcast_all_states()
                     last_broadcast_time = start
     
                 next_frame_time += frame_duration
                 sleep_duration = next_frame_time - time.perf_counter()
                 if sleep_duration > 0:
-                    logger.debug("Before calling asyncio.sleep()")
                     await asyncio.sleep(sleep_duration)
-                    logger.debug("After calling asyncio.sleep()")
-                logger.debug("server_loop() iteration ends (never reaches here)")
+
         except Exception as e:
-            logger.error(f"Error in server_loop: {e}")
+            logger.error(f"Error in game loop: {e}")
+
         finally:
-            logger.debug("Exiting server_loop. Cleaning up.")
-            self.game_manager.running = False
+            logger.debug("Exiting game loop. Cleaning up.")
+            self.manager.running = False
 
     async def update_game_state(self, game_state, dt):
         if 'config' not in game_state:
@@ -58,25 +58,25 @@ class GameLoop:
         self.handle_ball_collisions(game_state)
         await self.handle_scoring(game_state)
         self.update_paddles(game_state)
-        self.update_ai_paddle(game_state)
+        # self.update_ai_paddle(game_state)
 
     def update_paddles(self, game_state):
         paddle_speed = 6
         canvas_height = game_state['canvas']['height']
         paddle_height = game_state['config']['paddle']['height']
-        max_paddle_y = canvas_height - paddle_height
 
         for player_data in game_state['players'].values():
-            if player_data['side'] == 'left':
-                input_data = player_data['input']
-                paddle = game_state['paddles']['left']
+            input_data = player_data['input']
+            paddle = game_state['paddles'][player_data['side']]
 
-                if input_data['up']:
-                    paddle['y'] -= paddle_speed
-                if input_data['down']:
-                    paddle['y'] += paddle_speed
+            if input_data['up']:
+                paddle['y'] -= paddle_speed
+            if input_data['down']:
+                paddle['y'] += paddle_speed
 
-                paddle['y'] = max(0, min(paddle['y'], max_paddle_y))
+            # Clamp paddle movement to stay within the canvas
+            max_paddle_y = canvas_height - paddle_height
+            paddle['y'] = max(0, min(paddle['y'], max_paddle_y))
 
     def update_ai_paddle(self, game_state):
         ai_speed = 4
@@ -193,28 +193,3 @@ class GameLoop:
             ball['render'] = True
         except Exception as e:
             logger.error(f"Error resetting ball: {e}")
-    
-    async def test_broadcast(self, room_name):
-        game_state = self.initial_game_state()
-        message = {
-                    'type': 'state_update',
-                    'ball': game_state['ball'],
-                    'paddles': {
-                        'left': {
-                            'y': game_state['paddles']['left']['y'],
-                            'score': game_state['paddles']['left']['score'],
-                        },
-                        'right': {
-                            'y': game_state['paddles']['right']['y'],
-                            'score': game_state['paddles']['right']['score'],
-                        },
-                    },
-            }
-        await self.game_manager.channel_layer.group_send(
-            'game_0',
-            {
-                'type': 'game_message',
-                'data': message,
-            }
-        )
-        logger.debug("Test broadcast sent.")

@@ -7,8 +7,6 @@ from .manager import game_manager
 
 logger = logging.getLogger(__name__)
 
-
-
 class GameConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
@@ -30,9 +28,9 @@ class GameConsumer(AsyncWebsocketConsumer):
             logger.error(f"Error during accept: {e}")
 
         # Add player to the room via the GameManager
-        logger.debug(f"await game_manager.add_player() is called next.")
+        logger.debug(f"await manager.add_player() is called next.")
         await game_manager.add_player(self.room_name, self.channel_name)
-        logger.debug(f"game_manager.running = {game_manager.running}")
+        logger.debug(f"manager.running = {game_manager.running}")
         if game_manager.running != True:
             await game_manager.start()
         
