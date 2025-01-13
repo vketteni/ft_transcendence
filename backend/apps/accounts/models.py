@@ -1,7 +1,7 @@
 # accounts/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from .managers import UserOAuth2Manager
+from .manager import UserOAuth2Manager
 import hashlib
 from django.conf import settings
 
@@ -14,9 +14,6 @@ class User(AbstractUser):
     objects = UserOAuth2Manager()
     skill_level = models.IntegerField(default=0)  # Example: Player skill level
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)  # Example: Profile picture
-
-    def is_authenticated(self, request):
-        return True
 
     def __str__(self):
         return self.username

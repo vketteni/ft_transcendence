@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'channels',
 	'csp',
+    'corsheaders',
 	'django_celery_beat',
 
     # Local Apps
@@ -51,6 +52,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Frontend URL
 ]
 
 ROOT_URLCONF = 'config.urls'

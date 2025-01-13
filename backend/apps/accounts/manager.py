@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 
 class UserOAuth2Manager(models.UserManager):
 
-  def create_new_discord_user(self, user):
+  def create_new_42_user(self, user):
     logger.info('Inside User Manager')
     new_user = self.create(
       id=user['id'],

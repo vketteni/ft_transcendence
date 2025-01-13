@@ -6,14 +6,15 @@ logger = logging.getLogger(__name__)
 
 class AuthenticationBackend42(BaseBackend):
     def authenticate(self, request, user) -> User:
-        find_user = User.objects.filter(id=user['id'])
-        if len(find_user) == 0:
+        try:
+            find_user = User.objects.get(id=user['id'])
+            logger.info('User was found. Returning...')
+            return find_user
+        except User.DoesNotExist:
             logger.info('User was not found. Saving...')
-            new_user = User.objects.create_new_discord_user(user)
-            logger.info(new_user)
+            new_user = User.objects.create_new_42_user(user)
+            logger.info(f'New user created: {new_user}')
             return new_user
-        logger.info('User was found. Returning...')
-        return find_user
     
     def get_user(self, user_id):
         try:

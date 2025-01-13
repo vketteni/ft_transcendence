@@ -3,27 +3,18 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    image: web
     volumes:
       - ./backend:/app
     ports:
       - "8000:8000"
-    # command: ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
-    # environment:
-    #   - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres_db:5432/${POSTGRES_DB}
-    depends_on:
-      - postgres_db
-    env_file:
-      - .env
+    command: ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - DJANGO_SETTINGS_MODULE=config.settings
-      
     env_file:
       - .env
     depends_on:
-      - postgres_db
-      - DEBUG=True
+      - postgres
 
   frontend:
     image: nginx:latest
@@ -36,7 +27,6 @@ services:
       - NODE_ENV=production
     depends_on:
       - web
-
 
   redis:
     image: redis:latest

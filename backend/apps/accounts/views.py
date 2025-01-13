@@ -9,6 +9,7 @@ import logging
 from decouple import config
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from apps.accounts.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +26,21 @@ def home(request: HttpRequest) -> HttpResponse:
 
 @login_required(login_url="/account/login") #route if the user is not logged-in
 def get_authenticated_user(request: HttpRequest):
-    logger.info(request.user)
-    return JsonResponse({ "msg": "Authenticated" })
+    user = request.user
+    logger.info(f"Authenticated user: {user}")
+    # return JsonResponse({ "msg": "Authenticated" })
+    return JsonResponse({
+            "status": "success",
+            "message": "User authenticated successfully.",
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "first_name" : user.first_name,
+                "email": user.email,
+            },
+            "redirect_url": "http://localhost:3000"
+        })
+    # return redirect("http://localhost:3000")
 
 def login_42(request: HttpRequest):
     return redirect(auth_url_42)
@@ -37,7 +51,15 @@ def login_42_redirect(request: HttpRequest):
     user = exchange_code(code)
     user_42 = authenticate(request, user=user)
 
-    user_42 = list(user_42).pop()
+    # user_42 = list(user_42).pop()
+
+    # user_42 = user_42;
+    if isinstance(user_42, User):
+        # Proceed with user_42
+        pass
+    else:
+        raise ValueError("authenticate did not return a User object")
+
     logger.info(f"user_42: {user_42}")
     
     login(request, user_42)
@@ -68,5 +90,5 @@ def exchange_code(code: str):
         "Authorization": f"Bearer {access_token}"
     })
     user = response.json()
-    logger.info(f"User: {user}")
+    # logger.info(f"User: {user}")
     return user

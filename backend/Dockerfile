@@ -32,4 +32,4 @@ USER appuser
 
 EXPOSE 8000
 
-CMD ["sh", "tools/script.sh"]
+# CMD ["sh", "tools/script.sh"]

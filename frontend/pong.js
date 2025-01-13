@@ -6,6 +6,7 @@ import { GAME_CONFIG, setPlayerAlias, getPlayerAlias } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
+import {handleLoginRedirect} from './auth.js'
 
 let isPaused = false;
 const matchmakingTimer = new Timer(DOM.matchmakingTimer);
@@ -84,7 +85,10 @@ DOM.signupForm.addEventListener('submit', (e) => {
 
 // Handle "Login with 42"
 DOM.login42Button.addEventListener('click', () => {
-    window.location.href = "https://signin.intra.42.fr";
+    // window.location.href = "https://signin.intra.42.fr";
+    if (window.location.pathname === '/account/login/redirect') {
+        handleLoginRedirect();
+    }
 });
 
 DOM.PvCButton.addEventListener('click', () => {
