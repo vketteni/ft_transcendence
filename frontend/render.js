@@ -77,6 +77,6 @@ export function resizeCanvas() {
     clientState.ball.x = canvasWidth / 2;
     clientState.ball.y = canvasHeight / 2;
 
-    sendDimensions();
+    // sendDimensions();
     renderLoop();
 }
