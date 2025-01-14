@@ -4,6 +4,9 @@ from django.db import models
 from .manager import UserOAuth2Manager
 import hashlib
 from django.conf import settings
+from django.db import models
+from django.contrib.auth.models import User
+from django_otp.plugins.otp_totp.models import TOTPDevice
 
 class User(AbstractUser):
     """
@@ -33,3 +36,10 @@ class Player(models.Model):
         if not self.identifier:
             self.identifier = self.generate_identifier(self.name)
         super().save(*args, **kwargs)
+
+# class UserTOTPDevice(TOTPDevice):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='totp_device')
+#     is_active = models.BooleanField(default=True)
+
+#     def __str__(self):
+#         return f"2FA Device for {self.user.username}"
