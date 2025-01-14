@@ -139,7 +139,7 @@ CSP_DEFAULT_SRC = ["'self'"]
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
+    "https://api.intra.42.fr",
 ]
 
 
@@ -175,3 +175,9 @@ STATIC_ROOT = '/app/static/'
 CELERY_BROKER_URL = 'redis://redis:6379/0'  # Use the Redis service from Docker Compose
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+
+# 42berlin Oauthentication
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+REDIRECT_URI = os.getenv('REDIRECT_URI')

@@ -1,94 +1,75 @@
-from rest_framework import generics, permissions
-from .serializers import UserSerializer
-from django.contrib.auth import get_user_model   
-from django.shortcuts import render
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import redirect
-import requests
-import logging
-from decouple import config
+# backend/apps/accounts/views.py
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from apps.accounts.models import User
+from django.shortcuts import redirect
+from django.conf import settings
+import logging
+import requests
 
 logger = logging.getLogger(__name__)
 
-# auth_url_42 = "https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-0c49a81065b1e6d034e57bf44dddef3c1e9d9029a824c18018a80d3dbf729b79&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Faccount%2Flogin%2Fredirect&response_type=code"
-auth_url_42 = (
-    f"https://api.intra.42.fr/oauth/authorize?"
-    f"client_id={config('CLIENT_ID')}&"
-    f"redirect_uri={config('REDIRECT_URI')}&"
-    f"response_type=code"
-)
+class Login42View(APIView):
+    def get(self, request):
+        auth_url = (
+            f"https://api.intra.42.fr/oauth/authorize?"
+            f"client_id={settings.CLIENT_ID}&"
+            f"redirect_uri={settings.REDIRECT_URI}&"
+            f"response_type=code"
+        )
+        return redirect(auth_url)
 
-def home(request: HttpRequest) -> HttpResponse:
-    return JsonResponse({ "msg": "Hello World" })
+class Login42RedirectView(APIView):
+    def get(self, request):
+        code = request.GET.get("code")
+        logger.info(f"Code received: {code}")
+        user_data = self.exchange_code(code)
+        user = authenticate(request, user=user_data)
 
-@login_required(login_url="/account/login") #route if the user is not logged-in
-def get_authenticated_user(request: HttpRequest):
-    user = request.user
-    logger.info(f"Authenticated user: {user}")
-    # return JsonResponse({ "msg": "Authenticated" })
-    return JsonResponse({
-            "status": "success",
-            "message": "User authenticated successfully.",
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "first_name" : user.first_name,
-                "email": user.email,
-            },
-            "redirect_url": "http://localhost:3000"
+        if not user:
+            return Response({"error": "Authentication failed"}, status=401)
+
+        login(request, user)
+        return Response({"message": "Login successful", "user": {"username": user.username}})
+
+    def exchange_code(self, code):
+        try:
+            data = {
+                "client_id": settings.CLIENT_ID,
+                "client_secret": settings.CLIENT_SECRET,
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": settings.REDIRECT_URI,
+            }
+            response = requests.post(
+                "https://api.intra.42.fr/oauth/token", data=data, headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
+            response.raise_for_status()
+            access_token = response.json().get("access_token")
+            user_info_response = requests.get(
+                "https://api.intra.42.fr/v2/me", headers={"Authorization": f"Bearer {access_token}"}
+            )
+            user_info_response.raise_for_status()
+            return user_info_response.json()
+        except requests.RequestException as e:
+            logger.error(f"Error during authentication exchange: {e}")
+            raise
+
+
+class UserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
         })
-    # return redirect("http://localhost:3000")
 
-def login_42(request: HttpRequest):
-    return redirect(auth_url_42)
-
-def login_42_redirect(request: HttpRequest):
-    code = request.GET.get("code")
-    logger.info(f"Code received: {code}")
-    user = exchange_code(code)
-    user_42 = authenticate(request, user=user)
-
-    # user_42 = list(user_42).pop()
-
-    # user_42 = user_42;
-    if isinstance(user_42, User):
-        # Proceed with user_42
-        pass
-    else:
-        raise ValueError("authenticate did not return a User object")
-
-    logger.info(f"user_42: {user_42}")
-    
-    login(request, user_42)
-    return redirect("/account/user")
-
-def logout_user(request: HttpRequest):
-    logger.info(f"User {request.user} logged out.")
-    logout(request)
-    return JsonResponse({ "msg": "Logged out" })
-
-def exchange_code(code: str):
-    data = {
-        "client_id": config("CLIENT_ID"),
-        "client_secret": config("CLIENT_SECRET"),
-        "grant_type": "authorization_code",
-        "code": code,
-        "redirect_uri": config("REDIRECT_URI"),
-    }
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-    response = requests.post("https://api.intra.42.fr/oauth/token", data=data, headers=headers)
-    logger.info(f"Response: {response.status_code} - {response.text}")
-    credentials = response.json()
-    logger.info(f"Credentials: {credentials}")
-    access_token = credentials["access_token"]
-    response = requests.get("https://api.intra.42.fr/v2/me", headers={
-        "Authorization": f"Bearer {access_token}"
-    })
-    user = response.json()
-    # logger.info(f"User: {user}")
-    return user
+class LogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({"message": "Logged out successfully"})

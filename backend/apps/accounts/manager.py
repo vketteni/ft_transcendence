@@ -1,3 +1,4 @@
+# backend/accounts/manager.py
 import logging
 from django.contrib.auth import models
 logger = logging.getLogger(__name__)
@@ -14,3 +15,4 @@ class UserOAuth2Manager(models.UserManager):
       email=user['email']
     )
     return new_user
+  

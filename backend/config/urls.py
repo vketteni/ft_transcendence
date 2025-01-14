@@ -14,18 +14,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# backend/config/urls.py
 from django.contrib import admin
 from django.urls import path, include
-from apps.accounts import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('apps.accounts.urls')),
-    path('accounts', views.home, name='oauth2'),
-    path('account/login', views.login_42, name='oauth2_login'),
-    path('account/login/redirect', views.login_42_redirect, name='oauth2_login_redirect'),
-    path('account/user', views.get_authenticated_user, name='get_authenticated_user'),
-    path('account/logout', views.logout_user, name='logout'),
     path('game/', include('apps.game.urls')),
     path('matchmaking/', include('apps.matchmaking.urls')),
 ]

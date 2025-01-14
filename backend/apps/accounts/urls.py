@@ -1,10 +1,10 @@
+# backend/apps/accounts/urls.py
 from django.urls import path
-# from .views import UserProfileView, login_42, login_42_redirect, get_authenticated_user, logout_user
+from . import views
 
 urlpatterns = [
-    # path('profile/', UserProfileView.as_view(), name='user-profile'),
-    # path('account/login', login_42, name='oauth2_login'),
-    # path('account/login/redirect', login_42_redirect, name='oauth2_login_redirect'),
-    # path('account/user', get_authenticated_user, name='get_authenticated_user'),
-    # path('account/logout', logout_user, name='logout'),
+    path('login/', views.Login42View.as_view(), name='login_42'),
+    path('login/redirect/', views.Login42RedirectView.as_view(), name='login_42_redirect'),
+    path('user/', views.UserView.as_view(), name='user'),
+    path('logout/', views.LogoutView.as_view(), name='logout_user'),
 ]
