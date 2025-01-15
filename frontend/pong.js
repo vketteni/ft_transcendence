@@ -44,11 +44,61 @@ DOM.loginButton.addEventListener('click', () => {
     showScreen('login-screen'); // Navigate to login screen
 });
 
+const logoutButton = document.getElementById('logout-button');
+
+function checkLoginStatus() {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+        // Optionally, validate token with the backend here if necessary
+        logoutButton.classList.add('d-none');
+        console.log("User is logged in. Redirecting to category screen...");
+        showScreen('category-screen'); // Redirect to category screen
+    } else {
+        logoutButton.classList.remove('d-none');
+        console.log("User is not logged in. Redirecting to login screen...");
+        showScreen('registration-screen'); // Redirect to login screen
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    checkLoginStatus(); // Check and handle login status on page load
+});
+
+DOM.logoutButton.addEventListener('click', async () => {
+    const refreshToken = localStorage.getItem('refresh_token');
+
+    if (refreshToken) {
+        try {
+            // Notify the backend to invalidate the refresh token
+            await fetch('http://localhost:8000/accounts/logout/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refresh_token: refreshToken }),
+            });
+        } catch (error) {
+            console.error('Error during logout:', error);
+        }
+    }
+
+    // Clear tokens from localStorage
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+
+    // Update UI
+    alert('You have been logged out.');
+    logoutButton.classList.add('d-none');
+    showScreen('registration-screen'); // Navigate to the login screen
+});
+
+
 DOM.signupButton.addEventListener('click', () => {
     showScreen('signup-screen'); // Navigate to sign-up screen
 });
 
-DOM.loginForm.addEventListener('submit', (e) => {
+
+DOM.loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const alias = DOM.loginAlias.value.trim();
     const password = DOM.loginPassword.value.trim();
@@ -58,35 +108,83 @@ DOM.loginForm.addEventListener('submit', (e) => {
         return;
     }
 
-    console.log("Login:", { alias, password });
-    setPlayerAlias(alias);
-    // sendAlias(); // Send alias to the server
+    try {
+        const response = await fetch('http://localhost:8000/accounts/token/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: alias, password }),
+        });
 
-    showScreen('category-screen'); // Navigate to category screen
+        if (response.ok) {
+            // const data = await response.json();
+            const data = await response.json();
+
+            // Store tokens in localStorage or sessionStorage
+            localStorage.setItem('access_token', data.access);
+            localStorage.setItem('refresh_token', data.refresh);
+
+            console.log("Login successful:", data);
+            alert("Login successful!");
+
+            // Proceed to the next screen or load resources dynamically
+            showScreen('category-screen'); // Example of moving to the category screen
+        } else {
+            const errorData = await response.json();
+            alert(`Login failed: ${errorData.detail}`);
+        }
+    } catch (error) {
+        console.error('Error during login:', error);
+        alert('An unexpected error occurred. Please try again.');
+    }
 });
 
 // Handle sign-up form submission
-DOM.signupForm.addEventListener('submit', (e) => {
+DOM.signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const alias = DOM.signupAlias.value.trim();
     const password = DOM.signupPassword.value.trim();
+    const email = DOM.signupEmail.value.trim();
 
-    if (!alias || !password) {
+    if (!alias || !password || !email) {
         alert("Please create both alias and password.");
         return;
     }
 
-    console.log("Sign Up:", { alias, password });
-    setPlayerAlias(alias);
-    sendAlias();
+    console.log("Sign Up:", { alias, password, email });
+    // setPlayerAlias(alias);
+    // sendAlias();
+    try {
+        const response = await fetch('http://localhost:8000/accounts/register/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ alias, password, email }),
+        });
 
-    showScreen('category-screen'); // Navigate to category screen
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log("Sign Up Successful:", data);
+            // setPlayerAlias(alias);
+            // sendAlias(); // Notify the game server
+            showScreen('login-screen');
+        } else {
+            alert(`Sign Up Error: ${data.error}`);
+        }
+    } catch (error) {
+        console.error('Error signing up:', error);
+        alert('An unexpected error occurred. Please try again later.');
+    }
+    // showScreen('category-screen'); // Navigate to category screen
 });
 
 // Handle "Login with 42"
 DOM.login42Button.addEventListener('click', () => {
     // window.location.href = "https://signin.intra.42.fr";
-    if (window.location.pathname === '/account/login/redirect') {
+    if (window.location.pathname === '/accounts/login/redirect') {
         handleLoginRedirect();
     }
 });
@@ -98,7 +196,7 @@ DOM.PvCButton.addEventListener('click', () => {
         console.error("WebSocket connection is not open.");
     }
 	// DOM.matchmakingTimer
-    // showScreen('game-screen');
+    showScreen('game-screen');
 });
 
 DOM.PvPButton.addEventListener('click', () => {

@@ -16,19 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from apps.accounts import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('apps.accounts.urls')),
     path('game/', include('apps.game.urls')),
     path('matchmaking/', include('apps.matchmaking.urls')),
-
-    path('accounts', views.home, name='oauth2'),
-    path('account/login', views.login_42, name='oauth2_login'),
-    path('account/login/redirect', views.login_42_redirect, name='oauth2_login_redirect'),
-    path('account/user', views.get_authenticated_user, name='get_authenticated_user'),
-    path('account/logout', views.logout_user, name='logout'),
-
-    # path('api/token/', TwoFactorLoginView.as_view(), name='token_obtain_pair'),
 ]

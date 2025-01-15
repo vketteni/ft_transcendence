@@ -24,7 +24,7 @@ auth_url_42 = (
 def home(request: HttpRequest) -> HttpResponse:
     return JsonResponse({ "msg": "Hello World" })
 
-@login_required(login_url="/account/login") #route if the user is not logged-in
+@login_required(login_url="/accounts/login") #route if the user is not logged-in
 def get_authenticated_user(request: HttpRequest):
     user = request.user
     logger.info(f"Authenticated user: {user}")
@@ -63,7 +63,7 @@ def login_42_redirect(request: HttpRequest):
     logger.info(f"user_42: {user_42}")
     
     login(request, user_42)
-    return redirect("/account/user")
+    return redirect("/accounts/user")
 
 def logout_user(request: HttpRequest):
     logger.info(f"User {request.user} logged out.")
@@ -93,5 +93,61 @@ def exchange_code(code: str):
     # logger.info(f"User: {user}")
     return user
 
-# from django.contrib.auth.views import LoginView
-# from django_otp.forms import OTPAuthenticationForm
+from django.contrib.auth.hashers import make_password
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+
+@api_view(['POST'])
+def register_user(request):
+    try:
+        alias = request.data.get('alias')
+        password = make_password(request.data.get('password'))
+        email = request.data.get('email')
+        
+        if User.objects.filter(username=alias).exists():
+            return Response({"error": "Alias already taken."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = User.objects.create(
+            username=alias,
+            password=password,
+            email=email,
+            is_active=True
+        )
+        return Response({"message": "User created successfully.", "username": alias}, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+# Login view
+@api_view(['POST'])
+def custom_login_view(request):
+    alias = request.data.get('username')
+    password = request.data.get('password')
+
+    # Authenticate the user
+    user = authenticate(username=alias, password=password)
+    if user is not None:
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh)
+        })
+    else:
+        return Response({'detail': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+# Logout view
+@api_view(['POST'])
+def logout_view(request):
+    """
+    Handles user logout by blacklisting the refresh token.
+    """
+    try:
+        refresh_token = request.data["refresh_token"]
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        return Response({"message": "Logout successful."}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)

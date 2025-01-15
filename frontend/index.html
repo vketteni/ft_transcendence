@@ -27,7 +27,7 @@
             <input type="text" id="login-alias" class="form-control mb-3" placeholder="Enter your alias" required maxlength="20">
             <input type="password" id="login-password" class="form-control mb-3" placeholder="Enter your password" required>
             <button type="submit" class="btn btn-lg btn-primary mb-3">Login</button>
-            <button id="login-42-button" onclick="window.location.href='/account/login';" class="btn btn-lg btn-primary mb-3">Login with 42</button>
+            <button id="login-42-button" onclick="window.location.href='/accounts/login';" class="btn btn-lg btn-primary mb-3">Login with 42</button>
         </form>
     </div>
 
@@ -37,6 +37,7 @@
         <form id="signup-form" class="text-center w-15 regular-font">
             <input type="text" id="signup-alias" class="form-control mb-3" placeholder="Create your alias" required maxlength="20">
             <input type="password" id="signup-password" class="form-control mb-3" placeholder="Create a secure password" required>
+            <input type="email" id="signup-email" class="form-control mb-3" placeholder="Enter your email" required>
             <button type="submit" class="btn btn-lg btn-primary">Sign Up</button>
         </form>
     </div>
@@ -47,13 +48,14 @@
         <button id="PvP" class="btn btn-lg btn-primary mb-3 w-100">Player vs Player</button>
         <button id="PvC" class="btn btn-lg btn-primary mb-3 w-100">Player vs Computer</button>
         <button id="Tournament" class="btn btn-lg btn-primary w-100">Tournament</button>
+        <button id="logout-button" class="btn btn-lg btn-danger mb-3 d-none">Logout</button>
     </div>
 
-	<button id="pause-button" class="btn btn-lg btn-primary mb-3">Pause</button>
     <!-- game screen -->
     <div id="game-screen" class="d-none position-relative vh-100 d-flex flex-column justify-content-center align-items-center">
-		<div id="timerDisplay" class="hidden"></div>
+        <div id="timerDisplay" class="hidden"></div>
         <canvas id="canvas"></canvas>
+        <button id="pause-button" class="btn btn-lg btn-primary mb-3">Pause</button>
     </div>
 
     <!-- Game Over Screen -->
@@ -62,7 +64,6 @@
         <button id="play-again-button">Play Again</button>
     </div>
     
-
     <script type="module" src="pong.js"></script>
 </body>
 </html>

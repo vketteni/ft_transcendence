@@ -20,6 +20,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
     'apps.accounts.auth.AuthenticationBackend42',
 ]
 
@@ -32,11 +33,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # Third-party
-    'rest_framework',
     'channels',
 	'csp',
     'corsheaders',
 	'django_celery_beat',
+    'rest_framework',
     'rest_framework_simplejwt',
     'django_otp',
     'django_otp.plugins.otp_totp',
@@ -116,7 +117,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # DRF Basic Setup
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
         # Add TokenAuthentication or JWT if needed
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ]
@@ -125,8 +126,8 @@ REST_FRAMEWORK = {
 # JWT settings
 from datetime import timedelta
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(seconds=10),
     'ROTATE_REFRESH_TOKENS': True,
 }
 
