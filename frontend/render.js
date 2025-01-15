@@ -5,14 +5,13 @@ import { sendDimensions } from './sendToBackend.js';
 import { clearCanvas, drawRect, drawBall, extrapolateState } from './renderUtils.js';
 
 export function renderLoop() {
+    clearCanvas();
     extrapolateState();
     render();
     requestAnimationFrame(renderLoop);
 };
 
 export function render() {
-    clearCanvas();
-
     drawRect(0, clientState.paddles.left.y, GAME_CONFIG.paddleWidth, GAME_CONFIG.paddleHeight, GAME_CONFIG.paddleColor);
     drawRect(GAME_CONFIG.canvasWidth - GAME_CONFIG.paddleWidth, clientState.paddles.right.y, GAME_CONFIG.paddleWidth, GAME_CONFIG.paddleHeight, GAME_CONFIG.paddleColor);
     if (serverState.ball.render)
@@ -78,6 +77,6 @@ export function resizeCanvas() {
     clientState.ball.x = canvasWidth / 2;
     clientState.ball.y = canvasHeight / 2;
 
-    sendDimensions();
+    // sendDimensions();
     renderLoop();
 }

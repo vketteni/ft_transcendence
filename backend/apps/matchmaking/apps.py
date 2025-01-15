@@ -4,3 +4,6 @@ from django.apps import AppConfig
 class MatchmakingConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'apps.matchmaking'
+
+    def ready(self):
+        import apps.matchmaking.tasks  # Import tasks to ensure they're registered

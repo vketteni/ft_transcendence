@@ -33,14 +33,27 @@ body {
 
 /* SCREENS */
 #registration-screen,
-#game-screen {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 100vw;
-    height: 100vh;
+#category-screen {
     background-color: transparent; /* Ensure transparency */
+}
+
+#game-screen {
+    position: relative;
+    width: 100vw; /* Full width of the viewport */
+    height: 100vh; 
+    background-color: black; /* Optional for better visibility */
+}
+
+#pause-button {
+    z-index: 2; /* Optional: Ensure it appears above the canvas */
+}
+
+#pause-button.paused {
+    background-color: grey;
+}
+
+#pause-button.resumed {
+    background-color: grey;
 }
 
 /* BACKGROUND ANIMATION */
@@ -53,4 +66,41 @@ body {
     z-index: -1; /* Keep it behind other elements */
     background-color: transparent;
     pointer-events: none; /* Allow interactions with other elements */
+}
+
+/* ========================
+   MATCHMAKING TIMER
+======================== */
+#timerDisplay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    background-color: #333;
+    color: #fff;
+    border-radius: 5px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    transition: opacity 0.3s;
+}
+
+#timerDisplay.hidden {
+    opacity: 0; /* Timer is hidden but still occupies its position */
+    pointer-events: none;
+}	
+
+
+/* ========================
+   HELPER CLASSES
+======================== */
+.bg-cover {
+    background-size: cover;
+}
+
+.hidden {
+    visibility: hidden; /* Hides the element while keeping its space */
+    opacity: 0; /* Makes it fully transparent */
+    pointer-events: none; /* Disables interaction */
 }

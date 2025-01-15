@@ -10,11 +10,10 @@
     </head>
     
 <body class="vh-100 d-flex align-items-center justify-content-center">
-    <!-- Ball Animation Background -->
-    <canvas id="background-animation" class="position-fixed top-0 start-0 w-100 h-100"></canvas>
+    <!-- Ball Animation Background
+    <canvas id="background-animation" class="position-fixed top-0 start-0 w-100 h-100"></canvas> -->
 
-    
-    <!-- registration -->
+    <!-- registration screen-->
     <div id="registration-screen" class="d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
 		<img src="title.png" alt="Game Title" class="img-fluid mb-4" style="max-width: 400px;">
 		<button id="login-button" class="btn btn-lg btn-primary mb-3">Login</button>
@@ -24,37 +23,46 @@
     <!-- Login Screen -->
     <div id="login-screen" class="d-none d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
         <h1>Login</h1>
-        <form id="login-form" class="text-center w-25 regular-font">
+        <form id="login-form" class="text-center w-15 regul77f2acb9ce7601fc1af6e5fa1b6fce2582897140ar-font">
             <input type="text" id="login-alias" class="form-control mb-3" placeholder="Enter your alias" required maxlength="20">
             <input type="password" id="login-password" class="form-control mb-3" placeholder="Enter your password" required>
             <button type="submit" class="btn btn-lg btn-primary mb-3">Login</button>
-            <button id="login-42-button" class="btn btn-lg btn-outline-primary">Login with 42</button>
+            <button id="login-42-button" class="btn btn-lg btn-primary mb-3">Login with 42</button>
         </form>
     </div>
 
     <!-- Sign Up Screen -->
     <div id="signup-screen" class="d-none d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
         <h1>Sign Up</h1>
-        <form id="signup-form" class="text-center w-25 regular-font">
+        <form id="signup-form" class="text-center w-15 regular-font">
             <input type="text" id="signup-alias" class="form-control mb-3" placeholder="Create your alias" required maxlength="20">
             <input type="password" id="signup-password" class="form-control mb-3" placeholder="Create a secure password" required>
             <button type="submit" class="btn btn-lg btn-primary">Sign Up</button>
         </form>
     </div>
 
-    <!-- Game Screen -->
-    <div id="game-screen" class="d-none d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
-        <button id="start-button" class="btn btn-lg btn-primary mb-4">Start Game</button>
-        <button id="pause-button" class="btn btn-lg btn-primary mb-4 d-none">Pause</button>
-        <canvas id="pong"></canvas>
+   <!-- category screen -->
+   <div id="category-screen" 
+        class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+        <button id="PvP" class="btn btn-lg btn-primary mb-3 w-100">Player vs Player</button>
+        <button id="PvC" class="btn btn-lg btn-primary mb-3 w-100">Player vs Computer</button>
+        <button id="Tournament" class="btn btn-lg btn-primary w-100">Tournament</button>
+    </div>
+
+
+    <!-- game screen -->
+    <div id="game-screen" class="d-none position-relative vh-100 d-flex flex-column justify-content-center align-items-center">
+		<div id="timerDisplay" class="hidden"></div>
+        <canvas id="canvas"></canvas>
+		<button id="pause-button" class="btn btn-lg btn-primary mb-3">Pause</button>
     </div>
 
     <!-- Game Over Screen -->
-    <div id="game-over-screen" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex flex-column justify-content-center align-items-center">
-        <h1>Game Over</h1>
-        <p id="winner"></p>
-        <button id="restart-game-button" class="btn btn-lg btn-primary">Restart</button>
+    <div id="game-over-screen" class="d-none">
+        <h1 id="game-over-message">Game Over!</h1>
+        <button id="play-again-button">Play Again</button>
     </div>
+    
 
     <script type="module" src="pong.js"></script>
 </body>
