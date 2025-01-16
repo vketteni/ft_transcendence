@@ -64,6 +64,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Frontend URL
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -127,9 +129,14 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(seconds=10),
-    'REFRESH_TOKEN_LIFETIME': timedelta(seconds=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    "ALGORITHM": "HS256",
 }
+
+# SESSION_COOKIE_SECURE = True  # Ensure secure cookies
+# CSRF_COOKIE_SECURE = True
 
 # Channels & Redis
 CHANNEL_LAYERS = {

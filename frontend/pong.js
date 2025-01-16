@@ -6,7 +6,8 @@ import { GAME_CONFIG, setPlayerAlias, getPlayerAlias } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
-import {handleLoginRedirect} from './auth.js'
+import { handleLoginRedirect } from './auth.js'
+import { fetchGameData } from './token.js';
 
 let isPaused = false;
 const matchmakingTimer = new Timer(DOM.matchmakingTimer);
@@ -44,55 +45,6 @@ DOM.loginButton.addEventListener('click', () => {
     showScreen('login-screen'); // Navigate to login screen
 });
 
-const logoutButton = document.getElementById('logout-button');
-
-function checkLoginStatus() {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-        // Optionally, validate token with the backend here if necessary
-        logoutButton.classList.add('d-none');
-        console.log("User is logged in. Redirecting to category screen...");
-        showScreen('category-screen'); // Redirect to category screen
-    } else {
-        logoutButton.classList.remove('d-none');
-        console.log("User is not logged in. Redirecting to login screen...");
-        showScreen('registration-screen'); // Redirect to login screen
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    checkLoginStatus(); // Check and handle login status on page load
-});
-
-DOM.logoutButton.addEventListener('click', async () => {
-    const refreshToken = localStorage.getItem('refresh_token');
-
-    if (refreshToken) {
-        try {
-            // Notify the backend to invalidate the refresh token
-            await fetch('http://localhost:8000/accounts/logout/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ refresh_token: refreshToken }),
-            });
-        } catch (error) {
-            console.error('Error during logout:', error);
-        }
-    }
-
-    // Clear tokens from localStorage
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-
-    // Update UI
-    alert('You have been logged out.');
-    logoutButton.classList.add('d-none');
-    showScreen('registration-screen'); // Navigate to the login screen
-});
-
-
 DOM.signupButton.addEventListener('click', () => {
     showScreen('signup-screen'); // Navigate to sign-up screen
 });
@@ -115,6 +67,7 @@ DOM.loginForm.addEventListener('submit', async (e) => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ username: alias, password }),
+            credentials: 'include',
         });
 
         if (response.ok) {
@@ -122,14 +75,18 @@ DOM.loginForm.addEventListener('submit', async (e) => {
             const data = await response.json();
 
             // Store tokens in localStorage or sessionStorage
-            localStorage.setItem('access_token', data.access);
-            localStorage.setItem('refresh_token', data.refresh);
+            localStorage.setItem('access_token', data.access_token);
 
-            console.log("Login successful:", data);
             alert("Login successful!");
+            showScreen('category-screen'); // Example of moving to the category screen
+            // try {
+            //     await fetchGameData();
+            // } catch (fetchError) {
+            //     console.error('Error fetching game data:', fetchError);
+            //     alert('Failed to load game data.');
+            // }
 
             // Proceed to the next screen or load resources dynamically
-            showScreen('category-screen'); // Example of moving to the category screen
         } else {
             const errorData = await response.json();
             alert(`Login failed: ${errorData.detail}`);
@@ -259,4 +216,71 @@ export function stopAndResetTimer() {
     matchmakingTimer.reset();
     // DOM.matchmakingButton.classList.remove('d-none');
     // DOM.matchmakingButton.textContent = "Try Again";
+}
+
+async function updateUserInfo() {
+    const token = localStorage.getItem('access_token');
+    const updatedProfile = {
+        email: document.getElementById('profileEmail').value.trim(),
+        first_name: document.getElementById('profileFirstName').value.trim(),
+        last_name: document.getElementById('profileLastName').value.trim(),
+    };
+
+    try {
+        const response = await fetch('http://localhost:8000/accounts/profile/', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedProfile),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            alert('Profile updated successfully!');
+            loadUserInfo(); // Reload the profile to reflect updated data
+        } else {
+            const errorData = await response.json();
+            console.error('Failed to update profile:', errorData);
+            alert('Failed to update profile. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error during profile update:', error);
+        alert('An unexpected error occurred. Please try again.');
+    }
+}
+
+
+DOM.profileButton.addEventListener('click', () => {
+    // e.preventDefault();
+    showScreen('userprofile-screen');
+    loadUserInfo();
+});
+
+
+async function loadUserInfo() {
+    const token = localStorage.getItem('access_token');
+
+    try {
+        const response = await fetch('http://localhost:8000/accounts/profile/', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('profileUsername').textContent = data.username;
+            document.getElementById('profileEmail').textContent = data.email;
+            document.getElementById('profileFirstName').textContent = data.first_name;
+            document.getElementById('profileLastName').textContent = data.last_name;
+        } else {
+            console.error('Failed to load user info:', response.status);
+        }
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+    }
 }

@@ -95,6 +95,7 @@ def exchange_code(code: str):
 
 from django.contrib.auth.hashers import make_password
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -119,24 +120,78 @@ def register_user(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
+# from rest_framework_simplejwt.views import TokenObtainPairView
 
-# Login view
-@api_view(['POST'])
-def custom_login_view(request):
-    alias = request.data.get('username')
-    password = request.data.get('password')
+# Login endpoint
+class LoginView(APIView):
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        user = authenticate(request, username=username, password=password)
 
-    # Authenticate the user
-    user = authenticate(username=alias, password=password)
-    if user is not None:
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'access': str(refresh.access_token),
-            'refresh': str(refresh)
-        })
-    else:
-        return Response({'detail': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            response = Response({
+                "access_token": str(refresh.access_token),
+            })
+            # Store refresh token in a secure, HttpOnly cookie
+            response.set_cookie(
+                key="refresh_token",
+                value=str(refresh),
+                httponly=True,
+                secure=True,  # Set to True in production
+                samesite='Strict',  # Prevent CSRF attacks
+                max_age=7 * 24 * 60 * 60,  # Match refresh token expiry
+            )
+            return response
+        else:
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+# Refresh endpoint
+class RefreshTokenView(APIView):
+    def post(self, request):
+        refresh_token = request.COOKIES.get("refresh_token")
+        if not refresh_token:
+            return Response({"error": "No refresh token provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            new_access_token = refresh.access_token
+            new_refresh_token = refresh #RefreshToken.for_user(refresh.user)
+
+            response = Response({
+                "access_token": str(new_access_token),
+            })
+            # Update refresh token in cookie
+            response.set_cookie(
+                key="refresh_token",
+                value=str(new_refresh_token),
+                httponly=True,
+                secure=True,  # Set to True in production
+                samesite='Strict',  # Prevent CSRF attacks
+                max_age=7 * 24 * 60 * 60,  # Match refresh token expiry
+            )
+            return response
+        except Exception as e:
+            return Response({"error": "Invalid refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
+
+# # Login view
+# @api_view(['POST'])
+# def custom_login_view(request):
+#     alias = request.data.get('username')
+#     password = request.data.get('password')
+
+#     # Authenticate the user
+#     user = authenticate(username=alias, password=password)
+#     if user is not None:
+#         refresh = RefreshToken.for_user(user)
+#         return Response({
+#             'access': str(refresh.access_token),
+#             'refresh': str(refresh)
+#         })
+#     else:
+#         return Response({'detail': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 # Logout view
 @api_view(['POST'])
@@ -151,3 +206,29 @@ def logout_view(request):
         return Response({"message": "Logout successful."}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.serializers import ModelSerializer
+
+class UserProfileSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']  # Include fields to expose
+        read_only_fields = ['id', 'username']  # Prevent modification of certain fields
+
+# API view for profile management
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is logged in
+
+    def get(self, request):
+        # Serialize the logged-in user's profile
+        serializer = UserProfileSerializer(request.user)
+        return Response(serializer.data)
+
+    def put(self, request):
+        # Update the user's profile
+        serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

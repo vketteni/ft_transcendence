@@ -5,6 +5,7 @@ export const DOM = {
     ctx: document.getElementById('canvas').getContext('2d'),
 	matchmakingButton: document.getElementById('matchmaking-button'),
     matchmakingTimer: document.getElementById('timerDisplay'),
+    editProfileButton: document.getElementById('editProfileButton'),
     canvasImg: (() => {
         const img = new Image();
         img.src = './canvas.png';
@@ -20,6 +21,7 @@ export const DOM = {
     loginScreen: document.getElementById('login-screen'),
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
+    userprofileScreen: document.getElementById('userprofile-screen'),
 
     // login/signup screen
     loginButton: document.getElementById('login-button'),
@@ -42,6 +44,10 @@ export const DOM = {
     PvPButton: document.getElementById('PvP'),
     PvCButton: document.getElementById('PvC'),
     // TournamentButton: document.getElementById('Tournament'),
+
+    // User profile screen
+    editProfileButton: document.getElementById('editProfileButton'),
+    profileButton: document.getElementById('profileButton'),
     
     // Game screen
     pauseButton: document.getElementById('pause-button'),
