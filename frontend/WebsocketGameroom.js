@@ -1,6 +1,6 @@
 import { serverState } from './state.js';
 import { wsManager } from './WebSocketManager.js';
-import { showScreen } from './pong.js';
+import { showScreen } from './showScreen.js';
 
 export function connectToGame(gameRoomUrl) {
     wsManager.connect(

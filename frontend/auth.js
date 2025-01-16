@@ -1,32 +1,30 @@
-export async function handleLoginRedirect() {
-    try {
-        const response = await fetch('/account/login/redirect', {
-            method: 'GET',
-            credentials: 'include', // Ensure cookies (if any) are sent with the request
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to authenticate user.');
-        }
-        
-        const data = await response.json();
+import { displayError, logErrorToService } from './errorHandler.js';
+import { apiRequest } from './apiService.js';
 
-        if (data.status === 'success') {
-            // Save the token (if provided) and update the UI
-            console.log('User:', data.user);
-            localStorage.setItem('user', JSON.stringify(data.user));
+export let isLoggedIn = false; // Default to logged out
 
-            // Redirect to the provided URL or default to a fallback
-            const redirectUrl = data.redirect_url; //|| 'http://localhost:3000'
-            console.log('Redirect URL:', data.redirect_url);
-            window.location.href = redirectUrl;
+// Function to update the login state
+export function setLoginState(state) {
 
-        } else {
-            console.error(data.message);
-            alert('Authentication failed: ' + data.message);
-        }
-    } catch (error) {
-        console.error('Error during login redirect handling:', error);
-        alert('An error occurred while processing your login. Please try again.');
+	isLoggedIn = state;
+
+}
+
+export async function handleLoginRedirect(code) {
+    const response = await apiRequest(`/api/accounts/login/redirect/?code=${code}`);
+
+    if (response.success) {
+        console.log('Login successful:', response.data.user.username);
+		localStorage.setItem('user', JSON.stringify(data.user));
+
+		// Redirect to the provided URL or default to a fallback
+		const redirectUrl = data.redirect_url; //|| 'http://localhost:3000'
+		console.log('Redirect URL:', data.redirect_url);
+		window.location.href = redirectUrl;
+        // Update app state, e.g., save user info
+    } else {
+		displayError(response.message);
+        logErrorToService(response.message);
+        // Display an error message to the user
     }
 }

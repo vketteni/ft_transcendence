@@ -7,37 +7,17 @@ import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
 import {handleLoginRedirect} from './auth.js'
+import { showScreen } from './showScreen.js'
+import { initializeSessionAndCSRF } from './intializeSessionAndCSRF.js';
+import { updateTopBar } from './topBar.js';
+import { fetchUserState } from './fetchUserState.js';
+import { handleLogout } from './logout.js';
 
 let isPaused = false;
 const matchmakingTimer = new Timer(DOM.matchmakingTimer);
 
 DOM.gameScreen.width = GAME_CONFIG.canvasWidth;
 DOM.gameScreen.height = GAME_CONFIG.canvasHeight;
-
-export function showScreen(screenId) {
-    const screens = [
-        DOM.registrationScreen,
-        DOM.loginScreen,
-        DOM.signupScreen,
-        DOM.categoryScreen,
-        DOM.gameScreen,
-        DOM.gameOverScreen
-    ];
-
-    screens.forEach(screen => {
-        if (screen.id === screenId) {
-            screen.classList.remove('d-none');
-
-            // If showing game screen, initialize the canvas
-            if (screenId === 'game-screen') {
-                resizeCanvas();
-                console.log("Game screen initialized");
-            }
-        } else {
-            screen.classList.add('d-none');
-        }
-    });
-}
 
 // Login and sign-up screen navigation
 DOM.loginButton.addEventListener('click', () => {
@@ -85,12 +65,16 @@ DOM.signupForm.addEventListener('submit', (e) => {
 
 // Handle "Login with 42"
 DOM.login42Button.addEventListener('click', () => {
-    // window.location.href = "https://signin.intra.42.fr";
-    if (window.location.pathname === '/account/login/redirect') {
-        handleLoginRedirect();
-    }
-});
-
+		console.log("login42Button.addEventListener()");
+		const loginWindow = window.open(
+			'/oauth/accounts/login/', // Redirects to backend endpoint for OAuth initiation
+			'_blank',          // Open in a new tab or popup
+			'width=500,height=600,noopener=false,noreferrer=false'
+		);
+		fetchUserState(loginWindow);
+		
+	});
+	
 DOM.PvCButton.addEventListener('click', () => {
     if (wsManager.sockets['matchmaking'].readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
@@ -154,7 +138,6 @@ document.addEventListener('keyup', (e) => {
     }
 });
 
-
 // Stop and reset the timer when needed
 export function stopAndResetTimer() {
     matchmakingTimer.stop();
@@ -162,3 +145,30 @@ export function stopAndResetTimer() {
     // DOM.matchmakingButton.classList.remove('d-none');
     // DOM.matchmakingButton.textContent = "Try Again";
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+	// Call this function on app initialization
+	// initializeSessionAndCSRF();
+
+    // Set the category screen as the default
+    showScreen('category-screen');
+	
+    // Set up top bar navigation
+    DOM.topBarNav.addEventListener('click', (event) => {
+        if (event.target.tagName === 'A') {
+            event.preventDefault();
+            const sectionId = event.target.getAttribute('href').substring(1);
+
+            if (sectionId === 'login') {
+                showScreen('login-screen');
+            } else if (sectionId === 'signup') {
+                showScreen('signup-screen');
+			} else if (sectionId === 'logout') {
+                handleLogout();
+				updateTopBar();
+            } else {
+                console.warn(`Unhandled navigation target: ${sectionId}`);
+            }
+        }
+    });
+});

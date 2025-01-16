@@ -1,4 +1,9 @@
 export const DOM = {
+    // Top bar
+    topBar: document.getElementById('topbar'),
+    topBarNav: document.getElementById('topbar-nav'),
+    topBarLogo: document.getElementById('logo'),
+
     // game canvas
     gameScreen: document.getElementById('game-screen'),
     canvas: document.getElementById('canvas'),
@@ -54,3 +59,4 @@ export const DOM = {
 DOM.canvasImg.onerror = () => {
     console.error('Image failed to load. Check the file path.');
 };
+

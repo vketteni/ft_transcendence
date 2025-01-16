@@ -111,10 +111,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # DRF Basic Setup
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-        # Add TokenAuthentication or JWT if needed
-    ]
+    ],
 }
 
 # Channels & Redis
@@ -131,7 +133,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 CSP_CONNECT_SRC = [
     "'self'",
-    "ws://127.0.0.1:8000",
+    "ws://127.0.0.1:3000",
     "wss://vketteni.42.fr",
 ]
 
@@ -140,6 +142,10 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 CSRF_TRUSTED_ORIGINS = [
     "https://api.intra.42.fr",
+	'http://127.0.0.1:3000',
+	'http://127.0.0.1:8000',
+	'http://localhost:3000',
+	'http://localhost:8000',
 ]
 
 
@@ -181,3 +187,9 @@ CELERY_TASK_SERIALIZER = 'json'
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI')
+
+CORS_ALLOW_CREDENTIALS = True
+# CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
+
+SESSION_COOKIE_SAMESITE=None
+CSRF_COOKIE_SAMESITE=None

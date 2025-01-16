@@ -104,3 +104,73 @@ body {
     opacity: 0; /* Makes it fully transparent */
     pointer-events: none; /* Disables interaction */
 }
+
+
+/* Reset */
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+  }
+  
+  /* Topbar Styling */
+  #topbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background-color: #1a1a2e;
+	padding: 10px 20px;
+	color: #ffffff;
+	font-family: Arial, sans-serif;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 1000;
+  }
+  
+  #logo {
+	font-size: 1.5em;
+	font-weight: bold;
+  }
+  
+  #topbar-nav ul {
+	list-style: none;
+	display: flex;
+	gap: 15px;
+  }
+  
+  #topbar-nav ul li {
+	display: inline;
+  }
+  
+  #topbar-nav ul li a {
+	text-decoration: none;
+	color: #ffffff;
+	font-size: 1em;
+	transition: color 0.3s ease;
+  }
+  
+  #topbar-nav ul li a:hover {
+	color: #00adb5;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+	#topbar {
+	  flex-direction: column;
+	  align-items: flex-start;
+	}
+  
+	#topbar-nav ul {
+	  flex-direction: column;
+	  gap: 10px;
+	}
+  }
+  
+.logged-in {
+    display: none; /* Hide logged-in links by default */
+}
+
+.logged-out {
+    display: none; /* Hide logged-out links by default */
+}

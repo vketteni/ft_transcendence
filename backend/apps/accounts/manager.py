@@ -12,7 +12,8 @@ class UserOAuth2Manager(models.UserManager):
       username=user['login'],
       first_name=user['first_name'],
       last_name=user['last_name'],
-      email=user['email']
+      email=user['email'],
+      is_active=True,
     )
     return new_user
   
