@@ -11,6 +11,7 @@ export function showScreen(screenId) {
 		DOM.categoryScreen,
 		DOM.gameScreen,
 		DOM.gameOverScreen,
+		DOM.userprofileScreen
 	];
 
 	screens.forEach(screen => {

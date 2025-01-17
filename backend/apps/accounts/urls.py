@@ -10,4 +10,9 @@ urlpatterns = [
 	path('user/status/poll/', views.PollingUserStatusView.as_view(), name='poll'),
     path('logout/', views.LogoutView.as_view(), name='logout_user'),
 	path('csrf-token/', views.csrf_token_view, name='csrf-token'),
+
+	# path("token/", views.LoginView.as_view(), name="token_obtain_pair"),
+    # path("refresh/", views.RefreshTokenView.as_view(), name="token_refresh"),
+    # path("profile/", views.UserProfileView.as_view(), name="user_profile"),
+	# path('register/', views.register_user, name='register_user'),
 ]

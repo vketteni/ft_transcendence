@@ -17,7 +17,7 @@
 			<ul>
 				<li class="logged-out"><a href="#login">Login</a></li>
 				<li class="logged-in"><a href="#logout">Logout</a></li>
-				<!-- <li class="logged-in"><a href="#profile">Profile</a></li> -->
+				<li class="logged-in"><a href="#profile">Profile</a></li>
 				<!-- <li class="logged-in"><a href="#leaderboard">Leaderboard</a></li> -->
 				<!-- <li><a href="#signup">Sign Up</a></li> -->
 			</ul>
@@ -52,6 +52,7 @@
         <form id="signup-form" class="text-center w-15 regular-font">
             <input type="text" id="signup-alias" class="form-control mb-3" placeholder="Create your alias" required maxlength="20">
             <input type="password" id="signup-password" class="form-control mb-3" placeholder="Create a secure password" required>
+            <input type="email" id="signup-email" class="form-control mb-3" placeholder="Enter your email" required>
             <button type="submit" class="btn btn-lg btn-primary">Sign Up</button>
         </form>
     </div>
@@ -62,11 +63,24 @@
         <button id="PvP" class="btn btn-lg btn-primary mb-3 w-100">Player vs Player</button>
         <button id="PvC" class="btn btn-lg btn-primary mb-3 w-100">Player vs Computer</button>
         <button id="Tournament" class="btn btn-lg btn-primary w-100">Tournament</button>
+        <button id="logout-button" class="btn btn-lg btn-danger mb-3 d-none">Logout</button>
+        <!-- <button id="profileButton" class="btn btn-primary">View Profile</button> -->
+    </div>
+
+    <!-- user profile -->
+    <div id="userprofile-screen" 
+        class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+        <h2>User Profile</h2>
+        <p><strong>Username:</strong> <span id="profileUsername"></span></p>
+        <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+        <p><strong>First Name:</strong> <span id="profileFirstName"></span></p>
+        <p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
+        <button id="editProfileButton" class="btn btn-primary">Edit Profile</button>
     </div>
 
     <!-- game screen -->
     <div id="game-screen" class="d-none position-relative vh-100 d-flex flex-column justify-content-center align-items-center">
-		<div id="timerDisplay" class="hidden"></div>
+        <div id="timerDisplay" class="hidden"></div>
         <canvas id="canvas"></canvas>
 		<button id="pause-button" class="btn btn-lg btn-primary mb-3">Pause</button>
     </div>

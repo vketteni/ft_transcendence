@@ -4,6 +4,8 @@ from django.db import models
 from .manager import UserOAuth2Manager
 import hashlib
 from django.conf import settings
+from django.db import models
+from django.contrib.auth.models import User
 
 class User(AbstractUser):
     """

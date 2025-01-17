@@ -6,12 +6,13 @@ import { GAME_CONFIG, setPlayerAlias, getPlayerAlias } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
-import {handleLoginRedirect} from './auth.js'
+import { handleLoginRedirect } from './auth.js'
 import { showScreen } from './showScreen.js'
 import { initializeSessionAndCSRF } from './intializeSessionAndCSRF.js';
 import { updateTopBar } from './topBar.js';
 import { fetchUserState } from './fetchUserState.js';
 import { handleLogout } from './logout.js';
+import { fetchGameData } from './token.js';
 
 let isPaused = false;
 const matchmakingTimer = new Timer(DOM.matchmakingTimer);
@@ -28,7 +29,7 @@ DOM.signupButton.addEventListener('click', () => {
     showScreen('signup-screen'); // Navigate to sign-up screen
 });
 
-DOM.loginForm.addEventListener('submit', (e) => {
+DOM.loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const alias = DOM.loginAlias.value.trim();
     const password = DOM.loginPassword.value.trim();
@@ -38,29 +39,82 @@ DOM.loginForm.addEventListener('submit', (e) => {
         return;
     }
 
-    console.log("Login:", { alias, password });
-    setPlayerAlias(alias);
-    // sendAlias(); // Send alias to the server
+    try {
+        const response = await fetch('http://localhost:8000/accounts/token/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: alias, password }),
+            credentials: 'include',
+        });
 
-    showScreen('category-screen'); // Navigate to category screen
+        if (response.ok) {
+            // const data = await response.json();
+            const data = await response.json();
+
+            // Store tokens in localStorage or sessionStorage
+            localStorage.setItem('access_token', data.access_token);
+
+            alert("Login successful!");
+            showScreen('category-screen'); // Example of moving to the category screen
+            // try {
+            //     await fetchGameData();
+            // } catch (fetchError) {
+            //     console.error('Error fetching game data:', fetchError);
+            //     alert('Failed to load game data.');
+            // }
+
+            // Proceed to the next screen or load resources dynamically
+        } else {
+            const errorData = await response.json();
+            alert(`Login failed: ${errorData.detail}`);
+        }
+    } catch (error) {
+        console.error('Error during login:', error);
+        alert('An unexpected error occurred. Please try again.');
+    }
 });
 
 // Handle sign-up form submission
-DOM.signupForm.addEventListener('submit', (e) => {
+DOM.signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const alias = DOM.signupAlias.value.trim();
     const password = DOM.signupPassword.value.trim();
+    const email = DOM.signupEmail.value.trim();
 
-    if (!alias || !password) {
+    if (!alias || !password || !email) {
         alert("Please create both alias and password.");
         return;
     }
 
-    console.log("Sign Up:", { alias, password });
-    setPlayerAlias(alias);
-    sendAlias();
+    console.log("Sign Up:", { alias, password, email });
+    // setPlayerAlias(alias);
+    // sendAlias();
+    try {
+        const response = await fetch('http://localhost:8000/accounts/register/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ alias, password, email }),
+        });
 
-    showScreen('category-screen'); // Navigate to category screen
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log("Sign Up Successful:", data);
+            // setPlayerAlias(alias);
+            // sendAlias(); // Notify the game server
+            showScreen('login-screen');
+        } else {
+            alert(`Sign Up Error: ${data.error}`);
+        }
+    } catch (error) {
+        console.error('Error signing up:', error);
+        alert('An unexpected error occurred. Please try again later.');
+    }
+    // showScreen('category-screen'); // Navigate to category screen
 });
 
 // Handle "Login with 42"
@@ -82,7 +136,7 @@ DOM.PvCButton.addEventListener('click', () => {
         console.error("WebSocket connection is not open.");
     }
 	// DOM.matchmakingTimer
-    // showScreen('game-screen');
+    showScreen('game-screen');
 });
 
 DOM.PvPButton.addEventListener('click', () => {
@@ -166,9 +220,80 @@ document.addEventListener('DOMContentLoaded', () => {
 			} else if (sectionId === 'logout') {
                 handleLogout();
 				updateTopBar();
+            } else if (sectionId === 'profile') {
+                showScreen('userprofile-screen');
             } else {
                 console.warn(`Unhandled navigation target: ${sectionId}`);
             }
         }
     });
 });
+
+
+
+async function updateUserInfo() {
+    const token = localStorage.getItem('access_token');
+    const updatedProfile = {
+        email: document.getElementById('profileEmail').value.trim(),
+        first_name: document.getElementById('profileFirstName').value.trim(),
+        last_name: document.getElementById('profileLastName').value.trim(),
+    };
+
+    try {
+        const response = await fetch('http://localhost:8000/accounts/profile/', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedProfile),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            alert('Profile updated successfully!');
+            loadUserInfo(); // Reload the profile to reflect updated data
+        } else {
+            const errorData = await response.json();
+            console.error('Failed to update profile:', errorData);
+            alert('Failed to update profile. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error during profile update:', error);
+        alert('An unexpected error occurred. Please try again.');
+    }
+}
+
+
+// DOM.profileButton.addEventListener('click', () => {
+//     // e.preventDefault();
+//     showScreen('userprofile-screen');
+//     loadUserInfo();
+// });
+
+
+async function loadUserInfo() {
+    const token = localStorage.getItem('access_token');
+
+    try {
+        const response = await fetch('http://localhost:8000/accounts/profile/', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('profileUsername').textContent = data.username;
+            document.getElementById('profileEmail').textContent = data.email;
+            document.getElementById('profileFirstName').textContent = data.first_name;
+            document.getElementById('profileLastName').textContent = data.last_name;
+        } else {
+            console.error('Failed to load user info:', response.status);
+        }
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+    }
+}

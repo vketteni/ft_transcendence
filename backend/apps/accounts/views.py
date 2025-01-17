@@ -24,18 +24,19 @@ from django.shortcuts import redirect
 from django.conf import settings
 import logging
 import requests
+from apps.accounts.models import User
 
 logger = logging.getLogger(__name__)
 
 class Login42View(APIView):
     def get(self, request):
-        logger.info("Login42View(APIView).get() called.")
         auth_url = (
             f"https://api.intra.42.fr/oauth/authorize?"
             f"client_id={settings.CLIENT_ID}&"
             f"redirect_uri={settings.REDIRECT_URI}&"
             f"response_type=code"
         )
+        logger.info("Login42View(APIView).get() called.")
         return redirect(auth_url)
 
 class Login42RedirectView(APIView):
@@ -73,6 +74,7 @@ class Login42RedirectView(APIView):
                 "code": code,
                 "redirect_uri": settings.REDIRECT_URI,
             }
+            logger.info(data)
             response = requests.post(
                 "https://api.intra.42.fr/oauth/token", data=data, headers={"Content-Type": "application/x-www-form-urlencoded"}
             )
@@ -113,7 +115,8 @@ class PollingUserStatusView(APIView):
         # Maximum wait time (in seconds) for a single poll
         timeout = 2
         poll_start_time = time.time()
-
+        
+        logger.info(f"request.user.is_authenticated: {request.user.is_authenticated}")
         while time.time() - poll_start_time < timeout:
             # Check if the user is authenticated
             if request.user.is_authenticated:
@@ -157,15 +160,138 @@ class UserView(APIView):
 class LogoutView(APIView):
     # permission_classes = [IsAuthenticated]
     def dispatch(self, request, *args, **kwargs):
-        logger.info(">>>> LogoutView.dispatch called")
-        logger.info("user = %s", request.user)
-        logger.info("is_authenticated = %s", request.user.is_authenticated)
-        logger.info("is_active = %s", request.user.is_active)
+        # logger.info(">>>> LogoutView.dispatch called")
+        # logger.info("user = %s", request.user)
+        # logger.info("is_authenticated = %s", request.user.is_authenticated)
+        # logger.info("is_active = %s", request.user.is_active)
         return super().dispatch(request, *args, **kwargs)
     def get(self, request):
         logger.info("LogoutView(APIView).post() called.")
         logout(request)
         return 	JsonResponse({"logged_in": request.user.is_authenticated})
+
+from django.contrib.auth.hashers import make_password
+from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+@api_view(['POST'])
+def register_user(request):
+    try:
+        alias = request.data.get('alias')
+        password = make_password(request.data.get('password'))
+        email = request.data.get('email')
+        
+        if User.objects.filter(username=alias).exists():
+            return Response({"error": "Alias already taken."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = User.objects.create(
+            username=alias,
+            password=password,
+            email=email,
+            is_active=True
+        )
+        return Response({"message": "User created successfully.", "username": alias}, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+from rest_framework_simplejwt.tokens import RefreshToken
+# from rest_framework_simplejwt.views import TokenObtainPairView
+
+# Login endpoint
+class LoginView(APIView):
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            response = Response({
+                "access_token": str(refresh.access_token),
+            })
+            # Store refresh token in a secure, HttpOnly cookie
+            response.set_cookie(
+                key="refresh_token",
+                value=str(refresh),
+                httponly=True,
+                secure=True,  # Set to True in production
+                samesite='Strict',  # Prevent CSRF attacks
+                max_age=7 * 24 * 60 * 60,  # Match refresh token expiry
+            )
+            return response
+        else:
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+# Refresh endpoint
+class RefreshTokenView(APIView):
+    def post(self, request):
+        refresh_token = request.COOKIES.get("refresh_token")
+        if not refresh_token:
+            return Response({"error": "No refresh token provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            new_access_token = refresh.access_token
+            new_refresh_token = refresh #RefreshToken.for_user(refresh.user)
+
+            response = Response({
+                "access_token": str(new_access_token),
+            })
+            # Update refresh token in cookie
+            response.set_cookie(
+                key="refresh_token",
+                value=str(new_refresh_token),
+                httponly=True,
+                secure=True,  # Set to True in production
+                samesite='Strict',  # Prevent CSRF attacks
+                max_age=7 * 24 * 60 * 60,  # Match refresh token expiry
+            )
+            return response
+        except Exception as e:
+            return Response({"error": "Invalid refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
+
+# Logout view
+@api_view(['POST'])
+def logout_view(request):
+    """
+    Handles user logout by blacklisting the refresh token.
+    """
+    try:
+        refresh_token = request.data["refresh_token"]
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        return Response({"message": "Logout successful."}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.serializers import ModelSerializer
+
+class UserProfileSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']  # Include fields to expose
+        read_only_fields = ['id', 'username']  # Prevent modification of certain fields
+
+# API view for profile management
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure the user is logged in
+
+    def get(self, request):
+        # Serialize the logged-in user's profile
+        serializer = UserProfileSerializer(request.user)
+        return Response(serializer.data)
+
+    def put(self, request):
+        # Update the user's profile
+        serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 def csrf_token_view(request):
     """

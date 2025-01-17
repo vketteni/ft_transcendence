@@ -22,6 +22,7 @@ export async function fetchUserState(loginWindow = null) {
 		if (data.logged_in) {
 			console.log('Polling detected successful login.');
 			loginHandled = true;
+			console.log("loginWindow: ", loginWindow, "loginWindow.closed: ", loginWindow.closed);
 			if (loginWindow && !loginWindow.closed) loginWindow.close();
 			setLoginState(data.logged_in);
 			updateTopBar();
@@ -36,7 +37,7 @@ export async function fetchUserState(loginWindow = null) {
 			alert(`Login failed: ${data.error}`);
 		} else if (data.timeout) {
 			console.log('Polling timed out. Sending a new request.');
-			fetchUserState(); // Restart Polling
+			fetchUserState(loginWindow); // Restart Polling
 		}
 	} catch (error) {
 		console.error('Error during Polling:', error);

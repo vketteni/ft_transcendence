@@ -10,6 +10,7 @@ export const DOM = {
     ctx: document.getElementById('canvas').getContext('2d'),
 	matchmakingButton: document.getElementById('matchmaking-button'),
     matchmakingTimer: document.getElementById('timerDisplay'),
+    editProfileButton: document.getElementById('editProfileButton'),
     canvasImg: (() => {
         const img = new Image();
         img.src = './canvas.png';
@@ -25,35 +26,43 @@ export const DOM = {
     loginScreen: document.getElementById('login-screen'),
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
+    userprofileScreen: document.getElementById('userprofile-screen'),
 
     // login/signup screen
     loginButton: document.getElementById('login-button'),
     signupButton: document.getElementById('signup-button'),
-
+    
     loginForm: document.getElementById('login-form'),
     signupForm: document.getElementById('signup-form'),
-
+    
     // login form
     loginAlias: document.getElementById('login-alias'),
     loginPassword: document.getElementById('login-password'),
     login42Button: document.getElementById('login-42-button'),
-
+    
     // sing up form
     signupAlias: document.getElementById('signup-alias'),
     signupPassword: document.getElementById('signup-password'),
-
+    signupEmail: document.getElementById('signup-email'),
+    
     // Category screen buttons  
     PvPButton: document.getElementById('PvP'),
     PvCButton: document.getElementById('PvC'),
     // TournamentButton: document.getElementById('Tournament'),
 
+    // User profile screen
+    editProfileButton: document.getElementById('editProfileButton'),
+    profileButton: document.getElementById('profileButton'),
+    
     // Game screen
     pauseButton: document.getElementById('pause-button'),
-
+    
     // Game over screen
     gameOverScreen: document.getElementById('game-over-screen'),
     gameOverMessage: document.getElementById('game-over-message'),
     playAgainButton: document.getElementById('play-again-button'),
+
+    logoutButton: document.getElementById('logout-button'),
 };
 
 DOM.canvasImg.onerror = () => {

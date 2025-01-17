@@ -20,6 +20,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
     'apps.accounts.auth.AuthenticationBackend42',
 ]
 
@@ -32,11 +33,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # Third-party
-    'rest_framework',
     'channels',
 	'csp',
     'corsheaders',
 	'django_celery_beat',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
 
     # Local Apps
     'apps.accounts',
@@ -53,11 +57,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django_otp.middleware.OTPMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Frontend URL
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'config.urls'
 
@@ -116,8 +123,20 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
+
+# JWT settings
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    "ALGORITHM": "HS256",
+}
+
 
 # Channels & Redis
 CHANNEL_LAYERS = {
@@ -183,7 +202,7 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 
-# 42berlin Oauthentication
+# 42OAuth
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI')
@@ -193,3 +212,6 @@ CORS_ALLOW_CREDENTIALS = True
 
 SESSION_COOKIE_SAMESITE=None
 CSRF_COOKIE_SAMESITE=None
+
+SESSION_COOKIE_SECURE = True  # Ensure secure cookies
+CSRF_COOKIE_SECURE = True

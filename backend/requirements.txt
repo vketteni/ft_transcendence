@@ -52,9 +52,14 @@ redis==5.2.0
 celery[redis]==5.4.0
 django-celery-beat>=2.5.0
 starlette==0.45.2
+djangorestframework
 djangorestframework-simplejwt
 django-allauth
 requests
 psycopg>=3.1.8
 python-decouple
 django-cors-headers
+django-otp
+django-two-factor-auth[phonenumbers]
+qrcode
+django-ratelimit
