@@ -6,13 +6,15 @@ import { GAME_CONFIG, setPlayerAlias, getPlayerAlias } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
-import { handleLoginRedirect } from './auth.js'
+import { handleLoginRedirect, setLoginState } from './auth.js'
 import { showScreen } from './showScreen.js'
 import { initializeSessionAndCSRF } from './intializeSessionAndCSRF.js';
 import { updateTopBar } from './topBar.js';
 import { fetchUserState } from './fetchUserState.js';
 import { handleLogout } from './logout.js';
 import { fetchGameData } from './token.js';
+import { getCookie, setCookie } from './cookie.js';
+import { generateUUID } from './generateUUID.js';
 
 let isPaused = false;
 const matchmakingTimer = new Timer(DOM.matchmakingTimer);
@@ -20,16 +22,13 @@ const matchmakingTimer = new Timer(DOM.matchmakingTimer);
 DOM.gameScreen.width = GAME_CONFIG.canvasWidth;
 DOM.gameScreen.height = GAME_CONFIG.canvasHeight;
 
-// Login and sign-up screen navigation
-DOM.loginButton.addEventListener('click', () => {
-    showScreen('login-screen'); // Navigate to login screen
-});
-
-DOM.signupButton.addEventListener('click', () => {
-    showScreen('signup-screen'); // Navigate to sign-up screen
+DOM.registrationButton.addEventListener('click', () => {
+    console.log("registrationButton.addEventListener");
+    showScreen('signup-screen');
 });
 
 DOM.loginForm.addEventListener('submit', async (e) => {
+    console.log("loginForm.addEventListener");
     e.preventDefault();
     const alias = DOM.loginAlias.value.trim();
     const password = DOM.loginPassword.value.trim();
@@ -40,7 +39,7 @@ DOM.loginForm.addEventListener('submit', async (e) => {
     }
 
     try {
-        const response = await fetch('http://localhost:8000/accounts/token/', {
+        const response = await fetch('/api/accounts/token/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -57,6 +56,7 @@ DOM.loginForm.addEventListener('submit', async (e) => {
             localStorage.setItem('access_token', data.access_token);
 
             alert("Login successful!");
+            setLoginState(data.logged_in);
             showScreen('category-screen'); // Example of moving to the category screen
             // try {
             //     await fetchGameData();
@@ -92,7 +92,7 @@ DOM.signupForm.addEventListener('submit', async (e) => {
     // setPlayerAlias(alias);
     // sendAlias();
     try {
-        const response = await fetch('http://localhost:8000/accounts/register/', {
+        const response = await fetch('http://localhost:3000/api/accounts/register/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -166,6 +166,15 @@ DOM.playAgainButton.addEventListener('click', () => {
     showScreen('game-screen');
 });
 
+setCookie('browser_id', generateUUID(), {
+    path: '/',
+    // domain: '127.0.0.1', // Set this to match the backend's domain
+    // secure: true,             // Use true for HTTPS
+    sameSite: 'Lax',
+    // sameSite: 'None',         // None if cross-origin, Lax/Strict for same-origin
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+});
+console.log(getCookie('browser_id'));
 
 window.addEventListener('resize', resizeCanvas);
 
@@ -206,7 +215,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Set the category screen as the default
     showScreen('category-screen');
-	
+
+
+
     // Set up top bar navigation
     DOM.topBarNav.addEventListener('click', (event) => {
         if (event.target.tagName === 'A') {
@@ -229,71 +240,72 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-
-
-async function updateUserInfo() {
-    const token = localStorage.getItem('access_token');
-    const updatedProfile = {
-        email: document.getElementById('profileEmail').value.trim(),
-        first_name: document.getElementById('profileFirstName').value.trim(),
-        last_name: document.getElementById('profileLastName').value.trim(),
+DOM.editProfileForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const csrftoken = getCookie('csrftoken'); 
+    console.log("csrftoken: ", csrftoken);
+    const updatedData = {
+        csrfmiddlewaretoken: csrftoken,
+        username: DOM.editUsername.value,
+        email: DOM.editEmail.value,
+        first_name: DOM.editFirstName.value,
+        last_name: DOM.editLastName.value
     };
-
     try {
-        const response = await fetch('http://localhost:8000/accounts/profile/', {
+        const response = await fetch('/api/accounts/user-profile/', {
+        // const response = await fetch('http://localhost:8000/api/accounts/user-profile/', {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                // 'X-CSRFToken': csrftoken,
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(updatedProfile),
+            body: JSON.stringify(updatedData),
+            credentials: 'include',
         });
-
-        if (response.ok) {
-            const data = await response.json();
-            alert('Profile updated successfully!');
-            loadUserInfo(); // Reload the profile to reflect updated data
-        } else {
-            const errorData = await response.json();
-            console.error('Failed to update profile:', errorData);
-            alert('Failed to update profile. Please try again.');
+        const data = await response.json();
+        if (response.ok)
+        {
+            console.log("updatedData.username:", updatedData.username);
+            // Update the profile view with the new data
+            DOM.profileUsername.textContent = data.username;
+            DOM.profileEmail.textContent = data.email;
+            DOM.profileFirstName.textContent = data.first_name || 'N/A';
+            DOM.profileLastName.textContent = data.last_name || 'N/A';
+        
+            // Switch back to view mode
+            DOM.profileEdit.classList.add("d-none");
+            DOM.profileView.classList.remove("d-none");
         }
+        else
+            alert(`Sign Up Error: ${data.error}`);
     } catch (error) {
-        console.error('Error during profile update:', error);
-        alert('An unexpected error occurred. Please try again.');
+        console.error('Error signing up:', error);
+        alert('An unexpected error occurred. Please try again later.');
     }
-}
+});
 
+// Show the edit form and hide the view
+DOM.editProfileButton.addEventListener("click", () => {
+    console.log("editProfileButton.addEventListener");
+    DOM.profileView.classList.add("d-none");
+    DOM.profileEdit.classList.remove("d-none");
 
-// DOM.profileButton.addEventListener('click', () => {
-//     // e.preventDefault();
-//     showScreen('userprofile-screen');
-//     loadUserInfo();
-// });
+    const profileData = {
+        username: DOM.profileUsername.textContent,
+        email: DOM.profileEmail.textContent,
+        first_name: DOM.profileFirstName.textContent,
+        last_name: DOM.profileLastName.textContent
+    };
 
+    DOM.editUsername.value = profileData.username;
+    DOM.editEmail.value = profileData.email;
+    DOM.editFirstName.value = profileData.first_name || 'N/A';
+    DOM.editLastName.value = profileData.last_name || 'N/A';
+});
 
-async function loadUserInfo() {
-    const token = localStorage.getItem('access_token');
-
-    try {
-        const response = await fetch('http://localhost:8000/accounts/profile/', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            document.getElementById('profileUsername').textContent = data.username;
-            document.getElementById('profileEmail').textContent = data.email;
-            document.getElementById('profileFirstName').textContent = data.first_name;
-            document.getElementById('profileLastName').textContent = data.last_name;
-        } else {
-            console.error('Failed to load user info:', response.status);
-        }
-    } catch (error) {
-        console.error('Error fetching user info:', error);
-    }
-}
+// Cancel editing and return to view mode
+DOM.cancelEditButton.addEventListener("click", () => {
+    DOM.profileEdit.classList.add("d-none");
+    DOM.profileView.classList.remove("d-none");
+});

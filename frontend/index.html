@@ -32,7 +32,7 @@
     <div id="registration-screen" class="d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
 		<img src="title.png" alt="Game Title" class="img-fluid mb-4" style="max-width: 400px;">
 		<button id="login-button" class="btn btn-lg btn-primary mb-3">Login</button>
-        <button id="signup-button" class="btn btn-lg btn-primary mb-3">Sign Up</button>
+
     </div>
 
     <!-- Login Screen -->
@@ -44,6 +44,7 @@
             <button type="submit" class="btn btn-lg btn-primary mb-3">Login</button>
             <button id="login-42-button" class="btn btn-lg btn-primary mb-3">Login with 42</button>
         </form>
+        <button id="registration-button" class="btn btn-lg btn-primary mb-3">Sign Up</button>
     </div>
 
     <!-- Sign Up Screen -->
@@ -59,24 +60,54 @@
 
    <!-- category screen -->
    <div id="category-screen" 
-        class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+   
+   class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+   <img src="title.png" alt="Game Title" class="img-fluid mb-4" style="max-width: 400px;">
         <button id="PvP" class="btn btn-lg btn-primary mb-3 w-100">Player vs Player</button>
         <button id="PvC" class="btn btn-lg btn-primary mb-3 w-100">Player vs Computer</button>
         <button id="Tournament" class="btn btn-lg btn-primary w-100">Tournament</button>
         <button id="logout-button" class="btn btn-lg btn-danger mb-3 d-none">Logout</button>
+
         <!-- <button id="profileButton" class="btn btn-primary">View Profile</button> -->
     </div>
 
-    <!-- user profile -->
     <div id="userprofile-screen" 
         class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
         <h2>User Profile</h2>
-        <p><strong>Username:</strong> <span id="profileUsername"></span></p>
-        <p><strong>Email:</strong> <span id="profileEmail"></span></p>
-        <p><strong>First Name:</strong> <span id="profileFirstName"></span></p>
-        <p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
-        <button id="editProfileButton" class="btn btn-primary">Edit Profile</button>
+        <!-- Display View -->
+        <div id="profileView" class="text-center">
+            <p><strong>Username:</strong> <span id="profileUsername"></span></p>
+            <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+            <p><strong>First Name:</strong> <span id="profileFirstName"></span></p>
+            <p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
+            <button id="editProfileButton" class="btn btn-primary">Edit Profile</button>
+        </div>
+
+        <!-- Edit View -->
+        <div id="profileEdit" class="d-none text-center">
+            <form id="editProfileForm">
+                <div class="form-group">
+                    <label for="editUsername">Username</label>
+                    <input type="text" id="editUsername" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editEmail">Email</label>
+                    <input type="email" id="editEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editFirstName">First Name</label>
+                    <input type="text" id="editFirstName" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="editLastName">Last Name</label>
+                    <input type="text" id="editLastName" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-success">Save Changes</button>
+                <button type="button" id="cancelEditButton" class="btn btn-secondary">Cancel</button>
+            </form>
+        </div>
     </div>
+
 
     <!-- game screen -->
     <div id="game-screen" class="d-none position-relative vh-100 d-flex flex-column justify-content-center align-items-center">

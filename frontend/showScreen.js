@@ -2,6 +2,7 @@ import { updateTopBar } from './topBar.js'
 import { DOM } from './dom.js'
 import { fetchUserState } from './fetchUserState.js'
 import { resizeCanvas } from './render.js';
+import { loadUserInfo } from './userProfile.js';
 
 export function showScreen(screenId) {
 	const screens = [
@@ -22,6 +23,13 @@ export function showScreen(screenId) {
 				resizeCanvas();
 				console.log("Game screen initialized");
 			}
+
+			if (screenId === 'userprofile-screen')
+			{
+				loadUserInfo();
+				
+			}
+
 		} else {
 			screen.classList.add('d-none');
 		}

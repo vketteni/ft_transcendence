@@ -61,7 +61,8 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Frontend URL
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -98,7 +99,6 @@ DATABASES = {
     }
 }
 
-
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -122,16 +122,17 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
 
 # JWT settings
 from datetime import timedelta
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=10),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=120),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=2),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': False,
     "ALGORITHM": "HS256",
@@ -152,21 +153,18 @@ AUTH_USER_MODEL = 'accounts.User'
 
 CSP_CONNECT_SRC = [
     "'self'",
-    "ws://127.0.0.1:3000",
-    "wss://vketteni.42.fr",
+	'http://localhost:3000',
 ]
 
 CSP_DEFAULT_SRC = ["'self'"]
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://api.intra.42.fr",
-	'http://127.0.0.1:3000',
-	'http://127.0.0.1:8000',
-	'http://localhost:3000',
-	'http://localhost:8000',
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
 ]
 
+CORS_ALLOW_CREDENTIALS = True
 
 LOGGING = {
     'version': 1,
@@ -178,15 +176,19 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django': {
-            'handlers': ['console'],  # Attach the console handler
+        # 'django': {
+        #     'handlers': ['console'],  # Attach the console handler
+        #     'level': 'DEBUG',
+        #     'propagate': True,
+        # },
+        'django.security.csrf': {
+            'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
+
         },
     },
 }
-
-
 
 # backend/config/settings.py
 MEDIA_URL = '/media/'
@@ -207,11 +209,11 @@ CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI')
 
-CORS_ALLOW_CREDENTIALS = True
+
 # CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 
-SESSION_COOKIE_SAMESITE=None
-CSRF_COOKIE_SAMESITE=None
+# SESSION_COOKIE_SAMESITE=None
+# CSRF_COOKIE_SAMESITE=None
 
-SESSION_COOKIE_SECURE = True  # Ensure secure cookies
-CSRF_COOKIE_SECURE = True
+# SESSION_COOKIE_SECURE = True  # Ensure secure cookies
+# CSRF_COOKIE_SECURE = True

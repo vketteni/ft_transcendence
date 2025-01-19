@@ -55,6 +55,13 @@ body {
     z-index: 2; /* Optional: Ensure it appears above the canvas */
 }
 
+#userprofile-screen {
+  width: 400px;
+  height: 200px;
+  overflow: auto; /* Add this if content exceeds dimensions */
+}
+
+
 #pause-button.paused {
     background-color: grey;
 }

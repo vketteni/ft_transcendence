@@ -1,25 +1,26 @@
 import { apiRequest } from './apiService.js';
 import { setLoginState } from './auth.js';
-import { getCookie } from './getCookie.js';
+import { getCookie } from './cookie.js';
 import { updateTopBar } from './topBar.js';
 
 export async function handleLogout() {
     try {
 
 		const csrftoken = getCookie('csrftoken');
+		const access_token = getCookie('access_token');
 		const response = await fetch('/api/accounts/logout/', {
 		  method: 'GET',
 		  credentials: 'include',
 		  headers: {
-			'X-CSRFToken': csrftoken,
+            'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
 			'Content-Type': 'application/json',
 		  },
-		  // body: JSON.stringify(...), if needed
 		});
 		const data = await response.json();
 
         if (data.logged_in == false) {
             console.log('Logout successful:', data.logged_in);
+            localStorage.removeItem('access_token');
             // Clear or reset any local state indicating the user is authenticated
 			alert(`Logged out!`);
             setLoginState(data.logged_in);
