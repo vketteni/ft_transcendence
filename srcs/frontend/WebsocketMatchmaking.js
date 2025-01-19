@@ -57,3 +57,25 @@ function promptForGameConnection(matchData) {
         console.log('Game declined.');
     }
 }
+
+
+export function startPvCMatch() {
+    const roomName = `ai_game_${Date.now()}`;
+    const url = `ws://localhost:8000/ws/game/${roomName}/`;
+
+    stopAndResetTimer();
+
+    console.log(`Starting AI match in room: ${roomName}`);
+    
+    connectToGame(url);
+
+    wsManager.send('game', { 
+        action: 'player_ready', 
+        player_id: getPlayerAlias(),
+        ai_controlled: true
+    });
+
+    showScreen('game-screen');
+}
+
+

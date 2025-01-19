@@ -56,7 +56,8 @@ class GameLoop:
         self.handle_ball_collisions(config, game_state)
         await self.handle_scoring(config, game_state)
         self.update_paddles(config, game_state, dt)
-        # self.update_ai_paddle(config, game_state, dt)
+        if game_state['ai_controlled']:
+            self.update_ai_paddle(config, game_state, dt)
 
     def update_paddles(self, config, game_state, dt):
         paddle_speed = 150 * dt
@@ -85,11 +86,12 @@ class GameLoop:
         right_paddle = game_state['paddles']['right']
         paddle_center = right_paddle['y'] + paddle_height / 2
 
-        # Add randomness to AI movement
-        if paddle_center < ball_y - 10:
-            right_paddle['y'] += ai_speed + random.uniform(-1, 1)
-        elif paddle_center > ball_y + 10:
-            right_paddle['y'] -= ai_speed + random.uniform(-1, 1)
+        # Move only when the ball is significantly away from the AI paddle
+        if abs(paddle_center - ball_y) > 15:  
+            if paddle_center < ball_y:
+                right_paddle['y'] += ai_speed
+            elif paddle_center > ball_y:
+                right_paddle['y'] -= ai_speed
 
         # Clamp paddle within bounds
         right_paddle['y'] = max(0, min(right_paddle['y'], canvas_height - paddle_height))

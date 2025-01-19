@@ -24,18 +24,6 @@ export function render() {
     const scoreOffsetY = nameOffsetY + fontSize * 1.7;
 
     DOM.ctx.fillText(
-        getPlayerAlias() || "Player 1",
-        GAME_CONFIG.canvasWidth * 0.2,
-        nameOffsetY
-    );
-
-    DOM.ctx.fillText(
-        "Computer",
-        GAME_CONFIG.canvasWidth * 0.8,
-        nameOffsetY
-    );
-
-    DOM.ctx.fillText(
         serverState.paddles.left.score,
         GAME_CONFIG.canvasWidth * 0.2,
         scoreOffsetY
@@ -69,7 +57,7 @@ export function resizeCanvas() {
     GAME_CONFIG.canvasHeight = canvasHeight;
     GAME_CONFIG.paddleWidth = canvasWidth * 0.02;
     GAME_CONFIG.paddleHeight = canvasHeight * 0.2;
-    GAME_CONFIG.ballDiameter = canvasWidth * 0.025;
+    GAME_CONFIG.ballDiameter = canvasWidth * 0.03;
 
     clientState.paddles.left.y = canvasHeight / 2 - GAME_CONFIG.paddleHeight / 2;
     clientState.paddles.right.y = canvasHeight / 2 - GAME_CONFIG.paddleHeight / 2;

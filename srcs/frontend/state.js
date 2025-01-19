@@ -8,9 +8,23 @@ export let clientState = {
     ball: {
         x: GAME_CONFIG.canvasWidth / 2,
         y: GAME_CONFIG.canvasHeight / 2,
-        vx: 4,
-        vy: 4,
+        vx: 0,
+        vy: 0,
         render: false,
+    },
+};
+
+export let serverState = {
+    ball: {
+        x: clientState.ball.x,
+        y: clientState.ball.y,
+        vx: clientState.ball.vx,
+        vy: clientState.ball.vy,
+        render: clientState.ball.render,
+    },
+    paddles: {
+        left: { y: clientState.paddles.left.y, score: clientState.paddles.left.score },
+        right: { y: clientState.paddles.right.y, score: clientState.paddles.right.score },
     },
 };
 
@@ -27,16 +41,4 @@ export function updateServerState(serverData) {
     serverState.paddles.right.score = serverData.paddles.right.score;
 }
 
-export let serverState = {
-    ball: {
-        x: 0,
-        y: 0,
-        vx: 0,
-        vy: 0,
-        render: false,
-    },
-    paddles: {
-        left: { y: 0, score: 0 },
-        right: { y: 0, score: 0 },
-    },
-};
+

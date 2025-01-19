@@ -1,6 +1,6 @@
 import { wsManager } from './WebSocketManager.js';
 import { sendAlias } from './sendToBackend.js';
-import { connectToMatchmaking } from './WebsocketMatchmaking.js';
+import { connectToMatchmaking, startPvCMatch } from './WebsocketMatchmaking.js';
 import { GAME_CONFIG, setPlayerAlias, getPlayerAlias } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
@@ -88,9 +88,9 @@ DOM.login42Button.addEventListener('click', () => {
 });
 
 DOM.PvCButton.addEventListener('click', () => {
-    wsManager.send('game', { action: 'start_game', player: getPlayerAlias() });
-	// DOM.matchmakingTimer
-    // showScreen('game-screen');
+    console.log("PvC button clicked, showing matchmaking screen...");
+    matchmakingTimer.start();
+    startPvCMatch();
 });
 
 DOM.PvPButton.addEventListener('click', () => {

@@ -56,7 +56,9 @@ class GameConsumer(AsyncWebsocketConsumer):
             await game_manager.update_player_input(self.room_name, self.channel_name, up, down)
 
         elif action == 'player_ready':
-            await game_manager.set_game_started(self.room_name, self.channel_name)
+            ai_controlled = data.get('ai_controlled', False) 
+            await game_manager.set_game_started(self.room_name, self.channel_name, ai_controlled)
+
 
         elif action == 'pause_game':
             logger.debug(f"Pausing game for room: {self.room_name}")

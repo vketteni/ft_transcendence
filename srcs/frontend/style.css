@@ -71,7 +71,7 @@ body {
 /* ========================
    MATCHMAKING TIMER
 ======================== */
-#timerDisplay {
+/* #timerDisplay {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -84,7 +84,7 @@ body {
     text-align: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     transition: opacity 0.3s;
-}
+} */
 
 #timerDisplay.hidden {
     opacity: 0; /* Timer is hidden but still occupies its position */
