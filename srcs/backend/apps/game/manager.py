@@ -48,7 +48,7 @@ class GameManager:
         self.game_loop = GameLoop(self)
 
         self.config = {
-            'canvas': {'width': 800, 'height': 400},
+            'canvas': {'width': 800, 'height': 600},
             'paddle': {
                 'height': 100,
                 'width': 15
@@ -163,13 +163,11 @@ class GameManager:
                 'left': {
                     'x': 0,
                     'y': config['canvas']['height'] / 2 - 50,
-                    'width': config['paddle']['width'],
                     'score': 0,
                 },
                 'right': {
                     'x': config['canvas']['width'] - config['paddle']['width'],
                     'y': config['canvas']['height'] / 2 - 50,
-                    'width': config['paddle']['width'],
                     'score': 0,
                 },
             },
@@ -216,7 +214,7 @@ class GameManager:
             'ball': {
                 'x': game_state['ball']['x'] / canvas_width,
                 'y': game_state['ball']['y'] / canvas_height,
-                'vx': game_state['ball']['vx'] / canvas_width,  # Normalize velocity too
+                'vx': game_state['ball']['vx'] / canvas_width,
                 'vy': game_state['ball']['vy'] / canvas_height,
                 'render': game_state['ball']['render'],
             },
@@ -224,13 +222,11 @@ class GameManager:
                 'left': {
                     'x': game_state['paddles']['left']['x'] / canvas_width,
                     'y': game_state['paddles']['left']['y'] / canvas_height,
-                    'width': game_state['paddles']['left']['width'] / canvas_width,
                     'score': game_state['paddles']['left']['score'],
                 },
                 'right': {
                     'x': game_state['paddles']['right']['x'] / canvas_width,
                     'y': game_state['paddles']['right']['y'] / canvas_height,
-                    'width': game_state['paddles']['right']['width'] / canvas_width,
                     'score': game_state['paddles']['right']['score'],
                 },
             }
@@ -264,7 +260,7 @@ class GameManager:
                 continue
             
             # Check if game is over
-            if game_state['paddles']['right']['score'] >= 5 or game_state['paddles']['left']['score'] >= 5:
+            if game_state['paddles']['right']['score'] >= 10 or game_state['paddles']['left']['score'] >= 10:
                 winner = "Right Player" if game_state['paddles']['right']['score'] >= 5 else "Left Player"
                 
                 await self.channel_layer.group_send(
@@ -284,7 +280,6 @@ class GameManager:
 
             # Normalize state
             norm_state = self.normalize_state(game_state)
-
             await self.channel_layer.group_send(
                 f"game_{room_name}",
                 {

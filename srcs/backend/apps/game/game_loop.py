@@ -12,6 +12,7 @@ class GameLoop:
 
     def __init__(self, manager):
         self.manager = manager
+        self.lock = asyncio.Lock()
 
     async def run(self):
         TICK_RATE = 30
@@ -52,9 +53,11 @@ class GameLoop:
             self.manager.running = False
 
     async def update_game_state(self, config, game_state, dt):
-        self.update_ball_position(game_state, dt)
-        self.handle_ball_collisions(config, game_state)
-        await self.handle_scoring(config, game_state)
+        if game_state['ball']['render']:
+            self.update_ball_position(game_state, dt)
+            self.handle_ball_collisions(config, game_state)
+            await self.handle_scoring(config, game_state)
+    
         self.update_paddles(config, game_state, dt)
         if game_state['ai_controlled']:
             self.update_ai_paddle(config, game_state, dt)
@@ -169,27 +172,28 @@ class GameLoop:
 
         if ball_state['x'] < 0:
             game_state['paddles']['right']['score'] += 1
-            await self.reset_ball(config, ball_state, canvas, 'right')
+            asyncio.create_task(self.reset_ball(config, ball_state, canvas, 'right'))
         elif ball_state['x'] > canvas['width']:
             game_state['paddles']['left']['score'] += 1
-            await self.reset_ball(config, ball_state, canvas, 'left')
+            asyncio.create_task(self.reset_ball(config, ball_state, canvas, 'left'))
 
     async def reset_ball(self, config, ball, canvas, lost_side):
         try:
-            ball['render'] = False
-    
-            ball['x'] = canvas['width'] // 2
-            ball['y'] = canvas['height'] // 2
-    
-            # Set normalized velocity based on canvas dimensions
-            if lost_side == 'left':
-                ball['vx'] = config['ball']['speed']
-            else:
-                ball['vx'] = -config['ball']['speed']
-            ball['vy'] = config['ball']['speed'] * (-1 if random.random() < 0.5 else 1)
+            async with self.lock:  # Prevent race conditions
+                ball['render'] = False
+        
+                ball['x'] = canvas['width'] / 2  # Ensure it's a float, not int
+                ball['y'] = canvas['height'] / 2
 
-    
-            await asyncio.sleep(0.5) 
-            ball['render'] = True
+                if lost_side == 'left':
+                    ball['vx'] = config['ball']['speed']
+                else:
+                    ball['vx'] = -config['ball']['speed']
+                ball['vy'] = config['ball']['speed'] * (-1 if random.random() < 0.5 else 1)
+
+                await asyncio.sleep(1)
+                
+                ball['render'] = True
+
         except Exception as e:
             logger.error(f"Error resetting ball: {e}")

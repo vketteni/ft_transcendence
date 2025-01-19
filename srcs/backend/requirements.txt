@@ -37,6 +37,7 @@
 # wadllib==1.3.6
 # xdg==5
 
+watchfiles
 
 # Django dependencies
 Django>=5.1.4

@@ -1,4 +1,5 @@
 services:
+
   web:
     build:
       context: .
@@ -7,15 +8,15 @@ services:
       - ./backend:/app
     ports:
       - "8000:8000"
-    command: ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
+    command: ["watchfiles", "daphne -b 0.0.0.0 -p 8000 config.asgi:application"]
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - DJANGO_SETTINGS_MODULE=config.settings
-      
     env_file:
       - .env
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   frontend:
     image: nginx:latest
@@ -79,6 +80,11 @@ services:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
 
 volumes:
   pg_data:
