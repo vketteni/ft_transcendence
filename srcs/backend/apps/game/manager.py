@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 import traceback
-from asyncio import Lock
 from contextlib import asynccontextmanager
 
 class DebugLock(Lock):
@@ -44,9 +43,22 @@ class GameManager:
     def __init__(self):
         self.games = {}  # {room_name: game_state_dict}
         self.running = False
-        self.channel_layer = self.channel_layer = get_channel_layer()
+        self.channel_layer = get_channel_layer()
         self.locks = defaultdict(DebugLock)
         self.game_loop = GameLoop(self)
+
+        self.config = {
+            'canvas': {'width': 800, 'height': 400},
+            'paddle': {
+                'height': 100,
+                'width': 15
+            },
+            'ball': {
+                'diameter': 20,
+                'speed': 350
+            }
+        }
+
         
     async def start(self):
         try:
@@ -79,7 +91,7 @@ class GameManager:
         async with room_lock:
             logger.debug(f"Acquired lock for room_name={room_name}")
             if room_name not in self.games:
-                self.games[room_name] = self.initial_game_state()
+                self.games[room_name] = self.initial_game_state(room_name)
                 logger.debug(f"Created new game state for room: {room_name}")
                 
             return self.games[room_name]
@@ -134,49 +146,54 @@ class GameManager:
         if game and channel_name in game['players']:
             game['players'][channel_name]['alias'] = alias
 
-    def initial_game_state(self):
-        paddle_width = 15
-        paddle_height = 100
-        canvas_width = 800
-        canvas_height = 400
-
+    def initial_game_state(self, room_name):
+        config = self.config
         return {
+            'room_name': room_name,
             'players': {},
-            'ball': {'x': canvas_width / 2, 'y': canvas_height / 2, 'vx': 4, 'vy': 4, 'render': True},
+            'ball': {
+                'x': config['canvas']['width'] / 2,
+                'y': config['canvas']['height'] / 2,
+                'vx': config['ball']['speed'] * (-1 if random.random() < 0.5 else 1),
+                'vy': config['ball']['speed'] * (-1 if random.random() < 0.5 else 1),
+                'render': True
+            },
             'paddles': {
                 'left': {
                     'x': 0,
-                    'y': canvas_height / 2 - 50,
-                    'width': paddle_width,
+                    'y': config['canvas']['height'] / 2 - 50,
+                    'width': config['paddle']['width'],
                     'score': 0,
                 },
                 'right': {
-                    'x': canvas_width - paddle_width,
-                    'y': canvas_height / 2 - 50,
-                    'width': paddle_width,
+                    'x': config['canvas']['width'] - config['paddle']['width'],
+                    'y': config['canvas']['height'] / 2 - 50,
+                    'width': config['paddle']['width'],
                     'score': 0,
                 },
-            },
-            'canvas': {'width': canvas_width, 'height': canvas_height},
-            'config': {
-                'paddle': {
-                    'height': paddle_height,
-                    'width': paddle_width,
-                },
-                'ball': {'diameter': 20},
             },
             'game_started': False,
             'paused': False,
         }
 
-    async def set_game_started(self, room_name, started):
-        logger.debug(f"set_game_started() started")
+    async def set_game_started(self, room_name, channel_name):
         async with debug_lock(self.locks[room_name]):
             game = self.games.get(room_name)
-            logger.debug(f"Attempting to start game: {game}")
-            if game:
-                game['game_started'] = started
-                logger.debug(f"Game in room '{room_name}' started: {started}")
+            if not game:
+                logger.warning(f"Game not found for room {room_name}")
+                return
+
+            # Mark player as ready by adding them to `game['players']`
+            if channel_name in game['players']:
+                game['players'][channel_name]['ready'] = True
+
+            # Check if BOTH players have accepted
+            if len(game['players']) == 2 and all(player.get('ready', False) for player in game['players'].values()):
+                game['game_started'] = True
+                logger.info(f"Game in room '{room_name}' started.")
+            else:
+                logger.info(f"Waiting for both players. Players ready: {sum(1 for p in game['players'].values() if p.get('ready', False))}/2")
+
 
     async def set_game_paused(self, room_name, paused=True):
         async with debug_lock(self.locks[room_name]):
@@ -188,48 +205,54 @@ class GameManager:
     async def set_game_resumed(self, room_name):
         await self.set_game_paused(room_name, paused=False)
 
-    async def set_game_config(self, room_name, canvas, paddle, ball):
-        logger.debug("Before calling create_or_get_game()")
-        game = await self.create_or_get_game(room_name)
-        logger.debug("After calling create_or_get_game()")
-        if not game:
-            logger.warning(f"Game not found for room {room_name}")
-            return
-        game['canvas'] = canvas
-        game['config'] = {
-                'paddle': paddle,
-                'ball': ball
+    def normalize_state(self, game_state):
+        """ Converts absolute positions into relative values (0 to 1). """
+        config = self.config
+        canvas_width = config['canvas']['width']
+        canvas_height = config['canvas']['height']
+
+        return {
+            'type': 'state_update',
+            'ball': {
+                'x': game_state['ball']['x'] / canvas_width,
+                'y': game_state['ball']['y'] / canvas_height,
+                'vx': game_state['ball']['vx'] / canvas_width,  # Normalize velocity too
+                'vy': game_state['ball']['vy'] / canvas_height,
+                'render': game_state['ball']['render'],
+            },
+            'paddles': {
+                'left': {
+                    'x': game_state['paddles']['left']['x'] / canvas_width,
+                    'y': game_state['paddles']['left']['y'] / canvas_height,
+                    'width': game_state['paddles']['left']['width'] / canvas_width,
+                    'score': game_state['paddles']['left']['score'],
+                },
+                'right': {
+                    'x': game_state['paddles']['right']['x'] / canvas_width,
+                    'y': game_state['paddles']['right']['y'] / canvas_height,
+                    'width': game_state['paddles']['right']['width'] / canvas_width,
+                    'score': game_state['paddles']['right']['score'],
+                },
             }
-        game['paddles']['left'] = {
-            'x': 0,
-            'y': canvas['height'] / 2 - paddle['height'] / 2,
-            'score': game['paddles'].get('left', {}).get('score', 0)
-            }
-        game['paddles']['right'] = {
-            'x': canvas['width'],
-            'y': canvas['height'] / 2 - paddle['height'] / 2,
-            'score': game['paddles'].get('right', {}).get('score', 0)
         }
-        logger.debug(f"Game config set for room '{room_name}': canvas={canvas}, paddle={paddle}, ball={ball}")
     
     def reset_game(self, game_state):
-        canvas = game_state['canvas']
-        paddle_config = game_state['config']['paddle']
-
+        config = self.config
         # Reset scores
         game_state['paddles']['left']['score'] = 0
         game_state['paddles']['right']['score'] = 0
 
         # Reset paddle positions
-        game_state['paddles']['left']['y'] = canvas['height'] / 2 - paddle_config['height'] / 2
-        game_state['paddles']['right']['y'] = canvas['height'] / 2 - paddle_config['height'] / 2
+        game_state['paddles']['left']['y'] = config['canvas']['height'] / 2 - 50
+        game_state['paddles']['right']['y'] = config['canvas']['height'] / 2 - 50
+        game_state['paddles']['left']['x'] = 0  # Keep at left edge
+        game_state['paddles']['right']['x'] = config['canvas']['width'] - config['paddle']['width']
 
         # Reset ball position and velocity
-        game_state['ball']['x'] = canvas['width'] / 2
-        game_state['ball']['y'] = canvas['height'] / 2
-        speed_ratio = 0.005  # Ball speed as a fraction of canvas dimensions
-        game_state['ball']['vx'] = canvas['width'] * speed_ratio * (-1 if random.random() < 0.5 else 1)
-        game_state['ball']['vy'] = canvas['height'] * speed_ratio * (-1 if random.random() < 0.5 else 1)
+        game_state['ball']['x'] = config['canvas']['width'] / 2
+        game_state['ball']['y'] = config['canvas']['height'] / 2
+        game_state['ball']['vx'] = config['ball']['speed'] * (-1 if random.random() < 0.5 else 1)
+        game_state['ball']['vy'] = config['ball']['speed'] * (-1 if random.random() < 0.5 else 1)
 
         # Reset game state flags
         game_state['game_started'] = False
@@ -239,7 +262,7 @@ class GameManager:
         for room_name, game_state in self.games.items():
             if not game_state.get('game_started') and not game_state.get('paused'):
                 continue
-
+            # print(f"[DEBUG] Sending game state for room {room_name}: {game_state}")
             # Check for game over condition
             if game_state['paddles']['right']['score'] >= 5 or game_state['paddles']['left']['score'] >= 5:
                 winner = "Right Player" if game_state['paddles']['right']['score'] >= 5 else "Left Player"
@@ -260,20 +283,12 @@ class GameManager:
                 self.reset_game(game_state)
                 continue
 
+            norm_state = self.normalize_state(game_state)
             # Regular game state broadcast
             message = {
                 'type': 'state_update',
-                'ball': game_state['ball'],
-                'paddles': {
-                    'left': {
-                        'y': game_state['paddles']['left']['y'],
-                        'score': game_state['paddles']['left']['score'],
-                    },
-                        'right': {
-                        'y': game_state['paddles']['right']['y'],
-                        'score': game_state['paddles']['right']['score'],
-                    },
-                },
+                'ball': norm_state['ball'],
+                'paddles': norm_state['paddles'],
             }
             await self.channel_layer.group_send(
                 f"game_{room_name}",

@@ -31,7 +31,7 @@ class GameLoop:
 
                     if game_state.get('game_started'):
                         try:
-                            await self.update_game_state(game_state, dt)
+                            await self.update_game_state(self.manager.config, game_state, dt)
                         except Exception as e:
                             logger.error(f"Error updating game state for room {room_name}: {e}")
     
@@ -51,19 +51,17 @@ class GameLoop:
             logger.debug("Exiting game loop. Cleaning up.")
             self.manager.running = False
 
-    async def update_game_state(self, game_state, dt):
-        if 'config' not in game_state:
-            return
-        self.update_ball_position(game_state)
-        self.handle_ball_collisions(game_state)
-        await self.handle_scoring(game_state)
-        self.update_paddles(game_state)
-        # self.update_ai_paddle(game_state)
+    async def update_game_state(self, config, game_state, dt):
+        self.update_ball_position(game_state, dt)
+        self.handle_ball_collisions(config, game_state)
+        await self.handle_scoring(config, game_state)
+        self.update_paddles(config, game_state, dt)
+        # self.update_ai_paddle(config, game_state, dt)
 
-    def update_paddles(self, game_state):
-        paddle_speed = 6
-        canvas_height = game_state['canvas']['height']
-        paddle_height = game_state['config']['paddle']['height']
+    def update_paddles(self, config, game_state, dt):
+        paddle_speed = 150 * dt
+        canvas_height = config['canvas']['height']
+        paddle_height = config['paddle']['height']
 
         for player_data in game_state['players'].values():
             input_data = player_data['input']
@@ -78,11 +76,11 @@ class GameLoop:
             max_paddle_y = canvas_height - paddle_height
             paddle['y'] = max(0, min(paddle['y'], max_paddle_y))
 
-    def update_ai_paddle(self, game_state):
-        ai_speed = 4
+    def update_ai_paddle(self, config, game_state, dt):
+        ai_speed = 50 * dt
         ball_y = game_state['ball']['y']
-        paddle_height = game_state['config']['paddle']['height']
-        canvas_height = game_state['canvas']['height']
+        paddle_height = config['paddle']['height']
+        canvas_height = config['canvas']['height']
 
         right_paddle = game_state['paddles']['right']
         paddle_center = right_paddle['y'] + paddle_height / 2
@@ -96,19 +94,20 @@ class GameLoop:
         # Clamp paddle within bounds
         right_paddle['y'] = max(0, min(right_paddle['y'], canvas_height - paddle_height))
 
-    def update_ball_position(self, game_state):
+    def update_ball_position(self, game_state, dt):
         ball_state = game_state['ball']
-        ball_state['x'] += ball_state['vx']
-        ball_state['y'] += ball_state['vy']
+        ball_state['x'] += ball_state['vx'] * dt
+        ball_state['y'] += ball_state['vy'] * dt
 
-    def handle_ball_collisions(self, game_state):
-        canvas = game_state['canvas']
-        ball_config = game_state['config'].get('ball', {})
-        paddle_config = game_state['config'].get('paddle', {})
+
+    def handle_ball_collisions(self, config, game_state):
+        canvas = config['canvas']
+        ball_config = config['ball']
+        paddle_config = config['paddle']
         ball_state = game_state['ball']
         left_paddle = game_state['paddles']['left']
         right_paddle = game_state['paddles']['right']
-        ball_radius = ball_config['diameter'] / 2
+        ball_radius = config['ball']['diameter'] / 2
 
         # Check wall collisions
         if (ball_state['vy'] > 0):
@@ -162,22 +161,18 @@ class GameLoop:
             ball['vx'] = -ball['vx'] 
             ball['vy'] = 4 * relative_hit
 
-    async def handle_scoring(self, game_state):
+    async def handle_scoring(self, config, game_state):
         ball_state = game_state['ball']
-        canvas = game_state['canvas']
+        canvas = config['canvas']
 
         if ball_state['x'] < 0:
             game_state['paddles']['right']['score'] += 1
-            logger.debug("Before calling reset_ball()")
-            await self.reset_ball(ball_state, canvas)
-            logger.debug("After calling reset_ball()")
+            await self.reset_ball(config, ball_state, canvas, 'right')
         elif ball_state['x'] > canvas['width']:
             game_state['paddles']['left']['score'] += 1
-            logger.debug("Before calling reset_ball()")
-            await self.reset_ball(ball_state, canvas)
-            logger.debug("After calling reset_ball()")
+            await self.reset_ball(config, ball_state, canvas, 'left')
 
-    async def reset_ball(self, ball, canvas):
+    async def reset_ball(self, config, ball, canvas, lost_side):
         try:
             ball['render'] = False
     
@@ -185,11 +180,14 @@ class GameLoop:
             ball['y'] = canvas['height'] // 2
     
             # Set normalized velocity based on canvas dimensions
-            speed_ratio = 0.005  # Ball speed as a fraction of canvas width
-            ball['vx'] = canvas['width'] * speed_ratio * (-1 if ball['vx'] > 0 else 1)
-            ball['vy'] = canvas['height'] * speed_ratio * (-1 if random.random() < 0.5 else 1)
+            if lost_side == 'left':
+                ball['vx'] = config['ball']['speed']
+            else:
+                ball['vx'] = -config['ball']['speed']
+            ball['vy'] = config['ball']['speed'] * (-1 if random.random() < 0.5 else 1)
+
     
-            await asyncio.sleep(0.1) 
+            await asyncio.sleep(0.5) 
             ball['render'] = True
         except Exception as e:
             logger.error(f"Error resetting ball: {e}")

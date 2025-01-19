@@ -1,6 +1,5 @@
 import { wsManager } from './WebSocketManager.js';
 import { sendAlias } from './sendToBackend.js';
-import { connectToGame } from './WebsocketGameroom.js';
 import { connectToMatchmaking } from './WebsocketMatchmaking.js';
 import { GAME_CONFIG, setPlayerAlias, getPlayerAlias } from './config.js';
 import { resizeCanvas } from './render.js';
@@ -20,7 +19,8 @@ export function showScreen(screenId) {
         DOM.signupScreen,
         DOM.categoryScreen,
         DOM.gameScreen,
-        DOM.gameOverScreen
+        DOM.gameOverScreen,
+        DOM.matchmakingScreen
     ];
 
     screens.forEach(screen => {
@@ -88,20 +88,18 @@ DOM.login42Button.addEventListener('click', () => {
 });
 
 DOM.PvCButton.addEventListener('click', () => {
-    if (wsManager.sockets['matchmaking'].readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
-    } else {
-        console.error("WebSocket connection is not open.");
-    }
+    wsManager.send('game', { action: 'start_game', player: getPlayerAlias() });
 	// DOM.matchmakingTimer
     // showScreen('game-screen');
 });
 
 DOM.PvPButton.addEventListener('click', () => {
-	connectToMatchmaking();
-    showScreen('game-screen');
-	matchmakingTimer.start();
+    console.log("PvP button clicked, showing matchmaking screen...");
+    showScreen('matchmaking-screen');
+    matchmakingTimer.start();
+    connectToMatchmaking();
 });
+
 
 DOM.pauseButton.addEventListener('click', () => {
     isPaused = !isPaused;
@@ -118,12 +116,8 @@ DOM.pauseButton.addEventListener('click', () => {
 });
 
 DOM.playAgainButton.addEventListener('click', () => {
-    if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
-    }
     showScreen('game-screen');
 });
-
 
 window.addEventListener('resize', resizeCanvas);
 
@@ -149,8 +143,6 @@ document.addEventListener('keyup', (e) => {
         wsManager.send('game', { action: 'input', up: false, down: false });
     }
 });
-
-window.addEventListener('resize', resizeCanvas);
 
 // Stop and reset the timer when needed
 export function stopAndResetTimer() {

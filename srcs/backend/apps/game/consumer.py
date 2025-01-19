@@ -49,23 +49,15 @@ class GameConsumer(AsyncWebsocketConsumer):
             if player_alias:
                 await game_manager.set_player_alias(self.room_name, self.channel_name, player_alias)
 
-        elif action == 'canvas_and_game_config':
-            canvas = data.get('canvas')
-            paddle = data.get('paddle')
-            ball = data.get('ball')
-            # logger.debug(f"Received canvas and game config: canvas={canvas}, paddle={paddle}, ball={ball}")
-            await game_manager.set_game_config(self.room_name, canvas, paddle, ball)
-
         elif action == 'input':
             up = data.get('up', False)
             down = data.get('down', False)
             # logger.debug(f"Received input: up:{up} down:{down}")
             await game_manager.update_player_input(self.room_name, self.channel_name, up, down)
 
-        elif action == 'start_game':
-            logger.debug(f"Starting game for room: {self.room_name}")
-            await game_manager.set_game_started(self.room_name, True)  # Start the game
-        
+        elif action == 'player_ready':
+            await game_manager.set_game_started(self.room_name, self.channel_name)
+
         elif action == 'pause_game':
             logger.debug(f"Pausing game for room: {self.room_name}")
             await game_manager.set_game_paused(self.room_name)

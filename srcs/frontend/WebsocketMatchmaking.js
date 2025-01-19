@@ -1,10 +1,8 @@
 import { getPlayerAlias } from './config.js';
 import { stopAndResetTimer } from './pong.js';
-import { sendDimensions } from './sendToBackend.js';
 import { wsManager } from './WebSocketManager.js';
 import { connectToGame } from './WebsocketGameroom.js';
-import { resizeCanvas } from './render.js';
-import { DOM } from './dom.js';
+import { showScreen } from './pong.js';
 
 export function connectToMatchmaking() {
     wsManager.connect(
@@ -53,12 +51,8 @@ function promptForGameConnection(matchData) {
     if (accept) {
         wsManager.close('matchmaking');
         connectToGame(url);
-		DOM.matchmakingTimer.classList.add('d-none');
-		
-		// DOM.gameScreen.classList.remove('d-none');
-		DOM.canvas.classList.remove('d-none');
-		resizeCanvas();
-		wsManager.send('game', { action: 'start_game', player: getPlayerAlias() });
+        wsManager.send('game', { action: 'player_ready' });
+        showScreen('game-screen');
     } else {
         console.log('Game declined.');
     }

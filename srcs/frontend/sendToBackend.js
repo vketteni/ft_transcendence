@@ -31,17 +31,4 @@ export function sendAlias() {
 }
 
 
-export function sendDimensions() {
-    const canvasConfig = {
-        action: 'canvas_and_game_config',
-        canvas: { width: GAME_CONFIG.canvasWidth, height: GAME_CONFIG.canvasHeight },
-        paddle: { width: GAME_CONFIG.paddleWidth, height: GAME_CONFIG.paddleHeight },
-        ball: { diameter: GAME_CONFIG.ballDiameter },
-    };
-    console.log("RESIZE: sending canvas and game config:", canvasConfig);
-
-    // Use WebSocketManager for sending game dimensions
-    wsManager.send('game', canvasConfig);
-}
-
 

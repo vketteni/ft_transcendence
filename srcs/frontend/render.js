@@ -1,7 +1,6 @@
 import { GAME_CONFIG, getPlayerAlias } from './config.js';
 import { DOM } from './dom.js';
 import { clientState, serverState } from './state.js';
-import { sendDimensions } from './sendToBackend.js';
 import { clearCanvas, drawRect, drawBall, extrapolateState } from './renderUtils.js';
 
 export function renderLoop() {
@@ -77,6 +76,5 @@ export function resizeCanvas() {
     clientState.ball.x = canvasWidth / 2;
     clientState.ball.y = canvasHeight / 2;
 
-    // sendDimensions();
     renderLoop();
 }

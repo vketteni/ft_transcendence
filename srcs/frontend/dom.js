@@ -3,8 +3,6 @@ export const DOM = {
     gameScreen: document.getElementById('game-screen'),
     canvas: document.getElementById('canvas'),
     ctx: document.getElementById('canvas').getContext('2d'),
-	matchmakingButton: document.getElementById('matchmaking-button'),
-    matchmakingTimer: document.getElementById('timerDisplay'),
     canvasImg: (() => {
         const img = new Image();
         img.src = './canvas.png';
@@ -20,6 +18,11 @@ export const DOM = {
     loginScreen: document.getElementById('login-screen'),
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
+    matchmakingScreen: document.getElementById('matchmaking-screen'),
+
+    //
+    matchmakingButton: document.getElementById('matchmaking-button'),
+    matchmakingTimer: document.getElementById('timerDisplay'),
 
     // login/signup screen
     loginButton: document.getElementById('login-button'),

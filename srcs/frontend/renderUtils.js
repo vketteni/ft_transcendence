@@ -23,20 +23,21 @@ export function drawBall(x, y, radius, color) {
 }
 
 export function extrapolateState() {
-	
-	const serverBall = serverState.ball;
-	const clientBall = clientState.ball;
+    // console.log("Extrapolating State:", serverState);
 
-	const predictedX = serverBall.x + (serverBall.vx) * SERVER_UPDATE_INTERVAL;
-	const predictedY = serverBall.y + (serverBall.vy) * SERVER_UPDATE_INTERVAL;
+    const serverBall = serverState.ball;
+    const clientBall = clientState.ball;
 
-	clientBall.x += (predictedX - clientBall.x) * EXTRAPOLATION_FACTOR;
-	clientBall.y += (predictedY - clientBall.y) * EXTRAPOLATION_FACTOR;
+    const predictedX = serverBall.x + (serverBall.vx * SERVER_UPDATE_INTERVAL);
+    const predictedY = serverBall.y + (serverBall.vy * SERVER_UPDATE_INTERVAL);
 
-   
-	const PADDLE_SYNC_FACTOR = 0.2;
-	clientState.paddles.left.y +=
-		(serverState.paddles.left.y - clientState.paddles.left.y) * PADDLE_SYNC_FACTOR;
-	clientState.paddles.right.y +=
-		(serverState.paddles.right.y - clientState.paddles.right.y) * PADDLE_SYNC_FACTOR;
+    clientBall.x += (predictedX - clientBall.x) * EXTRAPOLATION_FACTOR;
+    clientBall.y += (predictedY - clientBall.y) * EXTRAPOLATION_FACTOR;
+
+    clientState.paddles.left.y +=
+        (serverState.paddles.left.y - clientState.paddles.left.y) * 0.2;
+    clientState.paddles.right.y +=
+        (serverState.paddles.right.y - clientState.paddles.right.y) * 0.2;
 }
+
+
