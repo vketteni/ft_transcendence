@@ -190,17 +190,6 @@ class GameManager:
             if channel_name in game['players']:
                 game['players'][channel_name]['ready'] = True
 
-            # If AI is in the game, auto-mark it as ready
-            if ai_controlled:
-                await asyncio.sleep(0.5)
-                game['players']['right'] = {
-                    "side": "right",
-                    "ready": True,
-                    "alias": "Computer",
-                    "input": {"up": False, "down": False}
-                }
-                logger.info(f"AI player joined room '{room_name}' as '{game['players']['right']['alias']}'.")
-
             # Check if BOTH players are ready (human vs human) or AI match is set
             if ai_controlled or (len(game['players']) == 2 and all(p.get('ready', False) for p in game['players'].values())):
                 game['game_started'] = True
@@ -274,27 +263,21 @@ class GameManager:
             if not game_state.get('game_started') and not game_state.get('paused'):
                 continue
             
-            recipients = [
-                channel for channel, player in game_state['players'].items()
-                if channel != "ai"
-            ]
-
             # Check if game is over
             if game_state['paddles']['right']['score'] >= 5 or game_state['paddles']['left']['score'] >= 5:
                 winner = "Right Player" if game_state['paddles']['right']['score'] >= 5 else "Left Player"
                 
-                for player_channel in recipients:
-                    await self.channel_layer.send(
-                        player_channel,  # Send directly to real players
-                        {
-                            'type': 'game_message',
-                            'data': {
-                                'type': 'game_over',
-                                'message': f"Game Over! {winner} wins!",
-                                'winner': winner
-                            },
-                        }
-                    )
+                await self.channel_layer.group_send(
+                    f"game_{room_name}",
+                    {
+                        'type': 'game_message',
+                        'data': {
+                            'type': 'game_over',
+                            'message': f"Game Over! {winner} wins!",
+                            'winner': winner
+                        },
+                    }
+                )
 
                 self.reset_game(game_state)
                 continue
@@ -302,20 +285,16 @@ class GameManager:
             # Normalize state
             norm_state = self.normalize_state(game_state)
 
-            # Send game state update **only to real players**
-            for player_channel in recipients:
-                await self.channel_layer.send(
-                    player_channel,  # Send only to real players
-                    {
-                        'type': 'game_message',
-                        'data': {
-                            'type': 'state_update',
-                            'ball': norm_state['ball'],
-                            'paddles': norm_state['paddles'],
-                        },
-                    }
-                )
-
-
+            await self.channel_layer.group_send(
+                f"game_{room_name}",
+                {
+                    'type': 'game_message',
+                    'data': {
+                        'type': 'state_update',
+                        'ball': norm_state['ball'],
+                        'paddles': norm_state['paddles'],
+                    },
+                }
+            )
 
 game_manager = GameManager()
