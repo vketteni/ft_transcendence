@@ -2,7 +2,7 @@ import { DOM } from './dom.js';
 import { clientState, serverState } from './state.js';
 
 const EXTRAPOLATION_FACTOR = 0.2;
-const SERVER_UPDATE_INTERVAL = 0.05;
+const SERVER_UPDATE_INTERVAL = 0.01;
 
 export function clearCanvas() {
 	DOM.ctx.clearRect(0, 0, DOM.canvas.width, DOM.canvas.height);

@@ -18,8 +18,8 @@ import { generateUUID } from './generateUUID.js';
 let isPaused = false;
 const matchmakingTimer = new Timer(DOM.matchmakingTimer);
 
-DOM.gameScreen.width = GAME_CONFIG.canvasWidth;
-DOM.gameScreen.height = GAME_CONFIG.canvasHeight;
+DOM.canvas.width = GAME_CONFIG.canvasWidth;
+DOM.canvas.height = GAME_CONFIG.canvasHeight;
 
 DOM.registrationButton.addEventListener('click', () => {
     console.log("registrationButton.addEventListener");

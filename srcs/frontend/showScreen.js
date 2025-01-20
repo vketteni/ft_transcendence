@@ -1,7 +1,7 @@
 import { updateTopBar } from './topBar.js'
 import { DOM } from './dom.js'
 import { fetchUserState } from './fetchUserState.js'
-import { resizeCanvas } from './render.js';
+import { renderLoop, resizeCanvas } from './render.js';
 import { loadUserInfo } from './userProfile.js';
 
 export function showScreen(screenId) {
@@ -25,7 +25,7 @@ export function showScreen(screenId) {
 			screen.classList.remove('d-none');
 
 			if (screenId === 'game-screen') {
-				resizeCanvas();
+				renderLoop();
 				console.log("Game screen initialized");
 			}
 

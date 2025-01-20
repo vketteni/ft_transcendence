@@ -37,33 +37,9 @@ export function render() {
 }
 
 export function resizeCanvas() {
-    const windowWidth = window.innerWidth * 0.6;
-    const windowHeight = window.innerHeight * 0.6;
+    DOM.canvas.width = GAME_CONFIG.canvasWidth;
+    DOM.canvas.height = GAME_CONFIG.canvasHeight;
 
-    const imageAspectRatio = 1.34;
-    // const imageAspectRatio = DOM.canvasImg.width / DOM.canvasImg.height;
-
-    let canvasWidth = windowWidth;
-    let canvasHeight = canvasWidth / imageAspectRatio;
-
-    if (canvasHeight > windowHeight) {
-        canvasHeight = windowHeight;
-        canvasWidth = canvasHeight * imageAspectRatio;
-    }
-
-    DOM.canvas.width = canvasWidth;
-    DOM.canvas.height = canvasHeight;
-
-    GAME_CONFIG.canvasWidth = canvasWidth;
-    GAME_CONFIG.canvasHeight = canvasHeight;
-    GAME_CONFIG.paddleWidth = canvasWidth * 0.02;
-    GAME_CONFIG.paddleHeight = canvasHeight * 0.2;
-    GAME_CONFIG.ballDiameter = canvasWidth * 0.03;
-
-    clientState.paddles.left.y = canvasHeight / 2 - GAME_CONFIG.paddleHeight / 2;
-    clientState.paddles.right.y = canvasHeight / 2 - GAME_CONFIG.paddleHeight / 2;
-    clientState.ball.x = canvasWidth / 2;
-    clientState.ball.y = canvasHeight / 2;
-    cancelAnimationFrame(renderLoop);
-    requestAnimationFrame(renderLoop);
+    // cancelAnimationFrame(renderLoop);
+    // requestAnimationFrame(renderLoop);
 }
