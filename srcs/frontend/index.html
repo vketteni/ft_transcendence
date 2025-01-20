@@ -124,12 +124,21 @@
 		</div>
 	</div>
 
-        <!-- game screen -->
+        <!-- tournament screen -->
 	<div id="tournament-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+            <!-- Sidebar -->
+        <div id="player-sidebar" class="bg-dark text-light p-3 d-flex flex-column" style="width: 250px;">
+            <h4 class="text-center mb-4">Players</h4>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item bg-dark text-light">1. Alice vs Bob</li>
+                <li class="list-group-item bg-dark text-light">2. Charlie vs Dave</li>
+                <li class="list-group-item bg-dark text-light">3. Eve vs Frank</li>
+            </ul>
+        </div>
 		<div class="game-container d-flex flex-column justify-content-center align-items-center">
 			<div id="timerDisplay" class="visually-hidden"></div>
 			<canvas id="canvas" class="border border-2 border-white"></canvas>
-			<button id="pause-button" class="btn btn-lg btn-outline-light mt-3">Pause</button>
+			<button id="pvp-back-to-menu" class="btn btn-lg btn-outline-warning mt-2">Exit</button>
 		</div>
 	</div>
 
