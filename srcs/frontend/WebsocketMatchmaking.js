@@ -58,7 +58,6 @@ function promptForGameConnection(matchData) {
     }
 }
 
-
 export function startPvCMatch() {
     const roomName = `ai_game_${Date.now()}`;
     const url = `ws://localhost:8000/ws/game/${roomName}/`;

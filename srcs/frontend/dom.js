@@ -48,11 +48,19 @@ export const DOM = {
     // Game screen
     pauseButton: document.getElementById('pause-button'),
 
-    // Game over screen
-    gameOverScreen: document.getElementById('game-over-screen'),
-    gameOverMessage: document.getElementById('game-over-message'),
-    playAgainButton: document.getElementById('play-again-button'),
+    // AI Game over screen
+    AIgameOverScreen: document.getElementById('ai-game-over-screen'),
+    AIgameOverMessage: document.getElementById('ai-game-over-message'),
+    AIplayAgainButton: document.getElementById('ai-play-again-button'),
+    AIbackToMenuButton: document.getElementById('ai-back-to-menu'),
+
+    // PVP Game over screen
+    PvPgameOverScreen: document.getElementById('pvp-game-over-screen'),
+    PvPgameOverMessage: document.getElementById('pvp-game-over-message'),
+    PvPplayAgainButton: document.getElementById('pvp-play-again-button'),
+    PvPbackToMenuButton: document.getElementById('pvp-back-to-menu'),
 };
+
 
 DOM.canvasImg.onerror = () => {
     console.error('Image failed to load. Check the file path.');

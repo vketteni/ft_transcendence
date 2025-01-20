@@ -19,7 +19,8 @@ export function showScreen(screenId) {
         DOM.signupScreen,
         DOM.categoryScreen,
         DOM.gameScreen,
-        DOM.gameOverScreen,
+        DOM.AIgameOverScreen,
+        DOM.PvPgameOverScreen,
         DOM.matchmakingScreen
     ];
 
@@ -115,9 +116,26 @@ DOM.pauseButton.addEventListener('click', () => {
     }
 });
 
-DOM.playAgainButton.addEventListener('click', () => {
-    showScreen('game-screen');
+DOM.AIplayAgainButton.addEventListener('click', () => {
+    matchmakingTimer.start();
+    startPvCMatch();
 });
+
+DOM.PvPplayAgainButton.addEventListener('click', () => {
+    showScreen('matchmaking-screen');
+    matchmakingTimer.start();
+    connectToMatchmaking();
+});
+
+DOM.AIbackToMenuButton.addEventListener('click', () => {
+    showScreen('category-screen');
+});
+
+DOM.PvPbackToMenuButton.addEventListener('click', () => {
+    showScreen('category-screen');
+    wsManager.close('game');
+});
+
 
 window.addEventListener('resize', resizeCanvas);
 

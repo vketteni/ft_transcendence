@@ -63,6 +63,6 @@ export function resizeCanvas() {
     clientState.paddles.right.y = canvasHeight / 2 - GAME_CONFIG.paddleHeight / 2;
     clientState.ball.x = canvasWidth / 2;
     clientState.ball.y = canvasHeight / 2;
-
-    renderLoop();
+    cancelAnimationFrame(renderLoop);
+    requestAnimationFrame(renderLoop);
 }

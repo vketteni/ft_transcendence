@@ -63,7 +63,7 @@ class GameLoop:
             self.update_ai_paddle(config, game_state, dt)
 
     def update_paddles(self, config, game_state, dt):
-        paddle_speed = 150 * dt
+        paddle_speed = 350 * dt
         canvas_height = config['canvas']['height']
         paddle_height = config['paddle']['height']
 
@@ -81,7 +81,7 @@ class GameLoop:
             paddle['y'] = max(0, min(paddle['y'], max_paddle_y))
 
     def update_ai_paddle(self, config, game_state, dt):
-        ai_speed = 50 * dt
+        ai_speed = 150 * dt
         ball_y = game_state['ball']['y']
         paddle_height = config['paddle']['height']
         canvas_height = config['canvas']['height']
@@ -164,7 +164,7 @@ class GameLoop:
     def reflect_ball(self, ball, paddle, paddle_config):
             relative_hit = (ball['y'] - (paddle['y'] + paddle_config['height'] / 2)) / (paddle_config['height'] / 2)
             ball['vx'] = -ball['vx'] 
-            ball['vy'] = 4 * relative_hit
+            ball['vy'] = 400 * relative_hit
 
     async def handle_scoring(self, config, game_state):
         ball_state = game_state['ball']

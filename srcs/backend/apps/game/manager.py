@@ -260,20 +260,32 @@ class GameManager:
                 continue
             
             # Check if game is over
-            if game_state['paddles']['right']['score'] >= 10 or game_state['paddles']['left']['score'] >= 10:
+            if game_state['paddles']['right']['score'] >= 5 or game_state['paddles']['left']['score'] >= 5:
                 winner = "Right Player" if game_state['paddles']['right']['score'] >= 5 else "Left Player"
-                
-                await self.channel_layer.group_send(
-                    f"game_{room_name}",
-                    {
-                        'type': 'game_message',
-                        'data': {
-                            'type': 'game_over',
-                            'message': f"Game Over! {winner} wins!",
-                            'winner': winner
-                        },
-                    }
-                )
+                if game_state['ai_controlled']:
+                    await self.channel_layer.group_send(
+                        f"game_{room_name}",
+                        {
+                            'type': 'game_message',
+                            'data': {
+                                'type': 'ai_game_over',
+                                'message': f"Game Over! {winner} wins!",
+                                'winner': winner
+                            },
+                        }
+                    )
+                else:
+                    await self.channel_layer.group_send(
+                        f"game_{room_name}",
+                        {
+                            'type': 'game_message',
+                            'data': {
+                                'type': 'game_over',
+                                'message': f"Game Over! {winner} wins!",
+                                'winner': winner
+                            },
+                        }
+                    )
 
                 self.reset_game(game_state)
                 continue
