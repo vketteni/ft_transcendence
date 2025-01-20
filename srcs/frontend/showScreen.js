@@ -5,20 +5,24 @@ import { resizeCanvas } from './render.js';
 import { loadUserInfo } from './userProfile.js';
 
 export function showScreen(screenId) {
+	console.log("enter showScreen screenID: ", screenId);
 	const screens = [
-		DOM.registrationScreen,
+		// DOM.registrationScreen,
 		DOM.loginScreen,
 		DOM.signupScreen,
 		DOM.categoryScreen,
 		DOM.gameScreen,
 		// DOM.gameOverScreen,
 		DOM.AIgameOverScreen,
-		DOM.userprofileScreen
+		DOM.userprofileScreen,
 		DOM.matchmakingScreen
 	];
 
+	console.log("screens", screens);
 	screens.forEach(screen => {
+		console.log("here in the loop", screen.id);
 		if (screen.id === screenId) {
+
 			screen.classList.remove('d-none');
 
 			if (screenId === 'game-screen') {

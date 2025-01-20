@@ -2,7 +2,7 @@ import { getPlayerAlias } from './config.js';
 import { stopAndResetTimer } from './pong.js';
 import { wsManager } from './WebSocketManager.js';
 import { connectToGame } from './WebsocketGameroom.js';
-import { showScreen } from './pong.js';
+import { showScreen } from './showScreen.js';
 
 export function connectToMatchmaking() {
     wsManager.connect(

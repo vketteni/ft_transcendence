@@ -19,7 +19,7 @@ export const DOM = {
     
     // screens
     gameScreen: document.getElementById('game-screen'),
-    registrationScreen: document.getElementById('registration-screen'),
+    // registrationScreen: document.getElementById('registration-screen'),
     loginScreen: document.getElementById('login-screen'),
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
