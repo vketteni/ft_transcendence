@@ -16,7 +16,7 @@
 
 	<header class="bg-dark text-white py-3">
 		<div class="container d-flex justify-content-between align-items-center">
-		  <div id="logo"><a class="text-white text-decoration-none fs-3 fw-bold" href="index.html">Pong!</a></div>
+		  <div id="logo"><a class="text-white text-decoration-none fs-3 fw-bold" href="" id="home-link">Pong!</a></div>
 		  <nav id="topbar-nav">
 			<ul class="nav">
 			  <li class="nav-item logged-out"><a class="nav-link text-white" href="#login">Login</a></li>
@@ -70,13 +70,14 @@
             <p><strong>Email:</strong> <span id="profileEmail"></span></p>
             <p><strong>First Name:</strong> <span id="profileFirstName"></span></p>
             <p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
+			<p><strong>2FA:</strong> <span id="profile2fa"></span></p>
             <button id="editProfileButton" class="btn btn-outline-light btn-lg">Edit Profile</button>
         </div>
 
         <!-- Edit View -->
         <div id="profileEdit" class="d-none w-50">
             <form id="editProfileForm">
-                <div class="mb-3">>
+                <div class="mb-3">
                     <label for="editUsername" class="form-label">Username</label>
                     <input type="text" id="editUsername" class="form-control" required>
                 </div>
@@ -92,7 +93,11 @@
                     <label for="editLastName" class="form-label">Last Name</label>
                     <input type="text" id="editLastName" class="form-control">
                 </div>
-                <button type="submit" class="btn btn-success">Save Changes</button>
+				<div class="form-check form-switch mb-3">
+					<input class="form-check-input" type="checkbox" id="toggle2FA">
+					<label class="form-check-label" for="toggle2FA">Enable Two-Factor Authentication</label>
+				</div>
+                <button type="submit" class="btn btn-outline-success">Save Changes</button>
                 <button type="button" id="cancelEditButton" class="btn btn-outline-warning">Cancel</button>
             </form>
         </div>
@@ -115,15 +120,15 @@
     <!-- AI Game Over Screen -->
     <div id="ai-game-over-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
         <h1 id="ai-game-over-message">Game Over!</h1>
-        <button id="ai-play-again-button">Play Again</button>
-        <button id="ai-back-to-menu">Back to menu</button>
+        <button type=button id="ai-play-again-button" class="btn btn-lg btn-outline-light mb-3">Play Again</button>
+        <button type=button id="ai-back-to-menu" class="btn btn-lg btn-outline-light">Back to menu</button>
     </div>
 
     <!-- PVP Game Over Screen -->
     <div id="pvp-game-over-screen" class="d-none">
-        <h1 id="pvp-game-over-message">Game Over!</h1>
-        <button id="pvp-play-again-button" class="btn btn-outline-light btn-lg mt-3">Rematch</button>
-        <button id="pvp-back-to-menu" class="btn btn-outline-light btn-lg">Back to menu</button>
+        <h1 id="pvp-game-over-message" class="mb-3">Game Over!</h1>
+        <button type=button id="pvp-play-again-button" class="btn btn-outline-light btn-lg mt-3">Rematch</button>
+        <button type=button id="pvp-back-to-menu" class="btn btn-outline-light btn-lg">Back to menu</button>
     </div>
     
     <script type="module" src="pong.js"></script>

@@ -24,7 +24,7 @@ export const DOM = {
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
     matchmakingScreen: document.getElementById('matchmaking-screen'),
-
+	homeLink: document.getElementById("home-link"),
     //
     matchmakingButton: document.getElementById('matchmaking-button'),
     matchmakingTimer: document.getElementById('timerDisplay'),
@@ -74,6 +74,7 @@ export const DOM = {
     profileEmail: document.getElementById('profileEmail'),
     profileFirstName: document.getElementById('profileFirstName'),
     profileLastName: document.getElementById('profileLastName'),
+	profile2fa: document.getElementById('profile2fa'),
     
     // Game screen
     pauseButton: document.getElementById('pause-button'),
