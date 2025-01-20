@@ -1,4 +1,5 @@
 *pycache*
+**/migrations/
 .env
 backend/game.log
 backend/celerybeat-schedule

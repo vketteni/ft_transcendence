@@ -5,6 +5,15 @@ import { GAME_CONFIG, setPlayerAlias, getPlayerAlias } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
+import { handleLoginRedirect, setLoginState } from './auth.js'
+import { showScreen } from './showScreen.js'
+import { initializeSessionAndCSRF } from './intializeSessionAndCSRF.js';
+import { updateTopBar } from './topBar.js';
+import { fetchUserState } from './fetchUserState.js';
+import { handleLogout } from './logout.js';
+import { fetchGameData } from './token.js';
+import { getCookie, setCookie } from './cookie.js';
+import { generateUUID } from './generateUUID.js';
 
 let isPaused = false;
 const matchmakingTimer = new Timer(DOM.matchmakingTimer);
@@ -12,43 +21,13 @@ const matchmakingTimer = new Timer(DOM.matchmakingTimer);
 DOM.gameScreen.width = GAME_CONFIG.canvasWidth;
 DOM.gameScreen.height = GAME_CONFIG.canvasHeight;
 
-export function showScreen(screenId) {
-    const screens = [
-        DOM.registrationScreen,
-        DOM.loginScreen,
-        DOM.signupScreen,
-        DOM.categoryScreen,
-        DOM.gameScreen,
-        DOM.AIgameOverScreen,
-        DOM.PvPgameOverScreen,
-        DOM.matchmakingScreen
-    ];
-
-    screens.forEach(screen => {
-        if (screen.id === screenId) {
-            screen.classList.remove('d-none');
-
-            // If showing game screen, initialize the canvas
-            if (screenId === 'game-screen') {
-                resizeCanvas();
-                console.log("Game screen initialized");
-            }
-        } else {
-            screen.classList.add('d-none');
-        }
-    });
-}
-
-// Login and sign-up screen navigation
-DOM.loginButton.addEventListener('click', () => {
-    showScreen('login-screen'); // Navigate to login screen
+DOM.registrationButton.addEventListener('click', () => {
+    console.log("registrationButton.addEventListener");
+    showScreen('signup-screen');
 });
 
-DOM.signupButton.addEventListener('click', () => {
-    showScreen('signup-screen'); // Navigate to sign-up screen
-});
-
-DOM.loginForm.addEventListener('submit', (e) => {
+DOM.loginForm.addEventListener('submit', async (e) => {
+    console.log("loginForm.addEventListener");
     e.preventDefault();
     const alias = DOM.loginAlias.value.trim();
     const password = DOM.loginPassword.value.trim();
@@ -58,37 +37,103 @@ DOM.loginForm.addEventListener('submit', (e) => {
         return;
     }
 
-    console.log("Login:", { alias, password });
-    setPlayerAlias(alias);
-    // sendAlias(); // Send alias to the server
+    try {
+        const response = await fetch('/api/accounts/token/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: alias, password }),
+            credentials: 'include',
+        });
 
-    showScreen('category-screen'); // Navigate to category screen
+        if (response.ok) {
+            // const data = await response.json();
+            const data = await response.json();
+
+            // Store tokens in localStorage or sessionStorage
+            localStorage.setItem('access_token', data.access_token);
+
+            alert("Login successful!");
+            setLoginState(data.logged_in);
+            showScreen('category-screen'); // Example of moving to the category screen
+            // try {
+            //     await fetchGameData();
+            // } catch (fetchError) {
+            //     console.error('Error fetching game data:', fetchError);
+            //     alert('Failed to load game data.');
+            // }
+
+            // Proceed to the next screen or load resources dynamically
+        } else {
+            const errorData = await response.json();
+            alert(`Login failed: ${errorData.detail}`);
+        }
+    } catch (error) {
+        console.error('Error during login:', error);
+        alert('An unexpected error occurred. Please try again.');
+    }
 });
 
 // Handle sign-up form submission
-DOM.signupForm.addEventListener('submit', (e) => {
+DOM.signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const alias = DOM.signupAlias.value.trim();
     const password = DOM.signupPassword.value.trim();
+    const email = DOM.signupEmail.value.trim();
 
-    if (!alias || !password) {
+    if (!alias || !password || !email) {
         alert("Please create both alias and password.");
         return;
     }
 
-    console.log("Sign Up:", { alias, password });
-    setPlayerAlias(alias);
-    sendAlias();
+    console.log("Sign Up:", { alias, password, email });
+    // setPlayerAlias(alias);
+    // sendAlias();
+    try {
+        const response = await fetch('http://localhost:3000/api/accounts/register/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ alias, password, email }),
+        });
 
-    showScreen('category-screen'); // Navigate to category screen
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log("Sign Up Successful:", data);
+            // setPlayerAlias(alias);
+            // sendAlias(); // Notify the game server
+            showScreen('login-screen');
+        } else {
+            alert(`Sign Up Error: ${data.error}`);
+        }
+    } catch (error) {
+        console.error('Error signing up:', error);
+        alert('An unexpected error occurred. Please try again later.');
+    }
+    // showScreen('category-screen'); // Navigate to category screen
 });
 
 // Handle "Login with 42"
 DOM.login42Button.addEventListener('click', () => {
-    window.location.href = "https://signin.intra.42.fr";
-});
-
+		console.log("login42Button.addEventListener()");
+		const loginWindow = window.open(
+			'/oauth/accounts/login/', // Redirects to backend endpoint for OAuth initiation
+			'_blank',          // Open in a new tab or popup
+			'width=500,height=600,noopener=false,noreferrer=false'
+		);
+		fetchUserState(loginWindow);
+		
+	});
+	
 DOM.PvCButton.addEventListener('click', () => {
+    // if (wsManager.sockets['matchmaking'].readyState === WebSocket.OPEN) {
+    //     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
+    // } else {
+    //     console.error("WebSocket connection is not open.");
+    // }
     console.log("PvC button clicked, showing matchmaking screen...");
     matchmakingTimer.start();
     startPvCMatch();
@@ -136,6 +181,15 @@ DOM.PvPbackToMenuButton.addEventListener('click', () => {
     wsManager.close('game');
 });
 
+setCookie('browser_id', generateUUID(), {
+    path: '/',
+    // domain: '127.0.0.1', // Set this to match the backend's domain
+    // secure: true,             // Use true for HTTPS
+    sameSite: 'Lax',
+    // sameSite: 'None',         // None if cross-origin, Lax/Strict for same-origin
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+});
+console.log(getCookie('browser_id'));
 
 window.addEventListener('resize', resizeCanvas);
 
@@ -169,3 +223,104 @@ export function stopAndResetTimer() {
     // DOM.matchmakingButton.classList.remove('d-none');
     // DOM.matchmakingButton.textContent = "Try Again";
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+	// Call this function on app initialization
+	// initializeSessionAndCSRF();
+
+    // Set the category screen as the default
+    showScreen('category-screen');
+
+
+
+    // Set up top bar navigation
+    DOM.topBarNav.addEventListener('click', (event) => {
+        if (event.target.tagName === 'A') {
+            event.preventDefault();
+            const sectionId = event.target.getAttribute('href').substring(1);
+
+            if (sectionId === 'login') {
+                showScreen('login-screen');
+            } else if (sectionId === 'signup') {
+                showScreen('signup-screen');
+			} else if (sectionId === 'logout') {
+                handleLogout();
+				updateTopBar();
+            } else if (sectionId === 'profile') {
+                showScreen('userprofile-screen');
+            } else {
+                console.warn(`Unhandled navigation target: ${sectionId}`);
+            }
+        }
+    });
+});
+
+DOM.editProfileForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const csrftoken = getCookie('csrftoken'); 
+    console.log("csrftoken: ", csrftoken);
+    const updatedData = {
+        csrfmiddlewaretoken: csrftoken,
+        username: DOM.editUsername.value,
+        email: DOM.editEmail.value,
+        first_name: DOM.editFirstName.value,
+        last_name: DOM.editLastName.value
+    };
+    try {
+        const response = await fetch('/api/accounts/user-profile/', {
+        // const response = await fetch('http://localhost:8000/api/accounts/user-profile/', {
+            method: 'PUT',
+            headers: {
+                // 'X-CSRFToken': csrftoken,
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedData),
+            credentials: 'include',
+        });
+        const data = await response.json();
+        if (response.ok)
+        {
+            console.log("updatedData.username:", updatedData.username);
+            // Update the profile view with the new data
+            DOM.profileUsername.textContent = data.username;
+            DOM.profileEmail.textContent = data.email;
+            DOM.profileFirstName.textContent = data.first_name || 'N/A';
+            DOM.profileLastName.textContent = data.last_name || 'N/A';
+        
+            // Switch back to view mode
+            DOM.profileEdit.classList.add("d-none");
+            DOM.profileView.classList.remove("d-none");
+        }
+        else
+            alert(`Sign Up Error: ${data.error}`);
+    } catch (error) {
+        console.error('Error signing up:', error);
+        alert('An unexpected error occurred. Please try again later.');
+    }
+});
+
+// Show the edit form and hide the view
+DOM.editProfileButton.addEventListener("click", () => {
+    console.log("editProfileButton.addEventListener");
+    DOM.profileView.classList.add("d-none");
+    DOM.profileEdit.classList.remove("d-none");
+
+    const profileData = {
+        username: DOM.profileUsername.textContent,
+        email: DOM.profileEmail.textContent,
+        first_name: DOM.profileFirstName.textContent,
+        last_name: DOM.profileLastName.textContent
+    };
+
+    DOM.editUsername.value = profileData.username;
+    DOM.editEmail.value = profileData.email;
+    DOM.editFirstName.value = profileData.first_name || 'N/A';
+    DOM.editLastName.value = profileData.last_name || 'N/A';
+});
+
+// Cancel editing and return to view mode
+DOM.cancelEditButton.addEventListener("click", () => {
+    DOM.profileEdit.classList.add("d-none");
+    DOM.profileView.classList.remove("d-none");
+});

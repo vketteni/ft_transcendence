@@ -19,6 +19,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'apps.accounts.auth.AuthenticationBackend42',
+]
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -28,10 +33,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # Third-party
-    'rest_framework',
     'channels',
 	'csp',
+    'corsheaders',
 	'django_celery_beat',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
 
     # Local Apps
     'apps.accounts',
@@ -47,7 +56,16 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django_otp.middleware.OTPMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'config.urls'
 
@@ -81,7 +99,6 @@ DATABASES = {
     }
 }
 
-
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -93,15 +110,34 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # DRF Basic Setup
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        # Add TokenAuthentication or JWT if needed
-    ]
+        'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
 }
+
+# JWT settings
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=120),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=2),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    "ALGORITHM": "HS256",
+}
+
 
 # Channels & Redis
 CHANNEL_LAYERS = {
@@ -117,17 +153,18 @@ AUTH_USER_MODEL = 'accounts.User'
 
 CSP_CONNECT_SRC = [
     "'self'",
-    "ws://127.0.0.1:8000",
-    "wss://vketteni.42.fr",
+	'http://localhost:3000',
 ]
 
 CSP_DEFAULT_SRC = ["'self'"]
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:3000',
     'http://localhost:3000',
 ]
 
+CORS_ALLOW_CREDENTIALS = True
 
 LOGGING = {
     'version': 1,
@@ -139,15 +176,19 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django': {
-            'handlers': ['console'],  # Attach the console handler
+        # 'django': {
+        #     'handlers': ['console'],  # Attach the console handler
+        #     'level': 'DEBUG',
+        #     'propagate': True,
+        # },
+        'django.security.csrf': {
+            'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
+
         },
     },
 }
-
-
 
 # backend/config/settings.py
 MEDIA_URL = '/media/'
@@ -161,3 +202,18 @@ STATIC_ROOT = '/app/static/'
 CELERY_BROKER_URL = 'redis://redis:6379/0'  # Use the Redis service from Docker Compose
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+
+# 42OAuth
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+REDIRECT_URI = os.getenv('REDIRECT_URI')
+
+
+# CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
+
+# SESSION_COOKIE_SAMESITE=None
+# CSRF_COOKIE_SAMESITE=None
+
+# SESSION_COOKIE_SECURE = True  # Ensure secure cookies
+# CSRF_COOKIE_SECURE = True

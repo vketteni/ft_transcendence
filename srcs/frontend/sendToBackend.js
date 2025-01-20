@@ -22,6 +22,8 @@ export function sendInput(up, down) {
     });
 }
 
+// this function has been commented out
+// front communicates with back with post requests
 export function sendAlias() {
     console.log(`Sending alias "${getPlayerAlias()}" to backend.`);
     wsManager.send('game', {

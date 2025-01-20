@@ -10,6 +10,8 @@ RUN apt-get update && apt-get install -y \
     git \
     libpq-dev \
     gcc \
+    python3-dev \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy and install Python dependencies
