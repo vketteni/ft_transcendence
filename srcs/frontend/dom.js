@@ -7,11 +7,11 @@ export const DOM = {
     // game canvas
     canvas: document.getElementById('canvas'),
     ctx: document.getElementById('canvas').getContext('2d'),
-    canvasImg: (() => {
-        const img = new Image();
-        img.src = './canvas.png';
-        return img;
-    })(),
+    // canvasImg: (() => {
+    //     const img = new Image();
+    //     img.src = './canvas.png';
+    //     return img;
+    // })(),
     
     // animated video background
     // backgroundCanvas: document.getElementById('background-animation'),
@@ -95,7 +95,7 @@ export const DOM = {
 };
 
 
-DOM.canvasImg.onerror = () => {
-    console.error('Image failed to load. Check the file path.');
-};
+// DOM.canvasImg.onerror = () => {
+//     console.error('Image failed to load. Check the file path.');
+// };
 

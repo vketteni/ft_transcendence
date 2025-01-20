@@ -6,7 +6,7 @@ const SERVER_UPDATE_INTERVAL = 0.05;
 
 export function clearCanvas() {
 	DOM.ctx.clearRect(0, 0, DOM.canvas.width, DOM.canvas.height);
-	DOM.ctx.drawImage(DOM.canvasImg, 0, 0, DOM.canvas.width, DOM.canvas.height);
+	// DOM.ctx.drawImage(DOM.canvasImg, 0, 0, DOM.canvas.width, DOM.canvas.height);
 }
 
 export function drawRect(x, y, w, h, color) {

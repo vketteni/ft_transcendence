@@ -40,7 +40,8 @@ export function resizeCanvas() {
     const windowWidth = window.innerWidth * 0.6;
     const windowHeight = window.innerHeight * 0.6;
 
-    const imageAspectRatio = DOM.canvasImg.width / DOM.canvasImg.height;
+    const imageAspectRatio = 1.34;
+    // const imageAspectRatio = DOM.canvasImg.width / DOM.canvasImg.height;
 
     let canvasWidth = windowWidth;
     let canvasHeight = canvasWidth / imageAspectRatio;
