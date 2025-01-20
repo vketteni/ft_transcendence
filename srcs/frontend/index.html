@@ -9,159 +9,14 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <style>
-			/* RESET */
-			* {
-				margin: 0;
-				padding: 0;
-				box-sizing: border-box;
-			}
-
-			/* BODY */
-			body {
-				color: white;
-				background-color: black;
-			}
-
-			/* BUTTONS */
-			.btn-primary {
-				color: white; /* Text color */
-				border-color: white; /* Outline color */
-				background-color: transparent; /* Transparent background */
-				padding: 15px 30px;
-				font-size: 1.5rem;
-				border-radius: 8px;
-				transition: color 0.3s, background-color 0.3s;
-			}
-
-			.btn-primary:hover {
-				color: black; /* Change text to white */
-				background-color: white; /* Red background on hover */
-			}
-
-			#logout-button {
-				position: fixed;
-				top: 10px;
-				right: 10px;
-				z-index: 1000;
-			}
-
-			/* SCREENS */
-			#registration-screen,
-			#category-screen {
-				background-color: transparent; /* Ensure transparency */
-			}
-
-			#game-screen {
-				position: relative;
-				width: 100vw; /* Full width of the viewport */
-				height: 100vh; 
-				background-color: black; /* Optional for better visibility */
-			}
-
-			#pause-button {
-				z-index: 2; /* Optional: Ensure it appears above the canvas */
-			}
-
-			#userprofile-screen {
-			width: 400px;
-			height: 200px;
-			overflow: auto; /* Add this if content exceeds dimensions */
-			}
-
-
-			#pause-button.paused {
-				background-color: grey;
-			}
-
-			#pause-button.resumed {
-				background-color: grey;
-			}
-
-			/* BACKGROUND ANIMATION */
-			#background-animation {
-				position: fixed;
-				top: 0;
-				left: 0;
-				width: 100vw;
-				height: 100vh;
-				z-index: -1; /* Keep it behind other elements */
-				background-color: transparent;
-				pointer-events: none; /* Allow interactions with other elements */
-			}
-
-
-			#timerDisplay.hidden {
-				opacity: 0; /* Timer is hidden but still occupies its position */
-				pointer-events: none;
-			}	
-
-
-			/* ========================
-			HELPER CLASSES
-			======================== */
-			.bg-cover {
-				background-size: cover;
-			}
-
-			.hidden {
-				visibility: hidden; /* Hides the element while keeping its space */
-				opacity: 0; /* Makes it fully transparent */
-				pointer-events: none; /* Disables interaction */
-			}
-
-
-			/* Reset */
-			* {
-				margin: 0;
-				padding: 0;
-				box-sizing: border-box;
-			}
-			
-			
-			#logo {
-				font-size: 1.5em;
-				font-weight: bold;
-			}
-			
-			#topbar-nav ul {
-				list-style: none;
-				display: flex;
-				gap: 15px;
-			}
-			
-			#topbar-nav ul li {
-				display: inline;
-			}
-			
-			#topbar-nav ul li a {
-				text-decoration: none;
-				color: #ffffff;
-				font-size: 1em;
-				transition: color 0.3s ease;
-			}
-			
-			#topbar-nav ul li a:hover {
-				color: #00adb5;
-			}
-			
-			
-			.logged-in {
-				display: none; /* Hide logged-in links by default */
-			}
-
-			.logged-out {
-				display: none; /* Hide logged-out links by default */
-			}
-		</style>
     </head>
 	  
     
-<body>
+<body class="bg-black text-white">
 
 	<header class="bg-dark text-white py-3">
 		<div class="container d-flex justify-content-between align-items-center">
-		  <div id="logo"><a class="nav-link text-white" href="index.html">Pong Game</a></div>
+		  <div id="logo"><a class="text-white text-decoration-none fs-3 fw-bold" href="index.html">Pong!</a></div>
 		  <nav id="topbar-nav">
 			<ul class="nav">
 			  <li class="nav-item logged-out"><a class="nav-link text-white" href="#login">Login</a></li>
@@ -174,79 +29,71 @@
 		</div>
 	  </header>
 
-
-    <!-- registration screen-->
-    <!-- <div id="registration-screen" class="d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
-		<img src="title.png" alt="Game Title" class="img-fluid mb-4" style="max-width: 400px;">
-		<button id="login-button" class="btn btn-outline-light btn-lg mb-3">Login</button>
-        <button id="signup-button" class="btn btn-outline-light btn-lg">Sign Up</button>
-    </div> -->
-
    <!-- category screen -->
    <div id="category-screen" 
         class="d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
 		<img src="title.png" alt="Game Title" class="img-fluid mb-4" style="max-width: 400px;">
-        <button id="PvP" class="btn btn-primary mb-3 w-100">Player vs Player</button>
-        <button id="PvC" class="btn btn-primary mb-3 w-100">Player vs Computer</button>
-        <button id="Tournament" class="btn btn-primary w-100">Tournament</button>
+        <button id="PvP" class="btn btn-outline-light btn-lg mb-3">Player vs Player</button>
+        <button id="PvC" class="btn btn-outline-light btn-lg mb-3">Player vs Computer</button>
+        <button id="Tournament" class="btn btn-outline-light btn-lg">Tournament</button>
     </div>
 
-	    <!-- Login Screen -->
-		<div id="login-screen" class="d-none d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
-			<h1>Login</h1>
-			<form id="login-form" class="text-center w-15 regul77f2acb9ce7601fc1af6e5fa1b6fce2582897140ar-font">
-				<input type="text" id="login-alias" class="form-control mb-3" placeholder="Enter your alias" required maxlength="20">
-				<input type="password" id="login-password" class="form-control mb-3" placeholder="Enter your password" required>
-				<button type="submit" class="btn btn-lg btn-primary mb-3">Login</button>
-				<button id="login-42-button" class="btn btn-lg btn-primary mb-3">Login with 42</button>
-			</form>
-			<button id="registration-button" class="btn btn-lg btn-primary mb-3">Sign Up</button>
-		</div>
+	<!-- Login Screen -->
+	<div id="login-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+		<h1>Login</h1>
+		<form id="login-form" class="text-center w-50">
+			<input type="text" id="login-alias" class="form-control mb-3" placeholder="Enter your alias" required maxlength="20">
+			<input type="password" id="login-password" class="form-control mb-3" placeholder="Enter your password" required>
+			<button type="submit" class="btn btn-outline-light btn-lg mb-3">Login</button>
+			<button id="login-42-button" class="btn btn-outline-primary btn-lg mb-3">Login with 42</button>
+		</form>
+		<button id="registration-button" class="btn btn-outline-light btn-lg">Sign Up</button>
+	</div>
 	
-		<!-- Sign Up Screen -->
-		<div id="signup-screen" class="d-none d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
-			<h1>Sign Up</h1>
-			<form id="signup-form" class="text-center w-15 regular-font">
-				<input type="text" id="signup-alias" class="form-control mb-3" placeholder="Create your alias" required maxlength="20">
-				<input type="password" id="signup-password" class="form-control mb-3" placeholder="Create a secure password" required>
-				<input type="email" id="signup-email" class="form-control mb-3" placeholder="Enter your email" required>
-				<button type="submit" class="btn btn-lg btn-primary">Sign Up</button>
-			</form>
-		</div>
+	<!-- Sign Up Screen -->
+	<div id="signup-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+		<h1>Sign Up</h1>
+		<form id="signup-form" class="text-center w-50">
+			<input type="text" id="signup-alias" class="form-control mb-3" placeholder="Create your alias" required maxlength="20">
+			<input type="password" id="signup-password" class="form-control mb-3" placeholder="Create a secure password" required>
+			<input type="email" id="signup-email" class="form-control mb-3" placeholder="Enter your email" required>
+			<button type="submit" class="btn btn-outline-light btn-lg">Sign Up</button>
+		</form>
+	</div>
 
     <div id="userprofile-screen" 
         class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
         <h2>User Profile</h2>
         <!-- Display View -->
-        <div id="profileView" class="text-center">
+        <div id="profileView">
             <p><strong>Username:</strong> <span id="profileUsername"></span></p>
             <p><strong>Email:</strong> <span id="profileEmail"></span></p>
             <p><strong>First Name:</strong> <span id="profileFirstName"></span></p>
             <p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
-            <button id="editProfileButton" class="btn btn-primary">Edit Profile</button>
+            <button id="editProfileButton" class="btn btn-outline-light btn-lg">Edit Profile</button>
         </div>
 
         <!-- Edit View -->
-        <div id="profileEdit" class="d-none text-center">
+        <div id="profileEdit" class="d-none w-50">
             <form id="editProfileForm">
-                <div class="form-group">
-                    <label for="editUsername">Username</label>
+                <div class="mb-3">>
+                    <label for="editUsername" class="form-label">Username</label>
                     <input type="text" id="editUsername" class="form-control" required>
                 </div>
-                <div class="form-group">
-                    <label for="editEmail">Email</label>
+                <div class="mb-3">
+                    <label for="editEmail" class="form-label">Email</label>
                     <input type="email" id="editEmail" class="form-control" required>
                 </div>
-                <div class="form-group">
-                    <label for="editFirstName">First Name</label>
+                <div class="mb-3">
+                    <label for="editFirstName" class="form-label">First Name</label>
                     <input type="text" id="editFirstName" class="form-control">
                 </div>
-                <div class="form-group">
-                    <label for="editLastName">Last Name</label>
+                <div class="mb-3">
+                    <label for="editLastName" class="form-label">Last Name</label>
                     <input type="text" id="editLastName" class="form-control">
                 </div>
                 <button type="submit" class="btn btn-success">Save Changes</button>
-                <button type="button" id="cancelEditButton" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="cancelEditButton" class="btn btn-outline-warning">Cancel</button>
             </form>
         </div>
     </div>
@@ -259,14 +106,14 @@
     </div>
 
     <!-- game screen -->
-    <div id="game-screen" class="d-none position-relative vh-100 d-flex flex-column justify-content-center align-items-center">
-		<div id="timerDisplay" class="hidden"></div>
-        <canvas id="canvas"></canvas>
-		<button id="pause-button" class="btn btn-lg btn-primary mb-3">Pause</button>
+    <div id="game-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+		<div id="timerDisplay" class="visually-hidden"></div>
+        <canvas id="canvas" class="w-80 h-60"></canvas>
+		<button id="pause-button" class="btn btn-lg btn-outline-light mb-3">Pause</button>
     </div>
 
     <!-- AI Game Over Screen -->
-    <div id="ai-game-over-screen" class="d-none">
+    <div id="ai-game-over-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
         <h1 id="ai-game-over-message">Game Over!</h1>
         <button id="ai-play-again-button">Play Again</button>
         <button id="ai-back-to-menu">Back to menu</button>
@@ -275,8 +122,8 @@
     <!-- PVP Game Over Screen -->
     <div id="pvp-game-over-screen" class="d-none">
         <h1 id="pvp-game-over-message">Game Over!</h1>
-        <button id="pvp-play-again-button">Rematch</button>
-        <button id="pvp-back-to-menu">Back to menu</button>
+        <button id="pvp-play-again-button" class="btn btn-outline-light btn-lg mt-3">Rematch</button>
+        <button id="pvp-back-to-menu" class="btn btn-outline-light btn-lg">Back to menu</button>
     </div>
     
     <script type="module" src="pong.js"></script>
