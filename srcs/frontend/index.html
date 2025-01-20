@@ -66,10 +66,17 @@
         <button id="pause-button" class="btn btn-outline-light mb-3">Pause</button>
     </div>
 
-    <!-- Game Over Screen -->
-    <div id="game-over-screen" class="d-none text-center">
-        <h1 id="game-over-message">Game Over!</h1>
-        <button id="play-again-button" class="btn btn-outline-light">Play Again</button>
+    <!-- AI Game Over Screen -->
+    <div id=“ai-game-over-screen” class="d-none position-relative vh-100 d-flex flex-column justify-content-center align-items-center">
+        <h1 id=“ai-game-over-message”>Game Over!</h1>
+        <button id=“ai-play-again-button”>Play Again</button>
+        <button id=“ai-back-to-menu”>Back to menu</button>
+    </div>
+    <!-- PVP Game Over Screen -->
+    <div id=“pvp-game-over-screen” class="d-none position-relative vh-100 d-flex flex-column justify-content-center align-items-center">
+        <h1 id=“pvp-game-over-message”>Game Over!</h1>
+        <button id=“pvp-play-again-button”>Rematch</button>
+        <button id=“pvp-back-to-menu”>Back to menu</button>
     </div>
 
     <script type="module" src="pong.js"></script>
