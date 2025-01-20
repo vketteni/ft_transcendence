@@ -20,7 +20,6 @@ export function showScreen(screenId) {
 
 	console.log("screens", screens);
 	screens.forEach(screen => {
-		console.log("here in the loop", screen.id);
 		if (screen.id === screenId) {
 
 			screen.classList.remove('d-none');
