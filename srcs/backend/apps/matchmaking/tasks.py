@@ -9,27 +9,31 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def run_matchmaking():
-    """Check the queue and create matches."""
+    """Check all queues and create matches."""
     manager = matchmaking_manager
-    players, match_id = manager.find_match()
+    logger.info(f"run_matchmaking() called.")
 
-    if players:
-        try:
-            # Process each player
-            user1, player1 = get_or_create_user_and_player(players[0])
-            user2, player2 = get_or_create_user_and_player(players[1])
+    for queue_name in manager.QUEUE_KEYS.keys():  # Iterate over all queues
+        players, room_url = manager.find_match(queue_name)
+        logger.debug(f"Run matchmaking for {queue_name}: {players}")
+        if players:
+            try:
+                # Process each player
+                user1, player1 = get_or_create_user_and_player(players[0])
+                user2, player2 = get_or_create_user_and_player(players[1])
 
-            # Create a new Match object
-            match = Match.objects.create(
-                player1=player1,
-                player2=player2,
-            )
+                # Create a new Match object
+                match = Match.objects.create(
+                    player1=player1,
+                    player2=player2,
+                )
 
-            logger.debug(f"Match created: {match}")
-        except Exception as e:
-            logger.error(f"Error during matchmaking: {e}")
-    else:
-        logger.debug("No matches found.")
+                logger.debug(f"Match created for {queue_name}: {match}")
+            except Exception as e:
+                logger.error(f"Error during matchmaking for {queue_name}: {e}")
+        else:
+            logger.debug(f"No matches found in {queue_name} queue.")
+
 
 
 def get_or_create_user_and_player(player_name):

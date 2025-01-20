@@ -2,6 +2,7 @@ import { getCookie } from "./cookie.js";
 import { setLoginState } from "./auth.js";
 import { updateTopBar } from "./topBar.js";
 import { showScreen } from "./showScreen.js";
+import { setPlayerID } from "./config.js";
 
 let loginHandled = false;
 
@@ -28,6 +29,7 @@ export async function fetchUserState(loginWindow = null) {
 			localStorage.setItem('access_token', data.access_token);
 			if (loginWindow && !loginWindow.closed) loginWindow.close();
 			setLoginState(data.logged_in);
+			setPlayerID(data.user.id);
 			updateTopBar();
 			showScreen('category-screen');
 			alert(`Welcome, ${data.user.username}!`);

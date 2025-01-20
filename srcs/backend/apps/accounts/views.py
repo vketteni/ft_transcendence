@@ -110,7 +110,8 @@ class UserStatusView(APIView):
             return Response({
                 'logged_in': True,
                 'user': {
-                    'username': request.user.username
+                    'username': request.user.username,
+					'id' : request.user.id
                 }
             })
         logger.info(f"Response('logged_in': False, status=200) returned. user: {request.user}")
@@ -216,13 +217,17 @@ class LoginView(APIView):
         username = request.data.get("username")
         password = request.data.get("password")
         user = authenticate(request, username=username, password=password)
-        logger.info(f"LoginView.post() user: {user}")
+        logger.info(f"LoginView.post() user: {user} userid: {user.id}")
         if user is not None:
             login(request, user)
             refresh = RefreshToken.for_user(user)
             response = Response({
-                "logged_in": request.user.is_authenticated,
-                "access_token": str(refresh.access_token),
+                'logged_in': request.user.is_authenticated,
+                'access_token': str(refresh.access_token),
+                'user': {
+                    'username': request.user.username,
+					'id' : request.user.id
+                }
             })
             # Store refresh token in a secure, HttpOnly cookie
             response.set_cookie(
@@ -313,6 +318,7 @@ class UserProfileView(APIView):
                 return Response({"detail": "Authentication failed. Invalid or missing token."}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Validate and update the user's profile
+            logger.info(f"Request data: {request.data}")
             serializer = UserSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()

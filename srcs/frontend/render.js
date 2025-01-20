@@ -1,4 +1,4 @@
-import { GAME_CONFIG, getPlayerAlias } from './config.js';
+import { GAME_CONFIG } from './config.js';
 import { DOM } from './dom.js';
 import { clientState, serverState } from './state.js';
 import { clearCanvas, drawRect, drawBall, extrapolateState } from './renderUtils.js';

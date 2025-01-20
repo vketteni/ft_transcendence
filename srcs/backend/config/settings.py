@@ -14,7 +14,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'replace-with-a-secure-key'
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "fallback_key_for_dev")
 DEBUG = True
 
 ALLOWED_HOSTS = []
