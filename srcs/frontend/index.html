@@ -6,7 +6,85 @@
         <link href="https://fonts.googleapis.com/css2?family=Jacquard+24&display=swap" rel="stylesheet">    
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <link rel="stylesheet" href="style.css">
+        <style>
+			/* BODY */
+			body {
+				color: white;
+				background-color: black;
+			}
+
+			/* BUTTONS */
+			.btn-primary {
+				color: white; /* Text color */
+				border-color: white; /* Outline color */
+				background-color: transparent; /* Transparent background */
+				padding: 15px 30px;
+				font-size: 1.5rem;
+				border-radius: 8px;
+				transition: color 0.3s, background-color 0.3s;
+			}
+
+			.btn-primary:hover {
+				color: black; /* Change text to white */
+				background-color: white; /* Red background on hover */
+			}
+
+			/* SCREENS */
+			#registration-screen,
+			#category-screen {
+				background-color: transparent; /* Ensure transparency */
+			}
+
+			#game-screen {
+				position: relative;
+				width: 100vw; /* Full width of the viewport */
+				height: 100vh; 
+				background-color: black; /* Optional for better visibility */
+			}
+
+			#pause-button {
+				z-index: 2; /* Optional: Ensure it appears above the canvas */
+			}
+
+			#pause-button.paused {
+				background-color: grey;
+			}
+
+			#pause-button.resumed {
+				background-color: grey;
+			}
+
+			/* BACKGROUND ANIMATION */
+			#background-animation {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100vw;
+				height: 100vh;
+				z-index: -1; /* Keep it behind other elements */
+				background-color: transparent;
+				pointer-events: none; /* Allow interactions with other elements */
+			}
+
+			#timerDisplay.hidden {
+				opacity: 0; /* Timer is hidden but still occupies its position */
+				pointer-events: none;
+			}	
+
+
+			/* ========================
+			HELPER CLASSES
+			======================== */
+			.bg-cover {
+				background-size: cover;
+			}
+
+			.hidden {
+				visibility: hidden; /* Hides the element while keeping its space */
+				opacity: 0; /* Makes it fully transparent */
+				pointer-events: none; /* Disables interaction */
+			}
+		</style>
     </head>
     
 <body class="vh-100 d-flex align-items-center justify-content-center">
@@ -16,8 +94,8 @@
     <!-- registration screen-->
     <div id="registration-screen" class="d-flex flex-column justify-content-center align-items-center w-100 h-100 bg-cover">
 		<img src="title.png" alt="Game Title" class="img-fluid mb-4" style="max-width: 400px;">
-		<button id="login-button" class="btn btn-lg btn-primary mb-3">Login</button>
-        <button id="signup-button" class="btn btn-lg btn-primary mb-3">Sign Up</button>
+		<button id="login-button" class="btn btn-outline-light btn-lg mb-3">Login</button>
+        <button id="signup-button" class="btn btn-outline-light btn-lg">Sign Up</button>
     </div>
 
     <!-- Login Screen -->
