@@ -53,7 +53,7 @@ export const DOM = {
     // Category screen buttons  
     PvPButton: document.getElementById('PvP'),
     PvCButton: document.getElementById('PvC'),
-    // TournamentButton: document.getElementById('Tournament'),
+    TournamentButton: document.getElementById('Tournament'),
 
     // User profile screen
     editProfileButton: document.getElementById('editProfileButton'),

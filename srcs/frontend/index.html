@@ -14,14 +14,14 @@
     
 <body class="bg-black text-white vh-100 overflow-hidden">
 
-	<header class="bg-dark text-white py-3">
+	<header class="bg-danger-subtle py-1">
 		<div class="container d-flex justify-content-between align-items-center">
-		  <div id="logo"><a class="text-white text-decoration-none fs-3 fw-bold" href="" id="home-link">Pong!</a></div>
+		  <div id="logo"><a class="text-black text-decoration-none fs-5 fw-bold" href="" id="home-link">Pong!</a></div>
 		  <nav id="topbar-nav">
 			<ul class="nav">
-			  <li class="nav-item logged-out"><a class="nav-link text-white" href="#login">Login</a></li>
-			  <li class="nav-item logged-in"><a class="nav-link text-white" href="#logout">Logout</a></li>
-			  <li class="nav-item logged-in"><a class="nav-link text-white" href="#profile">Profile</a></li>
+			  <li class="nav-item logged-out"><a class="nav-link text-black" href="#login">Login</a></li>
+			  <li class="nav-item logged-in"><a class="nav-link text-black" href="#logout">Logout</a></li>
+			  <li class="nav-item logged-in"><a class="nav-link text-black" href="#profile">Profile</a></li>
 			  <!-- <li class="nav-item"><a class="nav-link text-white" href="#leaderboard">Leaderboard</a></li> -->
 			  <!-- <li class="nav-item"><a class="nav-link text-white" href="#signup">Sign Up</a></li> -->
 			</ul>
@@ -32,22 +32,27 @@
    <!-- category screen -->
    <div id="category-screen" 
         class="d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-		<img src="title.png" alt="Game Title" class="img-fluid mb-4" style="max-width: 400px;">
-        <button id="PvP" class="btn btn-outline-light btn-lg mb-3">Player vs Player</button>
-        <button id="PvC" class="btn btn-outline-light btn-lg mb-3">Player vs Computer</button>
-        <button id="Tournament" class="btn btn-outline-light btn-lg">Tournament</button>
+		<img src="title.png" alt="Game Title" class="img-fluid" style="max-width: 400px;">
+        <div class="d-grid gap-2 col-4 mx-auto">
+            <button id="PvP" class="btn btn-outline-light btn-lg mb-2">Player vs Player</button>
+            <button id="PvC" class="btn btn-outline-light btn-lg mb-2">Player vs Computer</button>
+            <button id="Tournament" class="btn btn-outline-light btn-lg">Tournament</button>
+        </div>
     </div>
 
 	<!-- Login Screen -->
-	<div id="login-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-		<h1>Login</h1>
-		<form id="login-form" class="text-center w-50">
+	<div id="login-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-2">
+		<h2>Login</h2>
+		<form id="login-form" class="text-center w-40">
 			<input type="text" id="login-alias" class="form-control mb-3" placeholder="Enter your alias" required maxlength="20">
 			<input type="password" id="login-password" class="form-control mb-3" placeholder="Enter your password" required>
-			<button type="submit" class="btn btn-outline-light btn-lg mb-3">Login</button>
-			<button id="login-42-button" class="btn btn-outline-primary btn-lg mb-3">Login with 42</button>
+			<div class="d-grid gap-2 mx-auto">
+                <button type="submit" class="btn btn-outline-success btn-lg mb-3">Login</button>
+                <div><p>Don't have an account? <a class="text-success" href="" id="registration-button"> Sign Up</a></p></div>
+                <p>----------------------- OR -----------------------</p>
+                <button id="login-42-button" class="btn btn-outline-primary btn-lg mb-3">Login with <img src="42logo.png" style="height: 24px"></button>
+            </div>
 		</form>
-		<button id="registration-button" class="btn btn-outline-light btn-lg">Sign Up</button>
 	</div>
 	
 	<!-- Sign Up Screen -->
@@ -107,11 +112,20 @@
     <!-- matchmaking screen-->
     <div id="matchmaking-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
         <h1 id="waiting-text">Waiting for an opponent...</h1>
-        <div id="timerDisplay">0s</div>  <!-- Add this for the timer -->
+        <div id="timerDisplay">0s</div>
     </div>
 
     <!-- game screen -->
 	<div id="game-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+		<div class="game-container d-flex flex-column justify-content-center align-items-center">
+			<div id="timerDisplay" class="visually-hidden"></div>
+			<canvas id="canvas" class="border border-2 border-white"></canvas>
+			<button id="pause-button" class="btn btn-lg btn-outline-light mt-3">Pause</button>
+		</div>
+	</div>
+
+        <!-- game screen -->
+	<div id="tournament-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
 		<div class="game-container d-flex flex-column justify-content-center align-items-center">
 			<div id="timerDisplay" class="visually-hidden"></div>
 			<canvas id="canvas" class="border border-2 border-white"></canvas>

@@ -146,6 +146,17 @@ DOM.PvPButton.addEventListener('click', () => {
     connectToMatchmaking();
 });
 
+DOM.TournamentButton.addEventListener('click', () => {
+    // if (wsManager.sockets['matchmaking'].readyState === WebSocket.OPEN) {
+    //     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
+    // } else {
+    //     console.error("WebSocket connection is not open.");
+    // }
+    console.log("Tournament button clicked, showing matchmaking screen...");
+    matchmakingTimer.start();
+    startPvCMatch();
+});
+
 
 DOM.pauseButton.addEventListener('click', () => {
     isPaused = !isPaused;
