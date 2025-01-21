@@ -5,8 +5,8 @@ import { GAME_CONFIG, setPlayerID } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
-import { handleLoginRedirect, setLoginState } from './auth.js'
-import { showScreen } from './showScreen.js'
+import { handleLoginRedirect, setLoginState } from './auth.js';
+import { showScreen } from './showScreen.js';
 import { initializeSessionAndCSRF } from './intializeSessionAndCSRF.js';
 import { updateTopBar } from './topBar.js';
 import { fetchUserState } from './fetchUserState.js';
@@ -20,11 +20,6 @@ const matchmakingTimer = new Timer(DOM.matchmakingTimer);
 
 DOM.canvas.width = GAME_CONFIG.canvasWidth;
 DOM.canvas.height = GAME_CONFIG.canvasHeight;
-
-DOM.registrationButton.addEventListener('click', () => {
-    console.log("registrationButton.addEventListener");
-    showScreen('signup-screen');
-});
 
 DOM.loginForm.addEventListener('submit', async (e) => {
     console.log("loginForm.addEventListener");
@@ -117,74 +112,6 @@ DOM.signupForm.addEventListener('submit', async (e) => {
     // showScreen('category-screen'); // Navigate to category screen
 });
 
-// Handle "Login with 42"
-DOM.login42Button.addEventListener('click', () => {
-		console.log("login42Button.addEventListener()");
-		const loginWindow = window.open(
-			'/oauth/accounts/login/', // Redirects to backend endpoint for OAuth initiation
-			'_blank',          // Open in a new tab or popup
-			'width=500,height=600,noopener=false,noreferrer=false'
-		);
-		fetchUserState(loginWindow);
-		
-	});
-	
-DOM.PvCButton.addEventListener('click', () => {
-    console.log("PvC button clicked, showing matchmaking screen...");
-    matchmakingTimer.start();
-	connectToMatchmaking("PVC");
-
-});
-
-DOM.PvPButton.addEventListener('click', () => {
-    console.log("PvP button clicked, showing matchmaking screen...");
-    showScreen('matchmaking-screen');
-    matchmakingTimer.start();
-    connectToMatchmaking("PVP");
-});
-
-DOM.TournamentButton.addEventListener('click', () => {
-    console.log("Tournament button clicked, showing matchmaking screen...");
-    matchmakingTimer.start();
-    startPvCMatch();
-});
-
-
-DOM.pauseButton.addEventListener('click', () => {
-    isPaused = !isPaused;
-
-    if (isPaused) {
-        DOM.pauseButton.classList.add('paused');
-        DOM.pauseButton.textContent = "Resume";
-        wsManager.send('game', { action: 'pause_game' });
-    } else {
-        DOM.pauseButton.classList.remove('paused');
-        DOM.pauseButton.textContent = "Pause";
-        wsManager.send('game', { action: 'resume_game' });
-    }
-});
-
-DOM.AIplayAgainButton.addEventListener('click', () => {
-    matchmakingTimer.start();
-	connectToMatchmaking("PVC");
-
-});
-
-DOM.PvPplayAgainButton.addEventListener('click', () => {
-    showScreen('matchmaking-screen');
-    matchmakingTimer.start();
-    connectToMatchmaking("PVP");
-});
-
-DOM.AIbackToMenuButton.addEventListener('click', () => {
-    showScreen('category-screen');
-});
-
-DOM.PvPbackToMenuButton.addEventListener('click', () => {
-    showScreen('category-screen');
-    wsManager.close('game');
-});
-
 window.addEventListener('resize', resizeCanvas);
 
 document.addEventListener("keydown", (e) => {
@@ -214,8 +141,6 @@ document.addEventListener('keyup', (e) => {
 export function stopAndResetTimer() {
     matchmakingTimer.stop();
     matchmakingTimer.reset();
-    // DOM.matchmakingButton.classList.remove('d-none');
-    // DOM.matchmakingButton.textContent = "Try Again";
 }
 
 
@@ -260,32 +185,6 @@ DOM.editProfileForm.addEventListener("submit", async (event) => {
 	}
 });
 	
-// Show the edit form and hide the view
-DOM.editProfileButton.addEventListener("click", () => {
-	console.log("editProfileButton.addEventListener");
-	DOM.profileView.classList.add("d-none");
-	DOM.profileEdit.classList.remove("d-none");
-	
-	const profileData = {
-		username: DOM.profileUsername.textContent,
-		email: DOM.profileEmail.textContent,
-		first_name: DOM.profileFirstName.textContent,
-		last_name: DOM.profileLastName.textContent,
-		twoFA: DOM.profile2fa.textContent
-	};
-	
-	DOM.editUsername.value = profileData.username;
-	DOM.editEmail.value = profileData.email;
-	DOM.editFirstName.value = profileData.first_name || 'N/A';
-	DOM.editLastName.value = profileData.last_name || 'N/A';
-});
-	
-// Cancel editing and return to view mode
-DOM.cancelEditButton.addEventListener("click", () => {
-	DOM.profileEdit.classList.add("d-none");
-	DOM.profileView.classList.remove("d-none");
-});
-	
 document.addEventListener('DOMContentLoaded', () => {
 	// Set the category screen as the default
 	showScreen('category-screen');
@@ -324,3 +223,103 @@ setCookie('browser_id', generateUUID(), {
 	expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
 });
 localStorage.setItem('playerid', getCookie('browser_id'));
+
+// signup buttons
+DOM.registrationButton.addEventListener('click', () => {
+	console.log("registrationButton.addEventListener");
+	showScreen('signup-screen');
+});
+
+DOM.login42Button.addEventListener('click', () => {
+	console.log("login42Button.addEventListener()");
+	const loginWindow = window.open(
+		'/oauth/accounts/login/', // Redirects to backend endpoint for OAuth initiation
+		'_blank',          // Open in a new tab or popup
+		'width=500,height=600,noopener=false,noreferrer=false'
+	);
+	fetchUserState(loginWindow);
+	
+});
+
+DOM.editProfileButton.addEventListener("click", () => {
+	console.log("editProfileButton.addEventListener");
+	DOM.profileView.classList.add("d-none");
+	DOM.profileEdit.classList.remove("d-none");
+	
+	const profileData = {
+		username: DOM.profileUsername.textContent,
+		email: DOM.profileEmail.textContent,
+		first_name: DOM.profileFirstName.textContent,
+		last_name: DOM.profileLastName.textContent,
+		twoFA: DOM.profile2fa.textContent
+	};
+	
+	DOM.editUsername.value = profileData.username;
+	DOM.editEmail.value = profileData.email;
+	DOM.editFirstName.value = profileData.first_name || 'N/A';
+	DOM.editLastName.value = profileData.last_name || 'N/A';
+});
+
+DOM.cancelEditButton.addEventListener("click", () => {
+	DOM.profileEdit.classList.add("d-none");
+	DOM.profileView.classList.remove("d-none");
+});
+
+
+//game play buttons
+DOM.PvCButton.addEventListener('click', () => {
+    console.log("PvC button clicked, showing matchmaking screen...");
+	showScreen('matchmaking-screen');
+    matchmakingTimer.start();
+	connectToMatchmaking("PVC");
+});
+
+DOM.PvPButton.addEventListener('click', () => {
+    console.log("PvP button clicked, showing matchmaking screen...");
+    showScreen('matchmaking-screen');
+    matchmakingTimer.start();
+    connectToMatchmaking("PVP");
+});
+
+DOM.TournamentButton.addEventListener('click', () => {
+    console.log("Tournament button clicked, showing matchmaking screen...");
+	showScreen('matchmaking-screen');
+    matchmakingTimer.start();
+    startPvCMatch();
+});
+
+DOM.pauseButton.addEventListener('click', () => {
+    isPaused = !isPaused;
+
+    if (isPaused) {
+        DOM.pauseButton.classList.add('paused');
+        DOM.pauseButton.textContent = "Resume";
+        wsManager.send('game', { action: 'pause_game' });
+    } else {
+        DOM.pauseButton.classList.remove('paused');
+        DOM.pauseButton.textContent = "Pause";
+        wsManager.send('game', { action: 'resume_game' });
+    }
+});
+
+DOM.AIplayAgainButton.addEventListener('click', () => {
+    matchmakingTimer.start();
+	connectToMatchmaking("PVC");
+});
+
+DOM.PvPplayAgainButton.addEventListener('click', () => {
+    showScreen('matchmaking-screen');
+    matchmakingTimer.start();
+    connectToMatchmaking("PVP");
+});
+
+//back buttons
+DOM.AIbackToMenuButton.addEventListener('click', () => {
+    showScreen('category-screen');
+	// wsManager.close('game');
+});
+
+DOM.PvPbackToMenuButton.addEventListener('click', () => {
+    showScreen('category-screen');
+    // wsManager.close('game');
+});
