@@ -15,7 +15,7 @@ class User(AbstractUser):
     # Add any additional fields if needed
     objects = UserOAuth2Manager()
     skill_level = models.IntegerField(default=0)  # Example: Player skill level
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)  # Example: Profile picture
+    avatar = models.ImageField(upload_to='avatars/', default='avatars/default-avatar.jpg', blank=True)
 
     def __str__(self):
         return self.username

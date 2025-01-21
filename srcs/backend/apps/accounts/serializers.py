@@ -5,7 +5,10 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.timezone import now
 from django.contrib.auth.password_validation import validate_password
-from . import models  
+from . import models
+import logging
+
+logger = logging.getLogger(__name__)
 
 class UserSerializer(serializers.ModelSerializer):
     """
@@ -40,6 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
         allow_null=True,
         help_text="User's profile avatar. Optional."
     )
+    avatar_url = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -58,6 +62,7 @@ class UserSerializer(serializers.ModelSerializer):
             'is_staff',
             'date_joined',
             'last_login',
+            'avatar_url',
         ]
         read_only_fields = ['id', 'date_joined', 'last_login', 'is_staff']
         extra_kwargs = {
@@ -70,6 +75,17 @@ class UserSerializer(serializers.ModelSerializer):
         Concatenates first_name and last_name for the full name.
         """
         return f"{obj.first_name} {obj.last_name}".strip()
+
+    def get_avatar_url(self, obj):
+        """
+        Returns the full URL for the avatar field, or None if no avatar exists.
+        """
+        request = self.context.get('request')
+        if obj.avatar:
+            logger.info(f"Avatar file path: {obj.avatar.path}")
+            logger.info(f"Avatar file URL: {obj.avatar.url}")
+            return request.build_absolute_uri(obj.avatar.url) if request else obj.avatar.url
+        return None
 
     def create(self, validated_data):
         """

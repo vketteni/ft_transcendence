@@ -39,8 +39,6 @@ INSTALLED_APPS = [
 	'django_celery_beat',
     'rest_framework',
     'rest_framework_simplejwt',
-    'django_otp',
-    'django_otp.plugins.otp_totp',
 
     # Local Apps
     'apps.accounts',
@@ -57,7 +55,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django_otp.middleware.OTPMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -191,8 +188,8 @@ LOGGING = {
 }
 
 # backend/config/settings.py
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = 'http://localhost:3000/media/'
+MEDIA_ROOT = BASE_DIR / '/tmp'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/app/static/'

@@ -81,30 +81,33 @@ DOM.signupForm.addEventListener('submit', async (e) => {
     const alias = DOM.signupAlias.value.trim();
     const password = DOM.signupPassword.value.trim();
     const email = DOM.signupEmail.value.trim();
+    const avatar = DOM.signupAvatar.files[0];
 
     if (!alias || !password || !email) {
         alert("Please create both alias and password.");
         return;
     }
 
-    console.log("Sign Up:", { alias, password, email });
-    // setPlayerAlias(alias);
-    // sendAlias();
+    const formData = new FormData();
+    formData.append('alias', alias);
+    formData.append('password', password);
+    formData.append('email', email);
+    if (avatar) {
+        formData.append('avatar', avatar); // Only append if a file is selected
+    }
+
+    console.log("Sign Up Data:", { alias, password, email, avatar: avatar?.name || 'No file' });
+
     try {
-        const response = await fetch('http://localhost:3000/api/accounts/register/', {
+        const response = await fetch('api/accounts/register/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ alias, password, email }),
+            body: formData,
         });
 
         const data = await response.json();
 
         if (response.ok) {
             console.log("Sign Up Successful:", data);
-            // setPlayerAlias(alias);
-            // sendAlias(); // Notify the game server
             showScreen('login-screen');
         } else {
             alert(`Sign Up Error: ${data.error}`);
@@ -113,7 +116,6 @@ DOM.signupForm.addEventListener('submit', async (e) => {
         console.error('Error signing up:', error);
         alert('An unexpected error occurred. Please try again later.');
     }
-    // showScreen('category-screen'); // Navigate to category screen
 });
 
 // Handle "Login with 42"
@@ -316,7 +318,7 @@ DOM.editProfileButton.addEventListener("click", () => {
         email: DOM.profileEmail.textContent,
         first_name: DOM.profileFirstName.textContent,
         last_name: DOM.profileLastName.textContent,
-		twoFA: DOM.profile2fa.textContent
+		// twoFA: DOM.profile2fa.textContent
     };
 
     DOM.editUsername.value = profileData.username;
@@ -329,4 +331,10 @@ DOM.editProfileButton.addEventListener("click", () => {
 DOM.cancelEditButton.addEventListener("click", () => {
     DOM.profileEdit.classList.add("d-none");
     DOM.profileView.classList.remove("d-none");
+});
+
+document.getElementById('signup-avatar').addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    const fileNameElement = document.getElementById('avatar-filename');
+    fileNameElement.textContent = file ? file.name : 'No file selected';
 });

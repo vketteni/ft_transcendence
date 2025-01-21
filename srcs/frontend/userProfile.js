@@ -49,6 +49,8 @@ export async function loadUserInfo() {
             document.getElementById('profileEmail').textContent = data.email;
             document.getElementById('profileFirstName').textContent = data.first_name;
             document.getElementById('profileLastName').textContent = data.last_name;
+            console.log("Avatar URL:", data.avatar_url);
+            document.getElementById('profileAvatar').src = data.avatar_url;
         } else {
             console.error('Failed to load user info:', response.status);
         }

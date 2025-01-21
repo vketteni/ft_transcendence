@@ -193,7 +193,11 @@ def register_user(request):
         alias = request.data.get('alias')
         password = make_password(request.data.get('password'))
         email = request.data.get('email')
-        
+        try:
+            avatar = request.FILES.get('avatar')
+        except Exception as e:
+            return Response({"equest.FILES.get('avatar')": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         if User.objects.filter(username=alias).exists():
             return Response({"error": "Alias already taken."}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -203,6 +207,14 @@ def register_user(request):
             email=email,
             is_active=True
         )
+        logger.info(f"avatar: {avatar}")
+        try:
+            if avatar:
+                user.avatar.save(avatar.name, avatar)
+            user.save()
+        except Exception as e:
+            return Response({"save error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         return Response({"message": "User created successfully.", "username": alias}, status=status.HTTP_201_CREATED)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -298,7 +310,7 @@ class UserProfileView(APIView):
 
     def get(self, request):
         logger.info(f"UserProfileView(APIView).get() User: {request.user}")
-        serializer = UserSerializer(request.user)
+        serializer = UserSerializer(request.user, context={'request': request})
         return Response(serializer.data)
 
     def put(self, request):

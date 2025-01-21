@@ -49,7 +49,8 @@ export const DOM = {
     signupAlias: document.getElementById('signup-alias'),
     signupPassword: document.getElementById('signup-password'),
     signupEmail: document.getElementById('signup-email'),
-    
+    signupAvatar: document.getElementById('signup-avatar'),
+
     // Category screen buttons  
     PvPButton: document.getElementById('PvP'),
     PvCButton: document.getElementById('PvC'),
@@ -66,6 +67,7 @@ export const DOM = {
     editEmail: document.getElementById('editEmail'),
     editFirstName: document.getElementById('editFirstName'),
     editLastName: document.getElementById('editLastName'),
+    // edit2fa: document.getElementById('edit2fa'),
 
     profileView: document.getElementById('profileView'),
     profileEdit: document.getElementById('profileEdit'),
@@ -74,7 +76,8 @@ export const DOM = {
     profileEmail: document.getElementById('profileEmail'),
     profileFirstName: document.getElementById('profileFirstName'),
     profileLastName: document.getElementById('profileLastName'),
-	profile2fa: document.getElementById('profile2fa'),
+    profileAvatar: document.getElementById('profileAvatar'),
+	// profile2fa: document.getElementById('profile2fa'),
     
     // Game screen
     pauseButton: document.getElementById('pause-button'),
