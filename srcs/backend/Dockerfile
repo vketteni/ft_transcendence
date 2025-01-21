@@ -21,6 +21,9 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy the application code
 COPY backend /app/
 
+# Change permissions for the application files
+RUN chmod -R 755 /app
+
 # Add a non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
