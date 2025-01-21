@@ -156,7 +156,9 @@ DOM.TournamentButton.addEventListener('click', () => {
     // }
     console.log("Tournament button clicked, showing matchmaking screen...");
     matchmakingTimer.start();
-    startPvCMatch();
+    connectToMatchmaking("TRNMT");
+	
+    // startPvCMatch();
 });
 
 

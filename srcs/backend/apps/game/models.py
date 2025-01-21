@@ -9,7 +9,7 @@ class GameRoom(models.Model):
     is_active = models.BooleanField(default=True, help_text="Indicates if the game room is active")
     max_players = models.PositiveIntegerField(default=2, help_text="Maximum number of players allowed in the room")
     
-    # Use string reference for 'Match' and 'Player'
+    # Use string reference for '17' and 'Player'
     match = models.OneToOneField(
         'matchmaking.Match',  # Reference Match by app name and model name
         on_delete=models.CASCADE,
@@ -37,3 +37,11 @@ class GameRoom(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+class TournamentNode:
+    def __init__(self, player1=None, player2=None):
+        self.player1 = player1
+        self.player2 = player2
+        self.winner = None
+        self.left = None
+        self.right = None

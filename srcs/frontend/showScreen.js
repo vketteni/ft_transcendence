@@ -24,6 +24,7 @@ export function showScreen(screenId) {
 
 			if (screenId === 'game-screen') {
 				renderLoop();
+				// DOM.topBarNav.classList.add('d-none');
 				console.log("Game screen initialized");
 			}
 
