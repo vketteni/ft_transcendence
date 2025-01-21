@@ -7,16 +7,7 @@ export const DOM = {
     // game canvas
     canvas: document.getElementById('canvas'),
     ctx: document.getElementById('canvas').getContext('2d'),
-    // canvasImg: (() => {
-    //     const img = new Image();
-    //     img.src = './canvas.png';
-    //     return img;
-    // })(),
-    
-    // animated video background
-    // backgroundCanvas: document.getElementById('background-animation'),
-    // backgroundCtx: document.getElementById('background-animation').getContext('2d'), 
-    
+
     // screens
     gameScreen: document.getElementById('game-screen'),
     // registrationScreen: document.getElementById('registration-screen'),
@@ -24,8 +15,7 @@ export const DOM = {
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
     matchmakingScreen: document.getElementById('matchmaking-screen'),
-	// homeLink: document.getElementById("home-link"),
-    //
+
     matchmakingButton: document.getElementById('matchmaking-button'),
     matchmakingTimer: document.getElementById('timerDisplay'),
     userprofileScreen: document.getElementById('userprofile-screen'),
@@ -94,8 +84,4 @@ export const DOM = {
     logoutButton: document.getElementById('logout-button'),
 };
 
-
-// DOM.canvasImg.onerror = () => {
-//     console.error('Image failed to load. Check the file path.');
-// };
 

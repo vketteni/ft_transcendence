@@ -50,16 +50,15 @@ class GameManager:
         self.config = {
             'canvas': {'width': 800, 'height': 600},
             'paddle': {
-                'height': 100,
-                'width': 15
+                'height': int(600 * 0.2),
+                'width': int(800 * 0.02)
             },
             'ball': {
-                'diameter': 20,
+                'diameter': int(800 * 0.03),
                 'speed': 350
             }
         }
 
-        
     async def start(self):
         try:
             if self.running:

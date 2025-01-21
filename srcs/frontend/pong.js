@@ -130,11 +130,6 @@ DOM.login42Button.addEventListener('click', () => {
 	});
 	
 DOM.PvCButton.addEventListener('click', () => {
-    // if (wsManager.sockets['matchmaking'].readyState === WebSocket.OPEN) {
-    //     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerID() }));
-    // } else {
-    //     console.error("WebSocket connection is not open.");
-    // }
     console.log("PvC button clicked, showing matchmaking screen...");
     matchmakingTimer.start();
 	connectToMatchmaking("PVC");
@@ -149,11 +144,6 @@ DOM.PvPButton.addEventListener('click', () => {
 });
 
 DOM.TournamentButton.addEventListener('click', () => {
-    // if (wsManager.sockets['matchmaking'].readyState === WebSocket.OPEN) {
-    //     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
-    // } else {
-    //     console.error("WebSocket connection is not open.");
-    // }
     console.log("Tournament button clicked, showing matchmaking screen...");
     matchmakingTimer.start();
     startPvCMatch();

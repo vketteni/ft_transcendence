@@ -23,6 +23,7 @@ export function showScreen(screenId) {
 			screen.classList.remove('d-none');
 
 			if (screenId === 'game-screen') {
+				resizeCanvas();
 				renderLoop();
 				console.log("Game screen initialized");
 			}
