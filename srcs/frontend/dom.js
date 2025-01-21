@@ -17,7 +17,10 @@ export const DOM = {
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
     matchmakingScreen: document.getElementById('matchmaking-screen'),
+    AIwaitingScreen: document.getElementById('ai-waiting-screen'),
 
+
+    AItimer: document.getElementById('AItimerDisplay'),
     // matchmakingButton: document.getElementById('matchmaking-button'),
     matchmakingTimer: document.getElementById('timerDisplay'),
     userprofileScreen: document.getElementById('userprofile-screen'),

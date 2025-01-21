@@ -40,6 +40,28 @@ export let serverState = {
         },
 };
 
+export function resetClientState() {
+    clientState = {
+        paddles: {
+            left: { 
+                    y: GAME_CONFIG.canvasHeight / 2 - 50,
+                    x: 0,
+                    score: 0 },
+            right: { 
+                    y: GAME_CONFIG.canvasHeight / 2 - 50,
+                    x: GAME_CONFIG.canvasWidth - GAME_CONFIG.paddleWidth,
+                    score: 0 },
+            },
+        ball: {
+            x: GAME_CONFIG.canvasWidth / 2,
+            y: GAME_CONFIG.canvasHeight / 2,
+            vx: 0,
+            vy: 0,
+            render: false,
+        },
+    };
+}
+
 export function updateServerState(serverData) {
 
     serverState.ball.x = serverData.ball.x * GAME_CONFIG.canvasWidth;

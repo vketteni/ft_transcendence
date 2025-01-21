@@ -17,6 +17,7 @@ import { generateUUID } from './generateUUID.js';
 
 let isPaused = false;
 const matchmakingTimer = new Timer(DOM.matchmakingTimer);
+const AItimer = new Timer(DOM.AItimer);
 
 DOM.canvas.width = GAME_CONFIG.canvasWidth;
 DOM.canvas.height = GAME_CONFIG.canvasHeight;
@@ -187,8 +188,10 @@ DOM.editProfileForm.addEventListener("submit", async (event) => {
 	
 document.addEventListener('DOMContentLoaded', () => {
 	// Set the category screen as the default
-	showScreen('category-screen');
-
+	const screenId = location.hash.replace("#", "") || "category-screen";
+    showScreen(screenId, false);
+    showScreen('category-screen');
+    
 	// Set up top bar navigation
 	DOM.topBarNav.addEventListener('click', (event) => {
 		if (event.target.tagName === 'A') {
@@ -210,7 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 });
-
 
 /* Global Scope */
 
@@ -265,12 +267,11 @@ DOM.cancelEditButton.addEventListener("click", () => {
 	DOM.profileView.classList.remove("d-none");
 });
 
-
 //game play buttons
 DOM.PvCButton.addEventListener('click', () => {
     console.log("PvC button clicked, showing matchmaking screen...");
-	showScreen('matchmaking-screen');
-    matchmakingTimer.start();
+	showScreen('ai-waiting-screen');
+    AItimer.start();
 	connectToMatchmaking("PVC");
 });
 
@@ -284,7 +285,7 @@ DOM.PvPButton.addEventListener('click', () => {
 DOM.TournamentButton.addEventListener('click', () => {
     console.log("Tournament button clicked, showing matchmaking screen...");
 	showScreen('matchmaking-screen');
-    matchmakingTimer.start();
+    AItimer.start();
     startPvCMatch();
 });
 
@@ -303,7 +304,8 @@ DOM.pauseButton.addEventListener('click', () => {
 });
 
 DOM.AIplayAgainButton.addEventListener('click', () => {
-    matchmakingTimer.start();
+    AItimer.start();
+    showScreen('ai-waiting-screen');
 	connectToMatchmaking("PVC");
 });
 
@@ -313,13 +315,27 @@ DOM.PvPplayAgainButton.addEventListener('click', () => {
     connectToMatchmaking("PVP");
 });
 
-//back buttons
-DOM.AIbackToMenuButton.addEventListener('click', () => {
-    showScreen('category-screen');
-	// wsManager.close('game');
-});
-
 DOM.PvPbackToMenuButton.addEventListener('click', () => {
     showScreen('category-screen');
     // wsManager.close('game');
+});
+
+window.addEventListener("popstate", (event) => {
+    if (event.state && event.state.screen) {
+        showScreen(event.state.screen, false); // Avoid infinite loop by skipping history push
+    }
+});
+
+window.addEventListener("beforeunload", () => {
+    console.log("Checking WebSocket connections before refresh...");
+
+    if (wsManager.sockets['matchmaking']) {
+        console.log("Closing matchmaking socket before refresh.");
+        wsManager.close('matchmaking');
+    }
+
+    if (wsManager.sockets['game']) {
+        console.log("Closing game socket before refresh.");
+        wsManager.close('game');
+    }
 });

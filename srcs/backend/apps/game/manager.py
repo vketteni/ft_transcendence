@@ -232,6 +232,8 @@ class GameManager:
         }
     
     def reset_game(self, game_state):
+        game_state.clear()
+
         config = self.config
         # Reset scores
         game_state['paddles']['left']['score'] = 0
@@ -286,7 +288,6 @@ class GameManager:
                             },
                         }
                     )
-
                 self.reset_game(game_state)
                 continue
 

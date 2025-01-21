@@ -55,14 +55,6 @@ DOM.cancelEditButton.addEventListener("click", () => {
 });
 
 
-//game play buttons
-DOM.PvCButton.addEventListener('click', () => {
-    console.log("PvC button clicked, showing matchmaking screen...");
-	showScreen('matchmaking-screen');
-    matchmakingTimer.start();
-	connectToMatchmaking("PVC");
-});
-
 DOM.PvPButton.addEventListener('click', () => {
     console.log("PvP button clicked, showing matchmaking screen...");
     showScreen('matchmaking-screen');
@@ -89,11 +81,6 @@ DOM.pauseButton.addEventListener('click', () => {
         DOM.pauseButton.textContent = "Pause";
         wsManager.send('game', { action: 'resume_game' });
     }
-});
-
-DOM.AIplayAgainButton.addEventListener('click', () => {
-    matchmakingTimer.start();
-	connectToMatchmaking("PVC");
 });
 
 DOM.PvPplayAgainButton.addEventListener('click', () => {
