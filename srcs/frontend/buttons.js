@@ -13,6 +13,7 @@ import { fetchGameData } from './token.js';
 import { getCookie, setCookie } from './cookie.js';
 import { generateUUID } from './generateUUID.js';
 
+let isPaused = false;
 // signup buttons
 DOM.registrationButton.addEventListener('click', () => {
 	console.log("registrationButton.addEventListener");

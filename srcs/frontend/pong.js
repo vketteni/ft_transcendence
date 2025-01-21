@@ -289,19 +289,19 @@ DOM.TournamentButton.addEventListener('click', () => {
     startPvCMatch();
 });
 
-DOM.pauseButton.addEventListener('click', () => {
-    isPaused = !isPaused;
+// DOM.pauseButton.addEventListener('click', () => {
+//     isPaused = !isPaused;
 
-    if (isPaused) {
-        DOM.pauseButton.classList.add('paused');
-        DOM.pauseButton.textContent = "Resume";
-        wsManager.send('game', { action: 'pause_game' });
-    } else {
-        DOM.pauseButton.classList.remove('paused');
-        DOM.pauseButton.textContent = "Pause";
-        wsManager.send('game', { action: 'resume_game' });
-    }
-});
+//     if (isPaused) {
+//         DOM.pauseButton.classList.add('paused');
+//         DOM.pauseButton.textContent = "Resume";
+//         wsManager.send('game', { action: 'pause_game' });
+//     } else {
+//         DOM.pauseButton.classList.remove('paused');
+//         DOM.pauseButton.textContent = "Pause";
+//         wsManager.send('game', { action: 'resume_game' });
+//     }
+// });
 
 DOM.AIplayAgainButton.addEventListener('click', () => {
     AItimer.start();
@@ -318,6 +318,20 @@ DOM.PvPplayAgainButton.addEventListener('click', () => {
 DOM.PvPbackToMenuButton.addEventListener('click', () => {
     showScreen('category-screen');
     // wsManager.close('game');
+});
+
+DOM.pauseButton.addEventListener('click', () => {
+    isPaused = !isPaused;
+
+    if (isPaused) {
+        DOM.pauseButton.classList.add('paused');
+        DOM.pauseButton.textContent = "Resume";
+        wsManager.send('game', { action: 'pause_game' });
+    } else {
+        DOM.pauseButton.classList.remove('paused');
+        DOM.pauseButton.textContent = "Pause";
+        wsManager.send('game', { action: 'resume_game' });
+    }
 });
 
 window.addEventListener("popstate", (event) => {
