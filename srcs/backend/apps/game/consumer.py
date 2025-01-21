@@ -29,6 +29,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             # Decode the JWT token
             payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
             self.room_id = payload["room_id"]
+            self.game_type = payload["game_type"]
 
             # Generate group name dynamically
             self.room_group_name = f"game_{self.room_id}"
@@ -38,7 +39,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.accept()
 
             # Add player to the room via GameManager
-            await game_manager.add_player(self.room_id, self.channel_name)
+            await game_manager.add_player(self.room_id, self.game_type, self.channel_name)
 
             # # Start the game manager if it's not running
             if not game_manager.running:
@@ -75,8 +76,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             await game_manager.update_player_input(self.room_id, self.channel_name, up, down)
 
         elif action == 'player_ready':
-            ai_controlled = data.get('ai_controlled', False) 
-            await game_manager.set_game_started(self.room_id, self.channel_name, ai_controlled)
+            await game_manager.set_game_started(self.room_id, self.channel_name)
 
         elif action == 'pause_game':
             logger.debug(f"Pausing game for room: {self.room_id}")

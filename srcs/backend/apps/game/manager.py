@@ -80,7 +80,7 @@ class GameManager:
         self.running = False
         logger.debug("GameManager stopped.")
  
-    async def create_or_get_game(self, room_name):
+    async def create_or_get_game(self, room_name, game_type):
         logger.debug(f"create_or_get_game() called for room_name={room_name}")
         room_lock = self.locks[room_name]
 
@@ -91,7 +91,7 @@ class GameManager:
         async with room_lock:
             logger.debug(f"Acquired lock for room_name={room_name}")
             if room_name not in self.games:
-                self.games[room_name] = self.initial_game_state(room_name)
+                self.games[room_name] = self.initial_game_state(room_name, game_type)
                 logger.debug(f"Created new game state for room: {room_name}")
                 
             return self.games[room_name]
@@ -102,9 +102,9 @@ class GameManager:
                 del self.games[room_name]
                 logger.debug(f"Removed game state for room: {room_name}")
 
-    async def add_player(self, room_name, channel_name):
-        logger.debug(f"add_player() called for room_name={room_name}, channel_name={channel_name}")
-        game = await self.create_or_get_game(room_name)
+    async def add_player(self, room_name, game_type, channel_name):
+        logger.info(f"add_player() called for room_name={room_name}, game_type={game_type}, channel_name={channel_name}")
+        game = await self.create_or_get_game(room_name, game_type)
 
         if game is None:
             logger.error(f"Failed to retrieve or create game for room_name={room_name}.")
@@ -146,8 +146,10 @@ class GameManager:
         if game and channel_name in game['players']:
             game['players'][channel_name]['alias'] = alias
 
-    def initial_game_state(self, room_name, ai_controlled=False):
+    def initial_game_state(self, room_name, game_type):
         config = self.config
+        ai_controlled = (game_type == "PVC")
+        logger.info(ai_controlled)
         return {
             'room_name': room_name,
             'players': {},
@@ -176,23 +178,20 @@ class GameManager:
             'paused': False,
         }
 
-    async def set_game_started(self, room_name, channel_name, ai_controlled=False):
+    async def set_game_started(self, room_name, channel_name):
         async with debug_lock(self.locks[room_name]):
             game = self.games.get(room_name)
             if not game:
                 logger.warning(f"Game not found for room {room_name}")
                 return
 
-            if ai_controlled:
-                game['ai_controlled'] = True
-
             if channel_name in game['players']:
                 game['players'][channel_name]['ready'] = True
 
             # Check if BOTH players are ready (human vs human) or AI match is set
-            if ai_controlled or (len(game['players']) == 2 and all(p.get('ready', False) for p in game['players'].values())):
+            if game['ai_controlled'] or (len(game['players']) == 2 and all(p.get('ready', False) for p in game['players'].values())):
                 game['game_started'] = True
-                logger.info(f"Game in room '{room_name}' started (AI: {ai_controlled}).")
+                logger.info(f"Game in room '{room_name}'.")
                 
     async def set_game_paused(self, room_name, paused=True):
         async with debug_lock(self.locks[room_name]):

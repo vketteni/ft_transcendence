@@ -137,7 +137,8 @@ DOM.PvCButton.addEventListener('click', () => {
     // }
     console.log("PvC button clicked, showing matchmaking screen...");
     matchmakingTimer.start();
-    startPvCMatch();
+	connectToMatchmaking("PVC");
+
 });
 
 DOM.PvPButton.addEventListener('click', () => {
@@ -175,7 +176,8 @@ DOM.pauseButton.addEventListener('click', () => {
 
 DOM.AIplayAgainButton.addEventListener('click', () => {
     matchmakingTimer.start();
-    startPvCMatch();
+	connectToMatchmaking("PVC");
+
 });
 
 DOM.PvPplayAgainButton.addEventListener('click', () => {

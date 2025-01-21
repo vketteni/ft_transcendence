@@ -64,7 +64,9 @@ class MatchmakingManager:
     
             # Generate match details
             match_id = f"{int(time.time())}"
-            room_url = generate_shared_game_room_url(match_id)
+            game_type = get_key_from_value(self.QUEUE_KEYS, queue_key)
+            logger.info(f"Game mode: {game_type}")
+            room_url = generate_shared_game_room_url(match_id, game_type)
     
             # Notify players
             for player_id in players:
@@ -112,10 +114,10 @@ from django.conf import settings
 
 SECRET_KEY = settings.SECRET_KEY
 
-def generate_shared_game_room_url(room_id):
+def generate_shared_game_room_url(room_id, game_type):
     """Generate a shared secure URL for the game room."""
     token = jwt.encode(
-        {"room_id": room_id, "exp": time.time() + 3600},
+        {"room_id": room_id, "game_type": game_type, "exp": time.time() + 3600},
         SECRET_KEY,
         algorithm="HS256"
     )
@@ -130,3 +132,9 @@ def validate_game_room_token(token):
         raise ValueError("Token expired")
     except jwt.InvalidTokenError:
         raise ValueError("Invalid token")
+
+def get_key_from_value(dictionary, target_value):
+    for key, value in dictionary.items():
+        if value == target_value:
+            return key
+    return None  # Return None if the value is not found
