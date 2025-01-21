@@ -320,13 +320,15 @@ class UserProfileView(APIView):
             # logger.info(f"JWT Access Token: {request.data['access_token']}")
             # user, token = jwt_authenticator.authenticate(request)
             user = request.user
-
+            avatar = request.FILES.get('avatar')
             if not user:
                 return Response({"detail": "Authentication failed. Invalid or missing token."}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Validate and update the user's profile
             serializer = UserSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
+                if avatar:
+                    user.avatar.save(avatar.name, avatar)
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
 

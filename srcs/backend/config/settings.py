@@ -188,8 +188,11 @@ LOGGING = {
 }
 
 # backend/config/settings.py
-MEDIA_URL = 'http://localhost:3000/media/'
-MEDIA_ROOT = BASE_DIR / '/tmp'
+MEDIA_URL = 'media/'
+MEDIA_ROOT = "/"
+
+from django.core.files.storage import FileSystemStorage
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/app/static/'
@@ -205,7 +208,6 @@ CELERY_TASK_SERIALIZER = 'json'
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI')
-
 
 # CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 

@@ -18,10 +18,16 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY backend /app/
 # Change permissions for the application files
 RUN chmod -R 755 /app
+
+RUN mkdir -p media && \
+    chmod -R 755 /media
+    
 # Add a non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 # Set default permissions for the app directory
 RUN chown -R appuser:appuser /app
 USER appuser
+
+
 # Command to run the application (useful if you ever run the container manually)
 CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
