@@ -5,7 +5,6 @@ import { renderLoop, resizeCanvas } from './render.js';
 import { loadUserInfo } from './userProfile.js';
 
 export function showScreen(screenId) {
-	console.log("enter showScreen screenID: ", screenId);
 	const screens = [
 		// DOM.registrationScreen,
 		DOM.loginScreen,
@@ -18,7 +17,6 @@ export function showScreen(screenId) {
 		DOM.matchmakingScreen
 	];
 
-	console.log("screens", screens);
 	screens.forEach(screen => {
 		if (screen.id === screenId) {
 

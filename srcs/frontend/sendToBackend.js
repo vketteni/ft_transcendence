@@ -1,4 +1,4 @@
-import { GAME_CONFIG, getPlayerAlias } from './config.js';
+import { GAME_CONFIG } from './config.js';
 import { wsManager } from './WebSocketManager.js';
 // import { DOM } from './dom.js';
 // import { clientState } from './state.js';
@@ -16,7 +16,7 @@ export function sendInput(up, down) {
     // Use WebSocketManager for sending input
     wsManager.send('game', {
         action: 'input',
-        player: getPlayerAlias(),
+        player: getPlayerID(),
         up,
         down
     });
@@ -25,10 +25,10 @@ export function sendInput(up, down) {
 // this function has been commented out
 // front communicates with back with post requests
 export function sendAlias() {
-    console.log(`Sending alias "${getPlayerAlias()}" to backend.`);
+    console.log(`Sending alias "${getPlayerID()}" to backend.`);
     wsManager.send('game', {
         action: 'alias',
-        player: getPlayerAlias()
+        player: getPlayerID()
     });
 }
 

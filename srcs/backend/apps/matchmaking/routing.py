@@ -1,7 +1,7 @@
 # apps/matchmaking/routing.py
-from django.urls import path
+from django.urls import re_path
 from .consumer import MatchmakingConsumer
 
 websocket_urlpatterns = [
-    path('ws/matchmaking/', MatchmakingConsumer.as_asgi()),
+    re_path(r'ws/matchmaking$', MatchmakingConsumer.as_asgi()),
 ]

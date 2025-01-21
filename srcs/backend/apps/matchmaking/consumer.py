@@ -2,78 +2,64 @@
 from channels.generic.websocket import JsonWebsocketConsumer
 from asgiref.sync import async_to_sync
 from .manager import matchmaking_manager
+from urllib.parse import parse_qs
 import logging
 
 logger = logging.getLogger(__name__)
 
-
-
 class MatchmakingConsumer(JsonWebsocketConsumer):
     def connect(self):
-        self.accept()
-        self.group_name = f"queue_{123}"
-        # logger.debug(f"{self.group_name}")
+        logger.info("MatchmakingConsumer().connect() called.")
+        # Parse query parameters to determine the queue type
+        query_params = parse_qs(self.scope['query_string'].decode())
+        self.queue_name = query_params.get('queue_name', [None])[0]
+        self.player_id = query_params.get('player_id', [None])[0]
+
+        # Validate queue_name and player_id
+        if self.queue_name not in matchmaking_manager.QUEUE_KEYS or not self.player_id:
+            self.close()
+            return
+
+        # Assign the group name based on the queue
+        self.group_name = f"queue_{self.queue_name}"
+
+        # Add player to the group and accept the connection
         async_to_sync(self.channel_layer.group_add)(self.group_name, self.channel_name)
-        self.manager = matchmaking_manager
+        self.accept()
+
+        # Register the player in the queue
+        matchmaking_manager.add_player_to_queue(
+            self.player_id, self.channel_name, self.queue_name
+        )
+        logger.info(f"Player {self.player_id} joined {self.queue_name} queue.")
 
     def disconnect(self, close_code):
+        # Remove player from the queue and group
+        queue_key = matchmaking_manager.QUEUE_KEYS.get(self.queue_name)
+        if queue_key and self.player_id:
+            matchmaking_manager.remove_player_from_queue(self.player_id, queue_key)
+
         async_to_sync(self.channel_layer.group_discard)(self.group_name, self.channel_name)
+        logger.info(f"Player {self.player_id} left {self.queue_name} queue.")
 
     def receive_json(self, content):
         # Dispatch based on the message type
         message_type = content.get("type")
 
-        if message_type == "join_queue":
-            self.handle_join_queue(content)
-        elif message_type == "leave_queue":
-            self.handle_leave_queue(content)
-        elif message_type == "ping":
+        if message_type == "ping":
             self.handle_ping()
         else:
             self.send_json({"type": "error", "message": "Invalid message type"})
 
-    def handle_join_queue(self, content):
-        player_id = content.get("data", {}).get("player_id")
-        if not player_id:
-            self.send_json({"type": "error", "message": "Player ID is required"})
-            return
-
-        self.manager.add_player_to_queue(player_id)
-        position = self.manager.get_player_position(player_id)
-
-        self.send_json({
-            "type": "queue_update",
-            "data": {
-                "status": "joined",
-                "position": position
-            }
-        })
-
-    def handle_leave_queue(self, content):
-        player_id = content.get("data", {}).get("player_id")
-        if not player_id:
-            self.send_json({"type": "error", "message": "Player ID is required"})
-            return
-
-        self.manager.remove_player_from_queue(player_id)
-
-        self.send_json({
-            "type": "queue_update",
-            "data": {
-                "status": "left"
-            }
-        })
-        
-    def send_server_event(self, event):
-        """
-        Receive server-initiated events and send them to the client,
-        transforming 'event_type' to 'type' for the frontend.
-        """
-        self.send_json({
-            "type": event["event_type"],  # Use event_type as the frontend's type
-            "data": event["data"],        # Pass the rest of the data
-        })
-
-
     def handle_ping(self):
         self.send_json({"type": "pong"})
+
+    def match_found(self, event):
+        """
+        Notify the client of a match.
+        This method is called by the MatchmakingManager when a match is found.
+        """
+        self.send_json({
+            "type": "match_found",
+            "data": event["data"]
+        })

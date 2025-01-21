@@ -1,7 +1,7 @@
 import { wsManager } from './WebSocketManager.js';
 import { sendAlias } from './sendToBackend.js';
 import { connectToMatchmaking, startPvCMatch } from './WebsocketMatchmaking.js';
-import { GAME_CONFIG, setPlayerAlias, getPlayerAlias } from './config.js';
+import { GAME_CONFIG, setPlayerID } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
@@ -53,6 +53,7 @@ DOM.loginForm.addEventListener('submit', async (e) => {
 
             // Store tokens in localStorage or sessionStorage
             localStorage.setItem('access_token', data.access_token);
+			setPlayerID(data.user.id);
 
             alert("Login successful!");
             setLoginState(data.logged_in);
@@ -130,7 +131,7 @@ DOM.login42Button.addEventListener('click', () => {
 	
 DOM.PvCButton.addEventListener('click', () => {
     // if (wsManager.sockets['matchmaking'].readyState === WebSocket.OPEN) {
-    //     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
+    //     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerID() }));
     // } else {
     //     console.error("WebSocket connection is not open.");
     // }
@@ -143,7 +144,7 @@ DOM.PvPButton.addEventListener('click', () => {
     console.log("PvP button clicked, showing matchmaking screen...");
     showScreen('matchmaking-screen');
     matchmakingTimer.start();
-    connectToMatchmaking();
+    connectToMatchmaking("PVP");
 });
 
 DOM.TournamentButton.addEventListener('click', () => {
@@ -180,7 +181,7 @@ DOM.AIplayAgainButton.addEventListener('click', () => {
 DOM.PvPplayAgainButton.addEventListener('click', () => {
     showScreen('matchmaking-screen');
     matchmakingTimer.start();
-    connectToMatchmaking();
+    connectToMatchmaking("PVP");
 });
 
 DOM.AIbackToMenuButton.addEventListener('click', () => {
@@ -195,16 +196,6 @@ DOM.PvPbackToMenuButton.addEventListener('click', () => {
 DOM.homeLink.addEventListener('click', () => {
 	showScreen('category-screen');
 });
-
-setCookie('browser_id', generateUUID(), {
-    path: '/',
-    // domain: '127.0.0.1', // Set this to match the backend's domain
-    // secure: true,             // Use true for HTTPS
-    sameSite: 'Lax',
-    // sameSite: 'None',         // None if cross-origin, Lax/Strict for same-origin
-    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-});
-console.log(getCookie('browser_id'));
 
 window.addEventListener('resize', resizeCanvas);
 
@@ -239,105 +230,109 @@ export function stopAndResetTimer() {
     // DOM.matchmakingButton.textContent = "Try Again";
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-	// Call this function on app initialization
-	// initializeSessionAndCSRF();
-
-    // Set the category screen as the default
-    showScreen('category-screen');
-
-
-
-    // Set up top bar navigation
-    DOM.topBarNav.addEventListener('click', (event) => {
-        if (event.target.tagName === 'A') {
-            event.preventDefault();
-            const sectionId = event.target.getAttribute('href').substring(1);
-
-            if (sectionId === 'login') {
-                showScreen('login-screen');
-            } else if (sectionId === 'signup') {
-                showScreen('signup-screen');
-			} else if (sectionId === 'logout') {
-                handleLogout();
-				updateTopBar();
-            } else if (sectionId === 'profile') {
-                showScreen('userprofile-screen');
-            } else {
-                console.warn(`Unhandled navigation target: ${sectionId}`);
-            }
-        }
-    });
-});
 
 DOM.editProfileForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const csrftoken = getCookie('csrftoken'); 
-    console.log("csrftoken: ", csrftoken);
+	event.preventDefault();
     const updatedData = {
-        csrfmiddlewaretoken: csrftoken,
-        username: DOM.editUsername.value,
+		username: DOM.editUsername.value,
         email: DOM.editEmail.value,
         first_name: DOM.editFirstName.value,
         last_name: DOM.editLastName.value
     };
     try {
-        const response = await fetch('/api/accounts/user-profile/', {
-        // const response = await fetch('http://localhost:8000/api/accounts/user-profile/', {
-            method: 'PUT',
-            headers: {
-                // 'X-CSRFToken': csrftoken,
-                'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updatedData),
-            credentials: 'include',
-        });
-        const data = await response.json();
-        if (response.ok)
-        {
-            console.log("updatedData.username:", updatedData.username);
-            // Update the profile view with the new data
-            DOM.profileUsername.textContent = data.username;
-            DOM.profileEmail.textContent = data.email;
-            DOM.profileFirstName.textContent = data.first_name || 'N/A';
-            DOM.profileLastName.textContent = data.last_name || 'N/A';
+			const response = await fetch('/api/accounts/user-profile/', {
+			method: 'PUT',
+			headers: {
+				'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(updatedData),
+			credentials: 'include',
+		});
+		const data = await response.json();
+		if (response.ok)
+		{
+			console.log("updatedData.username:", updatedData.username);
+			// Update the profile view with the new data
+			DOM.profileUsername.textContent = data.username;
+			DOM.profileEmail.textContent = data.email;
+			DOM.profileFirstName.textContent = data.first_name || 'N/A';
+			DOM.profileLastName.textContent = data.last_name || 'N/A';
 			DOM.profile2fa.textContent = data.twoFA || "disabled";
-        
-            // Switch back to view mode
-            DOM.profileEdit.classList.add("d-none");
-            DOM.profileView.classList.remove("d-none");
-        }
-        else
-            alert(`Sign Up Error: ${data.error}`);
-    } catch (error) {
-        console.error('Error signing up:', error);
-        alert('An unexpected error occurred. Please try again later.');
-    }
+			
+			// Switch back to view mode
+			DOM.profileEdit.classList.add("d-none");
+			DOM.profileView.classList.remove("d-none");
+		}
+		else
+			alert(`Sign Up Error: ${data.error}`);
+	} catch (error) {
+		console.error('Error signing up:', error);
+		alert('An unexpected error occurred. Please try again later.');
+	}
 });
-
+	
 // Show the edit form and hide the view
 DOM.editProfileButton.addEventListener("click", () => {
-    console.log("editProfileButton.addEventListener");
-    DOM.profileView.classList.add("d-none");
-    DOM.profileEdit.classList.remove("d-none");
-
-    const profileData = {
-        username: DOM.profileUsername.textContent,
-        email: DOM.profileEmail.textContent,
-        first_name: DOM.profileFirstName.textContent,
-        last_name: DOM.profileLastName.textContent,
+	console.log("editProfileButton.addEventListener");
+	DOM.profileView.classList.add("d-none");
+	DOM.profileEdit.classList.remove("d-none");
+	
+	const profileData = {
+		username: DOM.profileUsername.textContent,
+		email: DOM.profileEmail.textContent,
+		first_name: DOM.profileFirstName.textContent,
+		last_name: DOM.profileLastName.textContent,
 		twoFA: DOM.profile2fa.textContent
-    };
-
-    DOM.editUsername.value = profileData.username;
-    DOM.editEmail.value = profileData.email;
-    DOM.editFirstName.value = profileData.first_name || 'N/A';
-    DOM.editLastName.value = profileData.last_name || 'N/A';
+	};
+	
+	DOM.editUsername.value = profileData.username;
+	DOM.editEmail.value = profileData.email;
+	DOM.editFirstName.value = profileData.first_name || 'N/A';
+	DOM.editLastName.value = profileData.last_name || 'N/A';
 });
-
+	
 // Cancel editing and return to view mode
 DOM.cancelEditButton.addEventListener("click", () => {
-    DOM.profileEdit.classList.add("d-none");
-    DOM.profileView.classList.remove("d-none");
+	DOM.profileEdit.classList.add("d-none");
+	DOM.profileView.classList.remove("d-none");
 });
+	
+document.addEventListener('DOMContentLoaded', () => {
+	// Set the category screen as the default
+	showScreen('category-screen');
+
+	// Set up top bar navigation
+	DOM.topBarNav.addEventListener('click', (event) => {
+		if (event.target.tagName === 'A') {
+			event.preventDefault();
+			const sectionId = event.target.getAttribute('href').substring(1);
+
+			if (sectionId === 'login') {
+				showScreen('login-screen');
+			} else if (sectionId === 'signup') {
+				showScreen('signup-screen');
+			} else if (sectionId === 'logout') {
+				handleLogout();
+				updateTopBar();
+			} else if (sectionId === 'profile') {
+				showScreen('userprofile-screen');
+			} else {
+				console.warn(`Unhandled navigation target: ${sectionId}`);
+			}
+		}
+	});
+});
+
+
+/* Global Scope */
+
+setCookie('browser_id', generateUUID(), {
+	path: '/',
+	// domain: '127.0.0.1', // Set this to match the backend's domain
+	// secure: true,             // Use true for HTTPS
+	sameSite: 'Lax',
+	// sameSite: 'None',         // None if cross-origin, Lax/Strict for same-origin
+	expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+});
+localStorage.setItem('playerid', getCookie('browser_id'));

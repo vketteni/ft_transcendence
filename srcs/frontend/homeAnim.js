@@ -1,4 +1,4 @@
-import { GAME_CONFIG, setPlayerAlias, getPlayerAlias, socket, initializeWebSocket } from './config.js';
+import { GAME_CONFIG, socket, initializeWebSocket } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
 import { serverState } from './state.js';

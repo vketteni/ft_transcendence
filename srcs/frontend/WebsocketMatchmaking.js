@@ -1,19 +1,17 @@
-import { getPlayerAlias } from './config.js';
+import { getPlayerID } from './config.js';
 import { stopAndResetTimer } from './pong.js';
 import { wsManager } from './WebSocketManager.js';
 import { connectToGame } from './WebsocketGameroom.js';
 import { showScreen } from './showScreen.js';
 
-export function connectToMatchmaking() {
+export function connectToMatchmaking(queue_type="PVP") {
     wsManager.connect(
         'matchmaking',
-        'ws://localhost:8000/ws/matchmaking/',
+        `/ws/matchmaking?queue_name=${queue_type}&player_id=${getPlayerID()}`,
         handleMatchmakingMessage,
         handleMatchmakingClose
     );
-
-    // Join the matchmaking queue
-    wsManager.send('matchmaking', { type: 'join_queue', data: { player_id: getPlayerAlias() } });
+	console.log("join_queue with player id:", getPlayerID());
 }
 
 function handleMatchmakingMessage(event) {
@@ -29,6 +27,10 @@ function handleMatchmakingMessage(event) {
             promptForGameConnection(message.data);
             break;
 
+		case 'error':
+            console.warn('Matchmaking: Error Message:', message.message);
+			break;
+
         default:
             console.warn('Unknown message type:', message.type);
     }
@@ -43,8 +45,9 @@ function handleMatchmakingClose(event) {
 }
 
 function promptForGameConnection(matchData) {
-	const url = "ws://localhost:8000/ws" + matchData.game_room_url + "/"
-	console.log(url)
+	const url = matchData.room_url
+	console.log("Game Url:", url);
+
 	
 	stopAndResetTimer();
     const accept = confirm(`Match found. Join game?`);
@@ -70,7 +73,7 @@ export function startPvCMatch() {
 
     wsManager.send('game', { 
         action: 'player_ready', 
-        player_id: getPlayerAlias(),
+        player_id: getPlayerID(),
         ai_controlled: true
     });
 

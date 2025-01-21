@@ -1,3 +1,4 @@
+
 export const GAME_CONFIG = {
     canvasWidth: 800,
     canvasHeight: 600,
@@ -8,13 +9,10 @@ export const GAME_CONFIG = {
     ballColor: '#FFFFFF',
 };
 
-export let playerAlias = '';
-export let socket = null;
-
-export function setPlayerAlias(alias) {
-    playerAlias = alias;
+export function getPlayerID() {
+    return localStorage.getItem('playerid');
 }
 
-export function getPlayerAlias() {
-    return playerAlias;
+export function setPlayerID(playerid) {
+    return localStorage.setItem('playerid', playerid);
 }
