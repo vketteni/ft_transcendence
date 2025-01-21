@@ -193,10 +193,6 @@ DOM.PvPbackToMenuButton.addEventListener('click', () => {
     wsManager.close('game');
 });
 
-DOM.homeLink.addEventListener('click', () => {
-	showScreen('category-screen');
-});
-
 window.addEventListener('resize', resizeCanvas);
 
 document.addEventListener("keydown", (e) => {

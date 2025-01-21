@@ -24,7 +24,7 @@ export const DOM = {
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
     matchmakingScreen: document.getElementById('matchmaking-screen'),
-	homeLink: document.getElementById("home-link"),
+	// homeLink: document.getElementById("home-link"),
     //
     matchmakingButton: document.getElementById('matchmaking-button'),
     matchmakingTimer: document.getElementById('timerDisplay'),

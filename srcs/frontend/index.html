@@ -16,7 +16,7 @@
 
 	<header class="bg-danger-subtle py-1">
 		<div class="container d-flex justify-content-between align-items-center">
-		  <div id="logo"><a class="text-black text-decoration-none fs-5 fw-bold" href="" id="home-link">Pong!</a></div>
+		  <div id="logo" class="text-black text-decoration-none fs-5 fw-bold">Pong!</div>
 		  <nav id="topbar-nav">
 			<ul class="nav">
 			  <li class="nav-item logged-out"><a class="nav-link text-black" href="#login">Login</a></li>
@@ -62,7 +62,10 @@
 			<input type="text" id="signup-alias" class="form-control mb-3" placeholder="Create your alias" required maxlength="20">
 			<input type="password" id="signup-password" class="form-control mb-3" placeholder="Create a secure password" required>
 			<input type="email" id="signup-email" class="form-control mb-3" placeholder="Enter your email" required>
-			<button type="submit" class="btn btn-outline-light btn-lg">Sign Up</button>
+			<div class="d-grid gap-2 mx-auto">
+				<button type="submit" class="btn btn-outline-success btn-lg">Sign Up</button>
+				<button type=button id="ai-back-to-menu" class="btn btn-outline-light btn-lg">Back to menu</button>
+			</div>
 		</form>
 	</div>
 
@@ -77,6 +80,7 @@
             <p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
 			<p><strong>2FA:</strong> <span id="profile2fa"></span></p>
             <button id="editProfileButton" class="btn btn-outline-light btn-lg">Edit Profile</button>
+			<button type=button id="ai-back-to-menu" class="btn btn-outline-light btn-lg">Back to menu</button>
         </div>
 
         <!-- Edit View -->
@@ -111,8 +115,11 @@
 
     <!-- matchmaking screen-->
     <div id="matchmaking-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-        <h1 id="waiting-text">Waiting for an opponent...</h1>
-        <div id="timerDisplay">0s</div>
+        <div class="mb-3">
+			<h1 id="waiting-text">Waiting for an opponent...</h1>
+			<div id="timerDisplay">0s</div>
+		</div>
+		<button type=button id="ai-back-to-menu" class="btn btn-outline-light btn-lg">Back to menu</button>		
     </div>
 
     <!-- game screen -->
