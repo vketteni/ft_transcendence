@@ -39,7 +39,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    command: ["celery", "-A", "config", "worker", "--loglevel=warning"]
+    command: ["celery", "-A", "config", "worker", "--loglevel=info"]
     depends_on:
       - redis
       - web

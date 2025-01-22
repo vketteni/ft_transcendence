@@ -3,14 +3,14 @@ from asyncio import Lock
 import logging
 import random
 from channels.layers import get_channel_layer
-from .models import TournamentNode
+from apps.matchmaking.manager import generate_shared_game_room_url
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 import traceback
 from contextlib import asynccontextmanager
-SCORE_TO_WIN = 3
+SCORE_TO_WIN = 4
 
 
 class DebugLock(Lock):
@@ -45,7 +45,7 @@ class GameManager:
 
     def __init__(self):
         self.games = {}  # {room_id: game_state_dict}
-        self.tournaments = {}
+        self.tournament_manager = TournamentManager()
         self.running = False
         self.channel_layer = get_channel_layer()
         self.locks = defaultdict(DebugLock)
@@ -121,14 +121,12 @@ class GameManager:
     
         if game_type == "TRNMT":
             # Tournament-specific logic
-            tournament_id = kwargs.get("tournament_id")
-            tournament = self.tournaments.get(tournament_id)
-            if not tournament:
-                raise ValueError(f"Tournament {tournament_id} not found.")
-            
-            current_match = tournament['current_match']
-            if not current_match:
-                raise ValueError(f"No active match found for tournament {tournament_id}.")
+            next_players = kwargs.get("next_players")
+            if not next_players:
+                tournament = self.tournament_manager.tournaments.get(kwargs.get('tournament_id'))
+                next_players = [player for player, status in tournament.items() if status['is_active'] and not status['is_waiting']]
+                
+            logger.info(f"Next_players: {next_players}")
 
             # Create or retrieve the game state for the match
             game = await self.create_or_get_game(**kwargs)
@@ -136,13 +134,7 @@ class GameManager:
                 raise RuntimeError(f"Could not create or retrieve game for room {room_id}")
             
             # Assign player to the current match
-            if not current_match.player1:
-                current_match.player1 = user_id
-                logger.info(f"Assigned {user_id} as player1 for match {room_id}")
-            elif not current_match.player2:
-                current_match.player2 = user_id
-                logger.info(f"Assigned {user_id} as player2 for match {room_id}")
-            else:
+            if user_id not in next_players:
                 # Add to spectators if both player slots are filled
                 game['spectators'][user_id] = {'watching': True,}
                 logger.info(f"Added {user_id} as a spectator for match {room_id}")
@@ -151,11 +143,11 @@ class GameManager:
     
             # Update players in the game state
             game['players'][user_id] = {
-                'side': 'left' if user_id == current_match.player1 else 'right',
+                'side': 'left' if user_id == next_players[0] else 'right',
                 'input': {'up': False, 'down': False},
                 'alias': user_id,
             }
-            logger.debug(f"Player {user_id} joined room {room_id} as {'left' if user_id == current_match.player1 else 'right'}")
+            logger.debug(f"Player {user_id} joined room {room_id} as {'left' if user_id == next_players[0] else 'right'}")
         
         else:
             # Standard matchmaking logic
@@ -210,6 +202,7 @@ class GameManager:
             'room_id': room_id,
             'tournament_id': tournament_id,
             'match_id': None,
+            'game_attributes': {**kwargs},
             'players': {},
             'spectators': {},
             'ai_controlled': ai_controlled,
@@ -250,19 +243,7 @@ class GameManager:
             # Check if BOTH players are ready (human vs human) or AI match is set
             players = list(game['players'].values())
             if len(players) == 2 and all(p.get('ready', False) for p in players):
-                from apps.matchmaking.models import Match
-                from apps.accounts.models import User
-                
-                users = list(game['players'].keys())
-                user1 = await sync_to_async(User.objects.get)(id=users[0])
-                user2 = await sync_to_async(User.objects.get)(id=users[1])
 
-                # Create a new Match object asynchronously
-                match = await sync_to_async(Match.objects.create)(
-                    player1=user1,
-                    player2=user2,
-                )
-                game['match_id'] = match.id
                 game['game_started'] = True
                 logger.info(f"Game in room '{room_id}'.")
                 
@@ -342,25 +323,50 @@ class GameManager:
                 winner = next(
                     player['alias'] for player in game_state['players'].values() if player['side'] == winning_side
                 )
+                looser = next(
+                    player['alias'] for player in game_state['players'].values() if player['side'] != winning_side
+                )
                 logger.info(f"The winner is: {winner}")
-                try: 
-                    player1 = game_state['players']['side']['left'] # Assuming you store the players as 'left' and 'right'
-                    player2 = game_state['players']['side']['right']
-                    score1 = game_state['paddles']['left']['score']
-                    score2 = game_state['paddles']['right']['score']
-
-                    # Record the match result
-                    record_match(player1, player2, score1, score2)
-                except Exception as e:
-                    logger.error(f"Error recording match: {e}")
-
-                if game_state["tournament_id"] != None:
-                    tournament_id = game_state["tournament_id"]
-                    tournament = self.tournaments.get(tournament_id)
-                    logger.info(f"Tournament node before advance: {tournament}")
-                    await self.advance_tournament_match(tournament_id)
-                    logger.info(f"Tournament node after advance: {tournament}")
                 
+                next = await self.tournament_manager.advance_next_match(game_state['tournament_id'], looser)
+                if next and len(next) == 2:
+                    data = game_state['game_attributes']
+                    data.update({'next_players': [next[0], next[1]]})
+                    url = generate_shared_game_room_url(**data)
+                    await self.channel_layer.group_send(
+                        f"game_{room_id}",
+                        {
+                            'type': 'game_message',
+                            'data': {
+                                'type': 'tournament',
+                                'winner': {'user_id': str(winner)},
+                                'next' : {
+                                    'players': [next[0], next[1]],
+                                    'url': url
+								}
+                            },
+                        }
+                    )
+                elif next and len(next) == 1:
+                    await self.channel_layer.group_send(
+                        f"game_{room_id}",
+                        {
+                            'type': 'game_message',
+                            'data': {
+                                'type': 'tournament',
+                                'winner': {'user_id': str(winner)}
+                            },
+                        }
+                    )
+                else:
+                    logger.info(next)
+
+                player1 = game_state['players']['side']['left'] # Assuming you store the players as 'left' and 'right'
+                player2 = game_state['players']['side']['right']
+                score1 = game_state['paddles']['left']['score']
+                score2 = game_state['paddles']['right']['score']
+                safe_record_match(player1, player2, score1, score2)
+
                 if game_state['ai_controlled']:
                     await self.channel_layer.group_send(
                     f"game_{room_id}", 
@@ -370,7 +376,7 @@ class GameManager:
                             'type': 'ai_game_over',
                             'message': f"Game Over! {winner} wins!",
                             'winner': {'user_id': str(winner)},
-							'match_id': game_state['match_id']
+							# 'match_id': game_state['match_id']
                         },
                     }
                 )
@@ -383,7 +389,7 @@ class GameManager:
                                 'type': 'game_over',
                                 'message': f"Game Over! {winner} wins!",
                                 'winner': {'user_id': str(winner)},
-								'match_id': game_state['match_id']
+								# 'match_id': game_state['match_id']
                             },
                         }
                     )
@@ -408,71 +414,91 @@ class GameManager:
                 }
             )
 
-    def build_tournament_tree(self, participants):
-        """
-        Build a binary tree representing the tournament.
+class TournamentManager:
+    def __init__(self):
+        self.tournaments = {}  # In-memory tournament data
 
-        Args:
-            participants (list): A list of participant identifiers (e.g., player names or IDs).
-
-        Returns:
-            TournamentNode: The root of the tournament binary tree.
-        """
-        # Add byes if the number of participants is not a power of 2
-        num_participants = len(participants)
-        next_power_of_two = 1 << (num_participants - 1).bit_length()
-        byes = next_power_of_two - num_participants
-
-        # Add None as placeholders for byes
-        participants.extend([None] * byes)
-
-        # Create the leaf nodes for the tree (initial matches)
-        nodes = [TournamentNode(player1=p1, player2=p2)
-                 for p1, p2 in zip(participants[::2], participants[1::2])]
-
-        # Build the tree by combining matches
-        while len(nodes) > 1:
-            next_round = []
-            for i in range(0, len(nodes), 2):
-                left = nodes[i]
-                right = nodes[i+1] if i+1 < len(nodes) else None
-                parent = TournamentNode()
-                parent.left = left
-                parent.right = right
-                next_round.append(parent)
-            nodes = next_round
-
-        # Root of the tree
-        return nodes[0] if nodes else None
-      
-    async def create_tournament(self, tournament_id, participants):
-        logger.info(f"create_tournament() called.")
-        root = self.build_tournament_tree(participants)
+    async def add(self, tournament_id, players):
+        # Initialize the tournament with all players active and waiting
         self.tournaments[tournament_id] = {
-            'tree': root,
-            'current_match': root,
-            'spectators': set(),
-            'participants': participants,
+            str(player): {'is_active': True, 'is_waiting': True} for player in players
         }
 
-    async def advance_tournament_match(self, tournament_id):
-        logger.info(f"Calling advance_tournament_match() with id: {tournament_id}.")
-        tournament = self.tournaments[tournament_id]
-        current_node = tournament['current_match']
-        if not current_node:
-            logger.info(f"Tournament {tournament_id} has concluded.")
-            return
+    async def advance_next_match(self, tournament_id, loser=None):
+        tournament = self.tournaments.get(tournament_id)
+        if not tournament:
+            raise ValueError(f"Tournament {tournament_id} not found")
         
-        winner = current_node.winner
-        parent = self.find_parent(tournament['tree'], current_node)
-        if parent:
-            if parent.left == current_node:
-                parent.player1 = winner
+        # If a loser is provided, mark them as inactive
+        if loser:
+            if loser in tournament:
+                tournament[loser]['is_active'] = False
+                tournament[loser]['is_waiting'] = False
             else:
-                parent.player2 = winner
-            tournament['current_match'] = parent
+                raise ValueError(f"Loser {loser} not found in tournament {tournament_id}")
+        
+        # Find all active and waiting players
+        waiting_players = [player for player, status in tournament.items() if status['is_active'] and status['is_waiting']]
+        active_players = [player for player, status in tournament.items() if status['is_active']]
+
+        if len(waiting_players) >= 2:
+            # Select the first two waiting players for the next match
+            player1, player2 = waiting_players[:2]
+            tournament[player1]['is_waiting'] = False
+            tournament[player2]['is_waiting'] = False
+            return (player1, player2)  # Return the pair for the next match
+
+        elif len(active_players) == 1:
+            # Only one active player remains; they are the winner
+            winner = active_players[0]
+            return winner
+
+        elif len(waiting_players) == 0 and len(active_players) > 1:
+            # End of a round: Reset waiting status for the next round
+            for player in active_players:
+                tournament[player]['is_waiting'] = True
+            return self.advance_next_match(tournament_id)
+
         else:
-            logger.info(f"Tournament {tournament_id} winner is {winner}.")
-            tournament['current_match'] = None
+            # No more matches to play
+            return "Tournament has concluded or cannot progress"
+    
+def safe_record_match(player1, player2, score1, score2):
+    try:
+        record_match(player1, player2, score1, score2)
+    except Exception as e:
+        logger.error(f"Error recording match: {e}")
+    
+    
+"""
+Ana, Vin, Na, Kate
+    find_match? select players
+		-> Ana Vin is_waiting False
+Round 1
+	Match 1
+	Ana vs Vin
+		-> Ana Wins
+			-> Vin is_active False
+    find match? select players
+		-> NA Kate is waiting False
+	Match 2
+	-> Na Wins
+		-> Kate is_active False
+    find_match? select players
+		-> round ended
+			-> is_active?
+				Ana Na is_waiting True
+Round 2
+	find match? select palyers
+		-> Ana Na is_waiting False
+	Match 3
+    Ana vs Na 
+		-> Ana Wins
+			Na -> is_active False
+    find match? select players
+		-> all matches played
+			-> Ana is tournament winner
+"""
+
 
 game_manager = GameManager()

@@ -4,6 +4,9 @@ from asgiref.sync import async_to_sync
 from .manager import matchmaking_manager
 from urllib.parse import parse_qs
 import logging
+from apps.accounts.models import User
+import uuid
+
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +16,15 @@ class MatchmakingConsumer(JsonWebsocketConsumer):
         # Parse query parameters to determine the queue type
         query_params = parse_qs(self.scope['query_string'].decode())
         self.queue_name = query_params.get('queue_name', [None])[0]
-        self.player_id = query_params.get('player_id', [None])[0]
-
+        unknown_id = query_params.get('player_id', [None])[0]
+        
+        if unknown_id is not None and not unknown_id.isdigit():
+            logger.info(f"unknown_id is not None and not unknown_id.isdigit: {unknown_id}")
+            user = user = User.objects.create(username=str(uuid.uuid4()))
+            self.player_id = str(user.id)
+        else:
+            self.player_id = str(unknown_id)
+        
         # Validate queue_name and player_id
         if self.queue_name not in matchmaking_manager.QUEUE_KEYS or not self.player_id:
             self.close()
@@ -26,6 +36,8 @@ class MatchmakingConsumer(JsonWebsocketConsumer):
         # Add player to the group and accept the connection
         async_to_sync(self.channel_layer.group_add)(self.group_name, self.channel_name)
         self.accept()
+        
+
 
         # Register the player in the queue
         matchmaking_manager.add_player_to_queue(

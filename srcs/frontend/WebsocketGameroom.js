@@ -14,6 +14,8 @@ export function connectToGame(gameRoomUrl) {
 
 function handleGameMessage(event) {
     const data = JSON.parse(event.data);
+	let winner;
+	let gameOverMessage;
 
     switch (data.type) {
         case 'state_update':
@@ -31,11 +33,25 @@ function handleGameMessage(event) {
             break ;
         case 'game_over':
             console.log("Game Over!", data);
-            const PVPwinner = data.winner;
-            const PVPgameOverMessage = `Game Over! ${PVPwinner} wins!`;
-            document.getElementById('pvp-game-over-message').textContent = PVPgameOverMessage;
+            winner = data.winner;
+            gameOverMessage = `Game Over! ${PVPwinner} wins!`;
+            document.getElementById('pvp-game-over-message').textContent = gameOverMessage;
             showScreen('pvp-game-over-screen');
             wsManager.close('game');
+            resetClientState();
+            break ;
+        case 'tournament':
+            console.log("Match finished!", data);
+            winner = data.winner;
+			next_player1 = data.players[0]
+			next_player2 = data.players[1]
+			url = data.game
+            gameOverMessage = `Match finished! ${winner} wins!`;
+            let nextGameMessage = `Next Match ${next_player1} vs ${next_player2}!`;
+            document.getElementById('pvp-game-over-message').textContent = gameOverMessage + "\n" + nextGameMessage;
+            showScreen('pvp-game-over-screen');
+            wsManager.close('game');
+			connectToGame(url);
             resetClientState();
             break ;
         default:

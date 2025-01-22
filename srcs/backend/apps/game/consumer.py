@@ -41,11 +41,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                 if key not in self.game_attributes:
                     raise ValueError(f"Missing required key: {key} in token payload")
 
-            tournament_id = self.game_attributes["tournament_id"]
             players = self.game_attributes["users"]
-            
-            if tournament_id and game_manager.tournaments.get(tournament_id) == None:
-                await game_manager.create_tournament(tournament_id, players)
+            tournament_id = self.game_attributes["tournament_id"]
+            if tournament_id and game_manager.tournament_manager.tournaments.get(tournament_id) == None:
+                await game_manager.tournament_manager.add(tournament_id, players)
+                start_players = await game_manager.tournament_manager.advance_next_match(tournament_id)
+                logger.info(f"Start players: {start_players}")
 
             # Generate group name dynamically
             self.room_group_name = f"game_{self.game_attributes['room_id']}"

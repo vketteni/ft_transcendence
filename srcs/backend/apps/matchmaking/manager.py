@@ -6,8 +6,7 @@ import time
 import logging
 from redis.exceptions import LockError
 import uuid
-from apps.matchmaking.models import Match
-from apps.accounts.models import Player
+from apps.accounts.models import Match
 from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
@@ -32,6 +31,7 @@ class MatchmakingManager:
         timestamp = time.time()
         queue_key = self.QUEUE_KEYS[queue_name]
         self.redis_client.zadd(queue_key, {player_id: timestamp})
+        logger.info(f"Add player to redis queue. Channel map (player_id : {player_id})")
         self.redis_client.hset(self.CHANNEL_MAP_KEY, player_id, channel_name)
 
     def remove_player_from_queue(self, player_id, queue_key):
@@ -84,17 +84,9 @@ class MatchmakingManager:
             if queue == "TRNMT":
                 data.update({'tournament_id' : str(uuid.uuid4())})
 
-            User = get_user_model()  # Use the swapped User model
             users = []
             for player in players:
-                # Get or create the User
-                user, user_created = User.objects.get_or_create(
-                    username=player,  # Use player_name as the username
-                    defaults={"email": f"{player.lower()}@example.com"}  # Provide a default email
-                )
-                users.append(str(user.id))
-                if user_created:
-                    logger.debug(f"User created: {user}")
+                users.append(str(player))
             data.update({'users': users})
             
             # Notify players of the match
@@ -169,12 +161,11 @@ class MatchmakingManager:
                 })
             room_url = generate_shared_game_room_url(**data)
             try:
-                from .models import User
-                
-                username = User.objects.get(id=user_id).username
-                channel_name = self.get_player_channel(username)
+               
+                channel_name = self.get_player_channel(user_id)
+                logger.info(f"ChANNEl name: {channel_name}")
                 if not channel_name:
-                    logger.error(f"No channel found for player {username}")
+                    logger.error(f"No channel found for player {user_id}")
                     continue
                 async_to_sync(self.channel_layer.send)(
                     channel_name,
@@ -184,7 +175,7 @@ class MatchmakingManager:
                     }
                 )
             except Exception as e:
-                logger.error(f"Failed to notify player {username}: {e}")
+                logger.error(f"Failed to notify player {user_id}: {e}")
 
 matchmaking_manager = MatchmakingManager()
 
