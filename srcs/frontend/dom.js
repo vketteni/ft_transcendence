@@ -72,7 +72,6 @@ export const DOM = {
     profileEmail: document.getElementById('profileEmail'),
     profileFirstName: document.getElementById('profileFirstName'),
     profileLastName: document.getElementById('profileLastName'),
-	profile2fa: document.getElementById('profile2fa'),
     
     // Game screen
     pauseButton: document.getElementById('pause-button'),

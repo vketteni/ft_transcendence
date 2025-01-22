@@ -41,7 +41,6 @@ DOM.editProfileButton.addEventListener("click", () => {
 		email: DOM.profileEmail.textContent,
 		first_name: DOM.profileFirstName.textContent,
 		last_name: DOM.profileLastName.textContent,
-		twoFA: DOM.profile2fa.textContent
 	};
 	
 	DOM.editUsername.value = profileData.username;

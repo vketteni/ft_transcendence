@@ -172,7 +172,6 @@ DOM.editProfileForm.addEventListener("submit", async (event) => {
 			DOM.profileEmail.textContent = data.email;
 			DOM.profileFirstName.textContent = data.first_name || 'N/A';
 			DOM.profileLastName.textContent = data.last_name || 'N/A';
-			DOM.profile2fa.textContent = data.twoFA || "disabled";
 			
 			// Switch back to view mode
 			DOM.profileEdit.classList.add("d-none");
@@ -253,7 +252,6 @@ DOM.editProfileButton.addEventListener("click", () => {
 		email: DOM.profileEmail.textContent,
 		first_name: DOM.profileFirstName.textContent,
 		last_name: DOM.profileLastName.textContent,
-		twoFA: DOM.profile2fa.textContent
 	};
 	
 	DOM.editUsername.value = profileData.username;
