@@ -6,7 +6,9 @@ import time
 import logging
 from redis.exceptions import LockError
 import uuid
-
+from apps.matchmaking.models import Match
+from apps.accounts.models import Player
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +53,7 @@ class MatchmakingManager:
                 logger.info(f"Removed stale player {player_id} from {queue_name}")
 
                 
-    def find_match(self, queue_name):
+    def find_match(self, queue):
         """
         Find the next pair of players for matchmaking and notify them.
         
@@ -61,44 +63,50 @@ class MatchmakingManager:
         Returns:
             tuple: Matched players and the generated room URL, or (None, None) if no match is found.
         """
-        players = self.get_top_players(queue_name)
+        players = self.get_top_players(self.QUEUE_KEYS, queue)
         room_url = None  # Initialize room_url to avoid UnboundLocalError
-    
-        queue_key = self.QUEUE_KEYS[queue_name]
-        logger.info(f"Queue key: {queue_key}")
+
+        logger.info(f"Queue: {queue}")
         logger.info(f"Players: {players}")
     
         # Determine if the current queue has enough players for a match
-        if self._has_sufficient_players(queue_key, players):
+        if self._has_sufficient_players(queue, players):
             logger.info("Sufficient players found for matchmaking.")
     
             # Remove matched players atomically
-            self.remove_matched_players(queue_name, players)
+            self.remove_matched_players(queue, players)
     
             # Generate match details
             data = {}
-            data.update({'match_id' : str(uuid.uuid4())})
-            data.update({'game_type' : self._get_game_type(queue_key)})
+            data.update({'room_id' : str(uuid.uuid4())})
+            data.update({'game_type' : queue})
             
-            
-            if self._get_game_type(queue_key) == "TRNMT":
-                data.update({
-                    'tournament' : {
-                        'tournament_id' : str(uuid.uuid4()),
-                        'players' : players
-					},
-                })
+            if queue == "TRNMT":
+                data.update({'tournament_id' : str(uuid.uuid4())})
+
+            User = get_user_model()  # Use the swapped User model
+            users = []
+            for player in players:
+                # Get or create the User
+                user, user_created = User.objects.get_or_create(
+                    username=player,  # Use player_name as the username
+                    defaults={"email": f"{player.lower()}@example.com"}  # Provide a default email
+                )
+                users.append(str(user.id))
+                if user_created:
+                    logger.debug(f"User created: {user}")
+            data.update({'users': users})
             
             # Notify players of the match
-            self._notify_players(players, **data)
+            self._notify_players(**data)
         else:
-            logger.debug(f"Insufficient players in {queue_name} queue for matchmaking.")
+            logger.debug(f"Insufficient players in {queue} queue for matchmaking.")
             return None, None
         # Always return a tuple with players and room_url
-        return players, room_url
+        return users, room_url
 
 
-    def _has_sufficient_players(self, queue_key, players):
+    def _has_sufficient_players(self, queue, players):
         """
         Check if the queue has enough players for a match.
     
@@ -109,12 +117,14 @@ class MatchmakingManager:
         Returns:
             bool: True if sufficient players are present, False otherwise.
         """
+        logger.info("_has_sufficient_players() called.")
+        logger.info(f"queue: {queue}, players: {players}.")
         required_sizes = {
-            self.QUEUE_KEYS["PVP"]: 2,
-            self.QUEUE_KEYS["PVC"]: 1,
-            self.QUEUE_KEYS["TRNMT"]: TOURNAMENT_SIZE,
+            "PVP": 2,
+            "PVC": 1,
+            "TRNMT": TOURNAMENT_SIZE,
         }
-        return len(players) == required_sizes.get(queue_key, float('inf'))
+        return len(players) == required_sizes.get(queue, float('inf'))
 
     def _get_game_type(self, queue_key):
         """
@@ -128,20 +138,19 @@ class MatchmakingManager:
         """
         return get_key_from_value(self.QUEUE_KEYS, queue_key)
 
-    def get_top_players(self, queue_name):
-        queue_key = self.QUEUE_KEYS[queue_name]
-        if queue_key == self.QUEUE_KEYS["PVP"]:
-            return self.redis_client.zrange(queue_key, 0, 1)
-        if queue_key == self.QUEUE_KEYS["PVC"]:
-            return self.redis_client.zrange(queue_key, 0, 0)
-        if queue_key == self.QUEUE_KEYS["TRNMT"]:
-            return self.redis_client.zrange(queue_key, 0, TOURNAMENT_SIZE)
+    def get_top_players(self, queue_keys, queue):
+        
+        if queue == "PVP":
+            return self.redis_client.zrange(queue_keys[queue], 0, 1)
+        if queue == "PVC":
+            return self.redis_client.zrange(queue_keys[queue], 0, 0)
+        if queue == "TRNMT":
+            return self.redis_client.zrange(queue_keys[queue], 0, TOURNAMENT_SIZE - 1)
 			
-    def remove_matched_players(self, queue_name, players):
-        queue_key = self.QUEUE_KEYS[queue_name]
-        self.redis_client.zrem(queue_key, *players)
+    def remove_matched_players(self, queue, players):
+        self.redis_client.zrem(self.QUEUE_KEYS[queue], *players)
 
-    def _notify_players(self, players, **data):
+    def _notify_players(self, **data):
         """
         Notify players of the match and send them the room URL.
     
@@ -151,17 +160,22 @@ class MatchmakingManager:
     
         Logs errors for any players that cannot be notified.
         """
-        for player_id in players:
+        logger.info("_notify_players() called.")
+        users = data.get('users')
+        for user_id in users:
+            logger.info(f"user_id: {user_id}")
             data.update({
-                'player_id': player_id
+                'user_id': user_id
                 })
             room_url = generate_shared_game_room_url(**data)
-            channel_name = self.get_player_channel(player_id)
-            if not channel_name:
-                logger.error(f"No channel found for player {player_id}")
-                continue
-    
             try:
+                from .models import User
+                
+                username = User.objects.get(id=user_id).username
+                channel_name = self.get_player_channel(username)
+                if not channel_name:
+                    logger.error(f"No channel found for player {username}")
+                    continue
                 async_to_sync(self.channel_layer.send)(
                     channel_name,
                     {
@@ -170,7 +184,7 @@ class MatchmakingManager:
                     }
                 )
             except Exception as e:
-                logger.error(f"Failed to notify player {player_id}: {e}")
+                logger.error(f"Failed to notify player {username}: {e}")
 
 matchmaking_manager = MatchmakingManager()
 

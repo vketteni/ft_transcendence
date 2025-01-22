@@ -16,6 +16,7 @@ SECRET_KEY = settings.SECRET_KEY
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        logger.info("GameConsumer().connect() called.")
         # Parse the token from the query string
         query_string = self.scope['query_string'].decode()
         query_params = parse_qs(query_string)
@@ -29,21 +30,22 @@ class GameConsumer(AsyncWebsocketConsumer):
         try:
             # Decode the JWT token
             self.game_attributes = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            
+            logger.info(f"Game Attributes: {self.game_attributes}")
+
             # Ensure mandatory keys exist
-            required_keys = ["room_id", "game_type"]
+            required_keys = ["room_id", "game_type", "user_id", "users"]
             if self.game_attributes["game_type"] == "TRNMT":
-                required_keys += ["tournament"]
+                required_keys += ["tournament_id"]
                 
             for key in required_keys:
                 if key not in self.game_attributes:
                     raise ValueError(f"Missing required key: {key} in token payload")
 
-            if self.game_attributes["tournament"]:
-                    tournament_id = self.game_attributes["tournament"]["tournament_id"]
-                    participants = self.game_attributes["tournament"]["players"]
-                    if tournament_id and not game_manager.tournaments.get(tournament_id):
-                        game_manager.create_tournament(tournament_id, participants)
+            tournament_id = self.game_attributes["tournament_id"]
+            players = self.game_attributes["users"]
+            
+            if tournament_id and game_manager.tournaments.get(tournament_id) == None:
+                await game_manager.create_tournament(tournament_id, players)
 
             # Generate group name dynamically
             self.room_group_name = f"game_{self.game_attributes['room_id']}"
@@ -53,7 +55,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.accept()
 
             # Add player to the room via GameManager
-            await game_manager.add_player(self.channel_name, **self.game_attributes)
+            await game_manager.add_player(**self.game_attributes)
 
             # # Start the game manager if it's not running
             if not game_manager.running:
@@ -72,54 +74,70 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         logger.debug(f"WebSocket disconnect: room={self.game_attributes['room_id']}, channel={self.channel_name}, close_code={close_code}")
         game_manager.remove_player(self.game_attributes['room_id'], self.channel_name)
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        if (self.room_group_name):
+            await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
         logger.debug(f"WebSocket receive: room={self.game_attributes['room_id']}, data={text_data}")
         data = json.loads(text_data)
         action = data.get('action')
         player_alias = data.get('player')
+        room_id = self.game_attributes['room_id']
+        user_id = self.game_attributes['user_id']
 
         if action == 'alias':
             if player_alias:
-                await game_manager.set_player_alias(self.game_attributes['room_id'], self.channel_name, player_alias)
+                await game_manager.set_player_alias(room_id, user_id, player_alias)
 
         elif action == 'input':
             up = data.get('up', False)
             down = data.get('down', False)
-            await game_manager.update_player_input(self.game_attributes['room_id'], self.channel_name, up, down)
+            await game_manager.update_player_input(room_id, user_id, up, down)
 
         elif action == 'player_ready':
-            await game_manager.set_game_started(self.game_attributes['room_id'], self.channel_name)
+            await game_manager.set_game_started(room_id, user_id)
 
         elif action == 'pause_game':
-            logger.debug(f"Pausing game for room: {self.game_attributes['room_id']}")
-            await game_manager.set_game_paused(self.game_attributes['room_id'])
+            logger.debug(f"Pausing game for room: {room_id}")
+            await game_manager.set_game_paused(room_id)
         
         elif action == 'resume_game':
-            logger.debug(f"Resuming game for room: {self.game_attributes['room_id']}")
-            await game_manager.set_game_resumed(self.game_attributes['room_id'])
+            logger.debug(f"Resuming game for room: {room_id}")
+            await game_manager.set_game_resumed(room_id)
 
-    async def end_game(self, room_name, winner):
-        from matchmaking.models import Match 
-        
+    
+    
+    async def end_game(self, match_id, winner):
+        logger.info("Calling GameConsumer.end_game().")
+        from asgiref.sync import sync_to_async
+        from django.utils import timezone
+        from apps.matchmaking.models import Match
+    
         try:
-            match = Match.objects.get(id=room_name)
+            # Fetch the match in an async-safe manner
+            match = await sync_to_async(Match.objects.get)(id=match_id)
+            
+            # Update fields and save the match using async-safe operations
             match.end_time = timezone.now()
             match.winner = winner
             match.duration = match.calculate_duration()
-            match.save()
+            await sync_to_async(match.save)()
+            
         except Match.DoesNotExist:
-            logger.error(f"Match with id {room_name} does not exist.")
+            logger.error(f"Match with id {match_id} does not exist.")
+            return
             
     async def game_message(self, event):
-        if event['data']['type'] == "game_over" or event['data']['type'] == "ai_game_over" :
-            room_name = self.game_attributes["room_id"]
-            self.end_game(room_name, event['data']['type']['winner'])
-        # game_state = game_manager.games.get(room_name)
-        if self.game_attributes.get("game_type") == "TRNMT":
-            logger.info("Game ended calling advance_tournament_match().")
-            tournament_id = self.game_attributes.get("tournament").get("tournament_id")
-            game_manager.advance_tournament_match(tournament_id)
+        data = event['data']
+        if data['type'] == "game_over" or data['type'] == "ai_game_over" :
+            from apps.accounts.models import User
+            from asgiref.sync import sync_to_async
+            
+            logger.info("Receiving game over message.")
+            match_id = data['match_id']
+            winner = await sync_to_async(User.objects.get)(id=data['winner']['user_id'])
+            logger.info(f"match_id: {match_id}, winner: {winner.id}")
+            await self.end_game(match_id, winner)
+            
         # Called by group_send in GameManager
         await self.send(text_data=json.dumps(event['data']))

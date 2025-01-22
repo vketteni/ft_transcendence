@@ -38,10 +38,3 @@ class GameRoom(models.Model):
     class Meta:
         ordering = ['-created_at']
 
-class TournamentNode:
-    def __init__(self, player1=None, player2=None):
-        self.player1 = player1
-        self.player2 = player2
-        self.winner = None
-        self.left = None
-        self.right = None

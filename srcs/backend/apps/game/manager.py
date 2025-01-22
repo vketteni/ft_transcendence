@@ -10,9 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 import traceback
 from contextlib import asynccontextmanager
-from apps.matchmaking.models import Match
-from apps.accounts.models import Player
-from django.contrib.auth import get_user_model
+
 
 class DebugLock(Lock):
     def __init__(self):
@@ -41,11 +39,12 @@ async def debug_lock(lock):
 from collections import defaultdict
 from apps.game.game_loop import GameLoop
 
+SCORE_TO_WIN = 3
 
 class GameManager:
 
     def __init__(self):
-        self.games = {}  # {room_name: game_state_dict}
+        self.games = {}  # {room_id: game_state_dict}
         self.tournaments = {}
         self.running = False
         self.channel_layer = get_channel_layer()
@@ -84,39 +83,42 @@ class GameManager:
         self.running = False
         logger.debug("GameManager stopped.")
  
-    async def create_or_get_game(self, room_name, game_type, **kwargs):
-        logger.debug(f"create_or_get_game() called for room_name={room_name}")
-        room_lock = self.locks[room_name]
+    async def create_or_get_game(self, **kwargs):
+        room_id = kwargs.get('room_id')
+        
+        logger.debug(f"create_or_get_game() called for room_id={room_id}")
+        room_lock = self.locks[room_id]
 
         while room_lock.locked():
-            logger.warning(f"Lock for room_name={room_name} is held. Waiting...")
+            logger.warning(f"Lock for room_id={room_id} is held. Waiting...")
             await asyncio.sleep(0.1)  # Wait for the lock to be released
 
         async with room_lock:
-            logger.debug(f"Acquired lock for room_name={room_name}")
-            if room_name not in self.games:
-                self.games[room_name] = self.initial_game_state(room_name, game_type, **kwargs)
-                logger.debug(f"Created new game state for room: {room_name}")
+            logger.debug(f"Acquired lock for room_id={room_id}")
+            if room_id not in self.games:
+                self.games[room_id] = self.initial_game_state(**kwargs)
+                logger.debug(f"Created new game state for room: {room_id}")
                 
-            return self.games[room_name]
+            return self.games[room_id]
 
-    async def remove_game(self, room_name):
-        async with debug_lock(self.locks[room_name]):
-            if room_name in self.games:
-                del self.games[room_name]
-                logger.debug(f"Removed game state for room: {room_name}")
+    async def remove_game(self, room_id):
+        async with debug_lock(self.locks[room_id]):
+            if room_id in self.games:
+                del self.games[room_id]
+                logger.debug(f"Removed game state for room: {room_id}")
 
-    async def add_player(self, channel_name, **kwargs):
+    async def add_player(self, **kwargs):
         """
         Add a player to a game room or tournament match.
     
         Args:
-            channel_name (str): The player's communication channel.
-            **kwargs: Additional game attributes, such as "room_id", "game_type", etc.
+            user_id (str): The player's identifier.
+            **kwargs: Additional game attributes, such as 'room_id', "game_type", etc.
         """
-        room_name = kwargs.get("room_id")
+        user_id = kwargs.get('user_id')
+        room_id = kwargs.get("room_id")
         game_type = kwargs.get("game_type")
-        logger.info(f"add_player() called for room_name={room_name}, game_type={game_type}, channel_name={channel_name}")
+        logger.info(f"add_player() called for room_id={room_id}, game_type={game_type}, user_id={user_id}")
     
         if game_type == "TRNMT":
             # Tournament-specific logic
@@ -130,81 +132,85 @@ class GameManager:
                 raise ValueError(f"No active match found for tournament {tournament_id}.")
 
             # Create or retrieve the game state for the match
-            game = await self.create_or_get_game(room_name, game_type, **kwargs)
+            game = await self.create_or_get_game(**kwargs)
             if game is None:
-                raise RuntimeError(f"Could not create or retrieve game for room {room_name}")
+                raise RuntimeError(f"Could not create or retrieve game for room {room_id}")
             
             # Assign player to the current match
             if not current_match.player1:
-                current_match.player1 = channel_name
-                logger.info(f"Assigned {channel_name} as player1 for match {room_name}")
+                current_match.player1 = user_id
+                logger.info(f"Assigned {user_id} as player1 for match {room_id}")
             elif not current_match.player2:
-                current_match.player2 = channel_name
-                logger.info(f"Assigned {channel_name} as player2 for match {room_name}")
+                current_match.player2 = user_id
+                logger.info(f"Assigned {user_id} as player2 for match {room_id}")
             else:
                 # Add to spectators if both player slots are filled
-                game['spectators'] += [channel_name]
-                logger.info(f"Added {channel_name} as a spectator for match {room_name}")
+                game['spectators'][user_id] = {'watching': True,}
+                logger.info(f"Added {user_id} as a spectator for match {room_id}")
                 return  # Spectators don't participate in the match directly
             
     
             # Update players in the game state
-            game['players'][channel_name] = {
-                'side': 'left' if channel_name == current_match.player1 else 'right',
+            game['players'][user_id] = {
+                'side': 'left' if user_id == current_match.player1 else 'right',
                 'input': {'up': False, 'down': False},
-                'alias': channel_name,
+                'alias': user_id,
             }
-            logger.debug(f"Player {channel_name} joined room {room_name} as {'left' if channel_name == current_match.player1 else 'right'}")
+            logger.debug(f"Player {user_id} joined room {room_id} as {'left' if user_id == current_match.player1 else 'right'}")
         
         else:
             # Standard matchmaking logic
-            game = await self.create_or_get_game(room_name, game_type, **kwargs)
+            game = await self.create_or_get_game(**kwargs)
             if game is None:
-                raise RuntimeError(f"Could not create or retrieve game for room {room_name}")
+                raise RuntimeError(f"Could not create or retrieve game for room {room_id}")
     
             players = game['players']
             side = 'left' if len(players) == 0 else 'right'
-            players[channel_name] = {
+            players[user_id] = {
                 'side': side,
                 'input': {'up': False, 'down': False},
-                'alias': channel_name,
+                'alias': user_id,
             }
-            logger.debug(f"Player {channel_name} joined room {room_name} as {side}")
+            logger.debug(f"Player {user_id} joined room {room_id} as {side}")
 
 
-    async def remove_player(self, room_name, channel_name):
-        async with debug_lock(self.locks[room_name]):
-            game = self.games.get(room_name)
+    async def remove_player(self, room_id, user_id):
+        async with debug_lock(self.locks[room_id]):
+            game = self.games.get(room_id)
             if not game:
                 return
-            if channel_name in game['players']:
-                del game['players'][channel_name]
-                logger.debug(f"Player {channel_name} left room {room_name}")
+            if user_id in game['players']:
+                del game['players'][user_id]
+                logger.debug(f"Player {user_id} left room {room_id}")
     
             # Optional: If no players left, you can remove the game from memory
             if len(game['players']) == 0:
                 logger.debug("Before calling remove_game()")
-                await self.remove_game(room_name)
+                await self.remove_game(room_id)
                 logger.debug("After calling remove_game()")
             
-    async def update_player_input(self, room_name, channel_name, up, down):
-        async with debug_lock(self.locks[room_name]):
-            game = self.games.get(room_name)
-            if game and channel_name in game['players']:
-                game['players'][channel_name]['input']['up'] = up
-                game['players'][channel_name]['input']['down'] = down
+    async def update_player_input(self, room_id, user_id, up, down):
+        async with debug_lock(self.locks[room_id]):
+            game = self.games.get(room_id)
+            if game and user_id in game['players']:
+                game['players'][user_id]['input']['up'] = up
+                game['players'][user_id]['input']['down'] = down
 
-    def set_player_alias(self, room_name, channel_name, alias):
-        game = self.games.get(room_name)
-        if game and channel_name in game['players']:
-            game['players'][channel_name]['alias'] = alias
+    def set_player_alias(self, room_id, user_id, alias):
+        game = self.games.get(room_id)
+        if game and user_id in game['players']:
+            game['players'][user_id]['alias'] = alias
 
-    def initial_game_state(self, room_name, game_type, **kwargs):
+    def initial_game_state(self, **kwargs):
+        game_type = kwargs.get('game_type')
+        room_id = kwargs.get('room_id')
+        tournament_id = kwargs.get('tournament_id')
         config = self.config
         ai_controlled = ( game_type == "PVC" )
-        logger.info(ai_controlled)
         return {
-            'room_name': room_name,
+            'room_id': room_id,
+            'tournament_id': tournament_id,
+            'match_id': None,
             'players': {},
             'spectators': {},
             'ai_controlled': ai_controlled,
@@ -232,44 +238,44 @@ class GameManager:
             'paused': False,
         }
 
-    async def set_game_started(self, room_name, channel_name):
-        async with debug_lock(self.locks[room_name]):
-            game = self.games.get(room_name)
+    async def set_game_started(self, room_id, user_id):
+        async with debug_lock(self.locks[room_id]):
+            game = self.games.get(room_id)
             if not game:
-                logger.warning(f"Game not found for room {room_name}")
+                logger.warning(f"Game not found for room {room_id}")
                 return
 
-            if channel_name in game['players']:
-                game['players'][channel_name]['ready'] = True
-
-            logger.info(game['players'].values())
+            if user_id in game['players']:
+                game['players'][user_id]['ready'] = True
+                
             # Check if BOTH players are ready (human vs human) or AI match is set
-            players = game['players'].values()
-            if all(p.get('ready', False) for p in players and len(players) == 2):
+            players = list(game['players'].values())
+            if len(players) == 2 and all(p.get('ready', False) for p in players):
+                from apps.matchmaking.models import Match
+                from apps.accounts.models import User
+                
+                users = list(game['players'].keys())
+                user1 = await sync_to_async(User.objects.get)(id=users[0])
+                user2 = await sync_to_async(User.objects.get)(id=users[1])
 
-
-                user1, player1 = get_or_create_user_and_player(players[0])
-                user1, player2 = get_or_create_user_and_player(players[1])
-                    
-                # Create a new Match object
-                Match.objects.create(
-                    id=room_name,
-                    player1=player1,
-                    player2=player2,
+                # Create a new Match object asynchronously
+                match = await sync_to_async(Match.objects.create)(
+                    player1=user1,
+                    player2=user2,
                 )
-                
+                game['match_id'] = match.id
                 game['game_started'] = True
-                logger.info(f"Game in room '{room_name}'.")
+                logger.info(f"Game in room '{room_id}'.")
                 
-    async def set_game_paused(self, room_name, paused=True):
-        async with debug_lock(self.locks[room_name]):
-            game = self.games.get(room_name)
+    async def set_game_paused(self, room_id, paused=True):
+        async with debug_lock(self.locks[room_id]):
+            game = self.games.get(room_id)
             if game:
                 game['paused'] = paused
                 # game['ball']['render'] = not paused
 
-    async def set_game_resumed(self, room_name):
-        await self.set_game_paused(room_name, paused=False)
+    async def set_game_resumed(self, room_id):
+        await self.set_game_paused(room_id, paused=False)
 
     def normalize_state(self, game_state):
         """ Converts absolute positions into relative values (0 to 1). """
@@ -323,52 +329,70 @@ class GameManager:
         game_state['paused'] = True
 
     async def broadcast_all_states(self):
-        for room_name, game_state in self.games.items():
+        for room_id, game_state in self.games.items():
             if not game_state.get('game_started') and not game_state.get('paused'):
                 continue
-            
             # Check if game is over
-            if game_state['paddles']['right']['score'] >= 10 or game_state['paddles']['left']['score'] >= 10:
-                winner = "Right Player" if game_state['paddles']['right']['score'] >= 5 else "Left Player"
+            if game_state['paddles']['right']['score'] >= SCORE_TO_WIN or game_state['paddles']['left']['score'] >= SCORE_TO_WIN:
+                winning_side = 'right' if game_state['paddles']['right']['score'] >= SCORE_TO_WIN else 'left'
+                logger.info(f"The winning_side is: {winning_side}")
+
+                # Find the user_id corresponding to the winning side
+                winner = next(
+                    player['alias'] for player in game_state['players'].values() if player['side'] == winning_side
+                )
+                logger.info(f"The winner is: {winner}")
+
+                self.reset_game(game_state)
+                if game_state["tournament_id"] != None:
+                    tournament_id = game_state["tournament_id"]
+                    tournament = self.tournaments.get(tournament_id)
+                    logger.info(f"Tournament node before advance: {tournament}")
+                    await self.advance_tournament_match(tournament_id)
+                    logger.info(f"Tournament node after advance: {tournament}")
                 
                 if game_state['ai_controlled']:
                     await self.channel_layer.group_send(
-                    f"game_{room_name}",
+                    f"game_{room_id}", 
                     {
                         'type': 'game_message',
                         'data': {
                             'type': 'ai_game_over',
                             'message': f"Game Over! {winner} wins!",
-                            'winner': winner
+                            'winner': {'user_id': str(winner)},
+							'match_id': game_state['match_id']
                         },
                     }
                 )
                 else:
                     await self.channel_layer.group_send(
-                        f"game_{room_name}",
+                        f"game_{room_id}",
                         {
                             'type': 'game_message',
                             'data': {
                                 'type': 'game_over',
                                 'message': f"Game Over! {winner} wins!",
-                                'winner': winner
+                                'winner': {'user_id': str(winner)},
+								'match_id': game_state['match_id']
                             },
                         }
                     )
 
-                self.reset_game(game_state)
+
                 continue
 
             # Normalize state
             norm_state = self.normalize_state(game_state)
             await self.channel_layer.group_send(
-                f"game_{room_name}",
+                f"game_{room_id}",
                 {
                     'type': 'game_message',
                     'data': {
                         'type': 'state_update',
                         'ball': norm_state['ball'],
                         'paddles': norm_state['paddles'],
+                        'players': game_state['players'],
+                        'spectators': game_state['spectators'],
                     },
                 }
             )
@@ -411,6 +435,7 @@ class GameManager:
         return nodes[0] if nodes else None
       
     async def create_tournament(self, tournament_id, participants):
+        logger.info(f"create_tournament() called.")
         root = self.build_tournament_tree(participants)
         self.tournaments[tournament_id] = {
             'tree': root,
@@ -420,6 +445,7 @@ class GameManager:
         }
 
     async def advance_tournament_match(self, tournament_id):
+        logger.info(f"Calling advance_tournament_match() with id: {tournament_id}.")
         tournament = self.tournaments[tournament_id]
         current_node = tournament['current_match']
         if not current_node:
@@ -437,36 +463,5 @@ class GameManager:
         else:
             logger.info(f"Tournament {tournament_id} winner is {winner}.")
             tournament['current_match'] = None
-
-def get_or_create_user_and_player(player_name):
-    """
-    Get or create a User and associated Player based on player_name.
-
-    Args:
-        player_name (str): The name of the player.
-
-    Returns:
-        tuple: (User, Player) objects.
-    """
-    User = get_user_model()  # Use the swapped User model
-
-    # Get or create the User
-    user, user_created = User.objects.get_or_create(
-        username=player_name,  # Use player_name as the username
-        defaults={"email": f"{player_name.lower()}@example.com"}  # Provide a default email
-    )
-    if user_created:
-        logger.debug(f"User created: {user}")
-
-    # Get or create the Player associated with the User
-    player, player_created = Player.objects.get_or_create(
-        user=user,
-        defaults={"name": player_name}
-    )
-    if player_created:
-        logger.debug(f"Player created: {player}")
-
-    return user, player
-
 
 game_manager = GameManager()
