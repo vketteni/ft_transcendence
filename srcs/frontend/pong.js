@@ -1,6 +1,6 @@
 import { wsManager } from './WebSocketManager.js';
 import { sendAlias } from './sendToBackend.js';
-import { connectToMatchmaking, startPvCMatch } from './WebsocketMatchmaking.js';
+import { connectToMatchmaking } from './WebsocketMatchmaking.js';
 import { GAME_CONFIG, setPlayerID } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
@@ -157,8 +157,7 @@ DOM.TournamentButton.addEventListener('click', () => {
     console.log("Tournament button clicked, showing matchmaking screen...");
     matchmakingTimer.start();
     connectToMatchmaking("TRNMT");
-	
-    // startPvCMatch();
+
 });
 
 
