@@ -49,6 +49,9 @@ export async function loadUserInfo() {
             document.getElementById('profileEmail').textContent = data.email;
             document.getElementById('profileFirstName').textContent = data.first_name;
             document.getElementById('profileLastName').textContent = data.last_name;
+        
+            document.getElementById('profileWins').textContent = data.wins ?? "0";
+            document.getElementById('profileLosses').textContent = data.losses ?? "0";
         } else {
             console.error('Failed to load user info:', response.status);
         }

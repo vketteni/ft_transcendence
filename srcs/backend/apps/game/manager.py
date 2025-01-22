@@ -36,7 +36,7 @@ async def debug_lock(lock):
 
 from collections import defaultdict
 from apps.game.game_loop import GameLoop
-
+from apps.accounts.services import record_match 
 
 class GameManager:
 
@@ -263,7 +263,17 @@ class GameManager:
             # Check if game is over
             if game_state['paddles']['right']['score'] >= 10 or game_state['paddles']['left']['score'] >= 10:
                 winner = "Right Player" if game_state['paddles']['right']['score'] >= 5 else "Left Player"
-                
+                try: 
+                    player1 = game_state['players']['side']['left'] # Assuming you store the players as 'left' and 'right'
+                    player2 = game_state['players']['side']['right']
+                    score1 = game_state['paddles']['left']['score']
+                    score2 = game_state['paddles']['right']['score']
+
+                    # Record the match result
+                    record_match(player1, player2, score1, score2)
+                except Exception as e:
+                    logger.error(f"Error recording match: {e}")
+
                 if game_state['ai_controlled']:
                     await self.channel_layer.group_send(
                     f"game_{room_name}",
