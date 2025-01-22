@@ -128,8 +128,8 @@ REST_FRAMEWORK = {
 # JWT settings
 from datetime import timedelta
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=120),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=2),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=30),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': False,
     "ALGORITHM": "HS256",
@@ -188,11 +188,8 @@ LOGGING = {
 }
 
 # backend/config/settings.py
-MEDIA_URL = 'media/'
-MEDIA_ROOT = "/"
-
-from django.core.files.storage import FileSystemStorage
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/app/static/'

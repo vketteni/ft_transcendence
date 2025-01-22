@@ -104,13 +104,13 @@ DOM.signupForm.addEventListener('submit', async (e) => {
             body: formData,
         });
 
-        const data = await response.json();
-
         if (response.ok) {
+            const data = await response.json();
             console.log("Sign Up Successful:", data);
             showScreen('login-screen');
         } else {
-            alert(`Sign Up Error: ${data.error}`);
+            const errorData = await response.json();
+            alert(`Registration failed: ${errorData.error}`);
         }
     } catch (error) {
         console.error('Error signing up:', error);
@@ -265,44 +265,58 @@ DOM.editProfileForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const csrftoken = getCookie('csrftoken'); 
     console.log("csrftoken: ", csrftoken);
-    const updatedData = {
-        csrfmiddlewaretoken: csrftoken,
-        username: DOM.editUsername.value,
-        email: DOM.editEmail.value,
-        first_name: DOM.editFirstName.value,
-        last_name: DOM.editLastName.value
-    };
+    const formData = new FormData(); // Use FormData to handle file upload
+    formData.append('csrfmiddlewaretoken', csrftoken);
+    formData.append('username', DOM.editUsername.value);
+    formData.append('email', DOM.editEmail.value);
+    formData.append('first_name', DOM.editFirstName.value);
+    formData.append('last_name', DOM.editLastName.value);
+
+    const avatarFile = DOM.editAvatar.files[0];
+    if (avatarFile) {
+        formData.append('avatar', avatarFile); // Include the avatar file
+        console.log("Avatar file selected:", avatarFile.name);
+    }
     try {
         const response = await fetch('/api/accounts/user-profile/', {
-        // const response = await fetch('http://localhost:8000/api/accounts/user-profile/', {
             method: 'PUT',
             headers: {
-                // 'X-CSRFToken': csrftoken,
+                'X-CSRFToken': csrftoken,
                 'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
-                'Content-Type': 'application/json',
+                // 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(updatedData),
+            body: formData,
             credentials: 'include',
         });
         const data = await response.json();
         if (response.ok)
         {
-            console.log("updatedData.username:", updatedData.username);
+            console.log("Profile updated successfully:", data);
             // Update the profile view with the new data
             DOM.profileUsername.textContent = data.username;
             DOM.profileEmail.textContent = data.email;
             DOM.profileFirstName.textContent = data.first_name || 'N/A';
             DOM.profileLastName.textContent = data.last_name || 'N/A';
-			DOM.profile2fa.textContent = data.twoFA || "disabled";
-        
+
+            if (data.avatar_url) {
+                console.log("New avatar URL:", data.avatar_url);
+                DOM.profileAvatar.src = data.avatar_url; // Update avatar image
+            }
+            // console.log("New avatar URL:", data.avatar_url);
+            //     // Add a timestamp to the avatar URL to force reload
+            //     const cacheBustedUrl = `${data.avatar_url}?t=${new Date().getTime()}`;
+            //     DOM.profileAvatar.src = cacheBustedUrl;
+            // }
+            DOM.editAvatar.value = "";
             // Switch back to view mode
+            showScreen('userprofile-screen');
             DOM.profileEdit.classList.add("d-none");
             DOM.profileView.classList.remove("d-none");
         }
         else
-            alert(`Sign Up Error: ${data.error}`);
+            alert(`Failed to update profile: ${data.error || data.detail}`);
     } catch (error) {
-        console.error('Error signing up:', error);
+        console.error('Error updating profile:', error);
         alert('An unexpected error occurred. Please try again later.');
     }
 });
@@ -318,13 +332,14 @@ DOM.editProfileButton.addEventListener("click", () => {
         email: DOM.profileEmail.textContent,
         first_name: DOM.profileFirstName.textContent,
         last_name: DOM.profileLastName.textContent,
-		// twoFA: DOM.profile2fa.textContent
     };
 
     DOM.editUsername.value = profileData.username;
     DOM.editEmail.value = profileData.email;
     DOM.editFirstName.value = profileData.first_name || 'N/A';
     DOM.editLastName.value = profileData.last_name || 'N/A';
+
+    DOM.editAvatar.value = "";
 });
 
 // Cancel editing and return to view mode
@@ -337,4 +352,17 @@ document.getElementById('signup-avatar').addEventListener('change', function (ev
     const file = event.target.files[0];
     const fileNameElement = document.getElementById('avatar-filename');
     fileNameElement.textContent = file ? file.name : 'No file selected';
+});
+
+DOM.editAvatar.addEventListener("change", () => {
+    const file = DOM.editAvatar.files[0];
+    const avatarFilename = document.getElementById("avatar-filename-edit");
+
+    if (file) {
+        avatarFilename.textContent = `${file.name}`;
+        console.log("Avatar file selected:", file.name);
+    } else {
+        avatarFilename.textContent = "No file selected";
+        console.log("No file selected.");
+    }
 });

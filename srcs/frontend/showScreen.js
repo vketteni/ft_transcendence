@@ -32,7 +32,7 @@ export function showScreen(screenId) {
 			if (screenId === 'userprofile-screen')
 			{
 				loadUserInfo();
-				
+				console.log("loading user info");
 			}
 
 		} else {

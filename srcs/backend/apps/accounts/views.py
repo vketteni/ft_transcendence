@@ -328,6 +328,9 @@ class UserProfileView(APIView):
             serializer = UserSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
                 if avatar:
+                    logger.info(f"Saving avatar: {avatar.name}")
+                    if user.avatar and user.avatar.name != "avatars/default-avatar.jpg":
+                        user.avatar.delete(save=False)
                     user.avatar.save(avatar.name, avatar)
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)

@@ -7,7 +7,7 @@ from django.utils.timezone import now
 from django.contrib.auth.password_validation import validate_password
 from . import models
 import logging
-
+from django.conf import settings
 logger = logging.getLogger(__name__)
 
 class UserSerializer(serializers.ModelSerializer):
@@ -63,6 +63,7 @@ class UserSerializer(serializers.ModelSerializer):
             'date_joined',
             'last_login',
             'avatar_url',
+            'avatar',
         ]
         read_only_fields = ['id', 'date_joined', 'last_login', 'is_staff']
         extra_kwargs = {
@@ -76,16 +77,53 @@ class UserSerializer(serializers.ModelSerializer):
         """
         return f"{obj.first_name} {obj.last_name}".strip()
 
+    # def get_avatar_url(self, obj):
+    #     """
+    #     Returns the full URL for the avatar field, or None if no avatar exists.
+    #     """
+    #     request = self.context.get('request')
+    #     if obj.avatar:
+    #         logger.info(f"Avatar file URL: {obj.avatar.url}")
+    #         return request.build_absolute_uri(obj.avatar.url)
+    #     return request.build_absolute_uri(settings.MEDIA_URL + 'avatars/default-avatar.jpg')
+
     def get_avatar_url(self, obj):
         """
         Returns the full URL for the avatar field, or None if no avatar exists.
         """
-        request = self.context.get('request')
-        if obj.avatar:
-            logger.info(f"Avatar file path: {obj.avatar.path}")
-            logger.info(f"Avatar file URL: {obj.avatar.url}")
-            return request.build_absolute_uri(obj.avatar.url) if request else obj.avatar.url
-        return None
+        try:
+            # Log the start of the function
+            logger.info("Entered get_avatar_url function")
+
+            # Log the object being processed
+            logger.info(f"Processing object: {obj}")
+
+            # Log the context to ensure request is included
+            if 'request' not in self.context:
+                logger.error("Request is not present in the serializer context!")
+                return None
+
+            request = self.context.get('request')
+            logger.info(f"Request object: {request}")
+
+            # Check if avatar exists
+            if obj.avatar:
+                logger.info(f"Avatar file path: {obj.avatar.path}")
+                logger.info(f"Avatar file URL: {obj.avatar.url}")
+                full_url = request.build_absolute_uri(obj.avatar.url)
+                logger.info(f"Generated full avatar URL: {full_url}")
+                return full_url
+
+            # If no avatar, return default avatar URL
+            default_avatar_path = settings.MEDIA_URL + 'avatars/default-avatar.jpg'
+            full_default_url = request.build_absolute_uri(default_avatar_path)
+            logger.info(f"Using default avatar. URL: {full_default_url}")
+            return full_default_url
+
+        except Exception as e:
+            # Log any exceptions that occur
+            logger.error(f"Error in get_avatar_url: {str(e)}", exc_info=True)
+            return None
 
     def create(self, validated_data):
         """
@@ -102,6 +140,9 @@ class UserSerializer(serializers.ModelSerializer):
         """
         Handles user updates. Ensures the password is hashed if provided.
         """
+        # Remove 'avatar' from validated_data to prevent double-saving
+        validated_data.pop('avatar', None)
+
         password = validated_data.pop('password', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)

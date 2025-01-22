@@ -19,8 +19,8 @@ COPY backend /app/
 # Change permissions for the application files
 RUN chmod -R 755 /app
 
-RUN mkdir -p media && \
-    chmod -R 755 /media
+RUN mkdir -p /app/media && \
+    chmod -R 755 /app/media
     
 # Add a non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser

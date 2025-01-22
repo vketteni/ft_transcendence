@@ -78,7 +78,6 @@
             <p><strong>Email:</strong> <span id="profileEmail"></span></p>
             <p><strong>First Name:</strong> <span id="profileFirstName"></span></p>
             <p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
-			<p><strong>2FA:</strong> <span id="profile2fa"></span></p>
             <button id="editProfileButton" class="btn btn-outline-light btn-lg">Edit Profile</button>
         </div>
 
@@ -101,10 +100,13 @@
                     <label for="editLastName" class="form-label">Last Name</label>
                     <input type="text" id="editLastName" class="form-control">
                 </div>
-				<div class="form-check form-switch mb-3">
-					<input class="form-check-input" type="checkbox" id="toggle2FA">
-					<label class="form-check-label" for="toggle2FA">Enable Two-Factor Authentication</label>
-				</div>
+                <div class="mb-3">
+                    <label for="editAvatar" style="cursor: pointer;" class="btn btn-outline-info btn-md mb-2">
+                        Edit Avatar
+                    </label>
+                    <input type="file" id="editAvatar" class="d-none" accept="image/*">
+                    <p id="avatar-filename-edit" class="mt-2 text-light">No file selected</p>
+                </div>
                 <button type="submit" class="btn btn-outline-success">Save Changes</button>
                 <button type="button" id="cancelEditButton" class="btn btn-outline-warning">Cancel</button>
             </form>

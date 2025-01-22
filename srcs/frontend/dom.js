@@ -67,7 +67,7 @@ export const DOM = {
     editEmail: document.getElementById('editEmail'),
     editFirstName: document.getElementById('editFirstName'),
     editLastName: document.getElementById('editLastName'),
-    // edit2fa: document.getElementById('edit2fa'),
+    editAvatar: document.getElementById('editAvatar'),
 
     profileView: document.getElementById('profileView'),
     profileEdit: document.getElementById('profileEdit'),
