@@ -22,11 +22,11 @@ export function showScreen(screenId, addToHistory = true) {
             if (screenId === 'game-screen') {
                 resizeCanvas();
                 renderLoop();
-                header.classList.add('d-none');
+                DOM.navNav.classList.add('d-none');
                 console.log("Game screen initialized");
             }
             else {
-                header.classList.remove('d-none');
+                DOM.navNav.classList.remove('d-none');
             }
             if (screenId === 'userprofile-screen')
             {

@@ -3,7 +3,7 @@ export const DOM = {
     topBar: document.getElementById('topbar'),
     topBarNav: document.getElementById('topbar-nav'),
     topBarLogo: document.getElementById('logo'),
-	header: document.getElementById("header"),
+	navNav: document.getElementById("naver"),
 
     // game canvas
     canvas: document.getElementById('canvas'),
