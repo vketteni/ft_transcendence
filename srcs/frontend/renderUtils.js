@@ -1,12 +1,11 @@
 import { DOM } from './dom.js';
 import { clientState, serverState } from './state.js';
 
-const EXTRAPOLATION_FACTOR = 0.2;
-const SERVER_UPDATE_INTERVAL = 0.01;
+const EXTRAPOLATION_FACTOR = 0.3;
+const SERVER_UPDATE_INTERVAL = 0.05;
 
 export function clearCanvas() {
 	DOM.ctx.clearRect(0, 0, DOM.canvas.width, DOM.canvas.height);
-	// DOM.ctx.drawImage(DOM.canvasImg, 0, 0, DOM.canvas.width, DOM.canvas.height);
 }
 
 export function drawRect(x, y, w, h, color) {
@@ -23,7 +22,6 @@ export function drawBall(x, y, radius, color) {
 }
 
 export function extrapolateState() {
-    // console.log("Extrapolating State:", serverState);
 
     const serverBall = serverState.ball;
     const clientBall = clientState.ball;
@@ -39,5 +37,3 @@ export function extrapolateState() {
     clientState.paddles.right.y +=
         (serverState.paddles.right.y - clientState.paddles.right.y) * 0.2;
 }
-
-

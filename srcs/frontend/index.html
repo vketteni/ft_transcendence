@@ -14,7 +14,7 @@
     
 <body class="bg-black text-white vh-100 overflow-hidden">
 
-	<header class="bg-danger-subtle py-1">
+	<header id="header" class="bg-danger-subtle py-1">
 		<div class="container d-flex justify-content-between align-items-center">
 		  <div id="logo" class="text-black text-decoration-none fs-5 fw-bold">Pong!</div>
 		  <nav id="topbar-nav">
@@ -53,6 +53,7 @@
                 <button id="login-42-button" class="btn btn-outline-primary btn-lg mb-3">Login with <img src="42logo.png" style="height: 24px"></button>
             </div>
 		</form>
+		<button id="login-exit" class="btn btn-outline-info btn-sm mt-3">Back to menu</button>
 	</div>
 	
 	<!-- Sign Up Screen -->
@@ -64,23 +65,28 @@
 			<input type="email" id="signup-email" class="form-control mb-3" placeholder="Enter your email" required>
 			<div class="d-grid gap-2 mx-auto">
 				<button type="submit" class="btn btn-outline-success btn-lg">Sign Up</button>
-				<button type=button id="ai-back-to-menu" class="btn btn-outline-light btn-lg">Back to menu</button>
 			</div>
 		</form>
+		<button id="signup-exit" class="btn btn-outline-info btn-sm mt-3">Back to menu</button>
 	</div>
 
+
+    <!-- User profile Screen -->
     <div id="userprofile-screen" 
         class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
         <h2>User Profile</h2>
         <!-- Display View -->
-        <div id="profileView">
-            <p><strong>Username:</strong> <span id="profileUsername"></span></p>
-            <p><strong>Email:</strong> <span id="profileEmail"></span></p>
-            <p><strong>First Name:</strong> <span id="profileFirstName"></span></p>
-            <p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
-			<p><strong>2FA:</strong> <span id="profile2fa"></span></p>
-            <button id="editProfileButton" class="btn btn-outline-light btn-lg">Edit Profile</button>
-			<button type=button id="ai-back-to-menu" class="btn btn-outline-light btn-lg">Back to menu</button>
+        <div id="profileView" class="text-center w-40">
+			<div class="d-grid gap-2 mx-auto">
+				<p><strong>Username:</strong> <span id="profileUsername"></span></p>
+				<p><strong>Email:</strong> <span id="profileEmail"></span></p>
+				<p><strong>First Name:</strong> <span id="profileFirstName"></span></p>
+				<p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
+				<p><strong>Wins:</strong> <span id="profileWins">0</span></p>
+                <p><strong>Losses:</strong> <span id="profileLosses">0</span></p>
+                <button id="editProfileButton" class="btn btn-outline-light btn-lg">Edit Profile</button>
+			</div>
+			<button id="profile-exit" class="btn btn-outline-info btn-sm mt-3">Back to menu</button>
         </div>
 
         <!-- Edit View -->
@@ -102,10 +108,6 @@
                     <label for="editLastName" class="form-label">Last Name</label>
                     <input type="text" id="editLastName" class="form-control">
                 </div>
-				<div class="form-check form-switch mb-3">
-					<input class="form-check-input" type="checkbox" id="toggle2FA">
-					<label class="form-check-label" for="toggle2FA">Enable Two-Factor Authentication</label>
-				</div>
                 <button type="submit" class="btn btn-outline-success">Save Changes</button>
                 <button type="button" id="cancelEditButton" class="btn btn-outline-warning">Cancel</button>
             </form>
@@ -115,11 +117,16 @@
 
     <!-- matchmaking screen-->
     <div id="matchmaking-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-        <div class="mb-3">
-			<h1 id="waiting-text">Waiting for an opponent...</h1>
-			<div id="timerDisplay">0s</div>
-		</div>
-		<button type=button id="ai-back-to-menu" class="btn btn-outline-light btn-lg">Back to menu</button>		
+		<h1 id="waiting-text">Waiting for opponent...</h1>
+		<div id="timerDisplay">0s</div>
+		<!-- <button id="matchmaking-exit" class="btn btn-lg btn-outline-info mt-3">Back to menu</button> -->
+    </div>
+
+    <!-- ai waiting screen-->
+    <div id="ai-waiting-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+        <h1 id="waiting-text">Waiting for AI rebellion...</h1>
+        <div id="AItimerDisplay">0s</div>
+        <!-- <button id="matchmaking-exit" class="btn btn-lg btn-outline-info mt-3">Back to menu</button> -->
     </div>
 
     <!-- game screen -->
@@ -128,6 +135,7 @@
 			<div id="timerDisplay" class="visually-hidden"></div>
 			<canvas id="canvas" class="border border-2 border-white"></canvas>
 			<button id="pause-button" class="btn btn-lg btn-outline-light mt-3">Pause</button>
+			<button id="game-exit" class="btn btn-lg btn-outline-warning mt-3">Exit</button>
 		</div>
 	</div>
 
@@ -145,7 +153,6 @@
 		<div class="game-container d-flex flex-column justify-content-center align-items-center">
 			<div id="timerDisplay" class="visually-hidden"></div>
 			<canvas id="canvas" class="border border-2 border-white"></canvas>
-			<button id="pvp-back-to-menu" class="btn btn-lg btn-outline-warning mt-2">Exit</button>
 		</div>
 	</div>
 
@@ -153,16 +160,18 @@
     <div id="ai-game-over-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
         <h1 id="ai-game-over-message">Game Over!</h1>
         <button type=button id="ai-play-again-button" class="btn btn-lg btn-outline-light mb-3">Play Again</button>
-        <button type=button id="ai-back-to-menu" class="btn btn-lg btn-outline-light">Back to menu</button>
+		<button type=button id="ai-back-to-menu" class="btn btn-outline-info btn-lg">Back to menu</button>
     </div>
 
     <!-- PVP Game Over Screen -->
-    <div id="pvp-game-over-screen" class="d-none">
+    <div id="pvp-game-over-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
         <h1 id="pvp-game-over-message" class="mb-3">Game Over!</h1>
-        <button type=button id="pvp-play-again-button" class="btn btn-outline-light btn-lg mt-3">Rematch</button>
-        <button type=button id="pvp-back-to-menu" class="btn btn-outline-light btn-lg">Back to menu</button>
+        <button type=button id="pvp-play-again-button" class="btn btn-outline-light btn-lg mb-3">Rematch</button>
+        <button type=button id="pvp-back-to-menu" class="btn btn-outline-info btn-lg">Back to menu</button>
     </div>
     
     <script type="module" src="pong.js"></script>
+	<script type="module" src="buttons.js"></script>
+	
 </body>
 </html>

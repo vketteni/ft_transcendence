@@ -1,5 +1,5 @@
 import { getPlayerID } from './config.js';
-import { stopAndResetTimer } from './pong.js';
+import { stopAndResetTimer } from './buttons.js';
 import { wsManager } from './WebSocketManager.js';
 import { connectToGame } from './WebsocketGameroom.js';
 import { showScreen } from './showScreen.js';

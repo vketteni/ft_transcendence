@@ -27,6 +27,7 @@ import logging
 import requests
 from apps.accounts.models import User
 from .serializers import UserSerializer
+from rest_framework import serializers
 
 logger = logging.getLogger(__name__)
 
@@ -289,17 +290,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.serializers import ModelSerializer
 
 class UserProfileSerializer(ModelSerializer):
+    wins = serializers.IntegerField(source='profile.wins', read_only=True)
+    losses = serializers.IntegerField(source='profile.losses', read_only=True)
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']  # Include fields to expose
-        read_only_fields = ['id', 'username']  # Prevent modification of certain fields
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'wins', 'losses']  # Include fields to expose
+        read_only_fields = ['id', 'username', 'wins', 'losses']  # Prevent modification of certain fields
 
 from rest_framework.authentication import SessionAuthentication
 # API view for profile management
 class UserProfileView(APIView):
     # authentication_classes = [SessionAuthentication]
     # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         logger.info(f"UserProfileView(APIView).get() User: {request.user}")
@@ -328,6 +331,20 @@ class UserProfileView(APIView):
         
         except Exception as e:
             return Response({"detail": f"Authentication error: {str(e)}"}, status=status.HTTP_401_UNAUTHORIZED)
+
+from .models import Match
+from .serializers import MatchSerializer
+from rest_framework import viewsets
+
+class MatchViewSet(viewsets.ModelViewSet):
+    queryset = Match.objects.all()
+    serializer_class = MatchSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        # Retrieve match history for the user (both as player1 and player2)
+        return Match.objects.filter(player1=user).order_by('-date_played') | Match.objects.filter(player2=user).order_by('-date_played')
 
 def csrf_token_view(request):
     """

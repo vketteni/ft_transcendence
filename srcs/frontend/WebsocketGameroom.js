@@ -1,6 +1,6 @@
 import { wsManager } from './WebSocketManager.js';
 import { showScreen } from './showScreen.js';
-import { updateServerState } from './state.js';
+import { updateServerState, resetClientState } from './state.js';
 
 export function connectToGame(gameRoomUrl) {
     wsManager.connect(
@@ -27,6 +27,7 @@ function handleGameMessage(event) {
 			document.getElementById('ai-game-over-message').textContent = gameOverMessage;
 			showScreen('ai-game-over-screen');
             wsManager.close('game');
+            resetClientState();
             break ;
         case 'game_over':
             console.log("Game Over!", data);
@@ -35,6 +36,7 @@ function handleGameMessage(event) {
             document.getElementById('pvp-game-over-message').textContent = PVPgameOverMessage;
             showScreen('pvp-game-over-screen');
             wsManager.close('game');
+            resetClientState();
             break ;
         default:
             console.warn('Unknown game message type:', data.type);

@@ -1,6 +1,11 @@
 # backend/apps/accounts/urls.py
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
+
+# Initialize the router
+router = DefaultRouter()
+router.register(r'matches', views.MatchViewSet)
 
 urlpatterns = [
     path('login/', views.Login42View.as_view(), name='login_42'),
@@ -16,4 +21,5 @@ urlpatterns = [
     path("refresh/", views.RefreshTokenView.as_view(), name="token_refresh"),
     # path("profile/", views.UserProfileView.as_view(), name="user_profile"),
 	path('register/', views.register_user, name='register_user'),
+	path('api/', include(router.urls)),  # Matches API endpoints
 ]

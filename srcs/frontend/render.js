@@ -36,10 +36,27 @@ export function render() {
     );
 }
 
-export function resizeCanvas() {
-    DOM.canvas.width = GAME_CONFIG.canvasWidth;
-    DOM.canvas.height = GAME_CONFIG.canvasHeight;
 
-    // cancelAnimationFrame(renderLoop);
-    // requestAnimationFrame(renderLoop);
+export function resizeCanvas() {
+    const windowWidth = window.innerWidth * 0.6;
+    const windowHeight = window.innerHeight * 0.6;
+
+    const aspectRatio = GAME_CONFIG.canvasWidth / GAME_CONFIG.canvasHeight;
+
+    let canvasWidth = windowWidth;
+    let canvasHeight = canvasWidth / aspectRatio;
+
+    if (canvasHeight > windowHeight) {
+        canvasHeight = windowHeight;
+        canvasWidth = canvasHeight * aspectRatio;
+    }
+
+    DOM.canvas.width = canvasWidth;
+    DOM.canvas.height = canvasHeight;
+
+    GAME_CONFIG.canvasWidth = canvasWidth;
+    GAME_CONFIG.canvasHeight = canvasHeight;
+    GAME_CONFIG.paddleWidth = canvasWidth * 0.02;
+    GAME_CONFIG.paddleHeight = canvasHeight * 0.2;
+    GAME_CONFIG.ballDiameter = canvasWidth * 0.025;
 }

@@ -10,6 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 import traceback
 from contextlib import asynccontextmanager
+SCORE_TO_WIN = 3
 
 
 class DebugLock(Lock):
@@ -38,8 +39,7 @@ async def debug_lock(lock):
 
 from collections import defaultdict
 from apps.game.game_loop import GameLoop
-
-SCORE_TO_WIN = 3
+from apps.accounts.services import record_match 
 
 class GameManager:
 
@@ -54,15 +54,14 @@ class GameManager:
         self.config = {
             'canvas': {'width': 800, 'height': 600},
             'paddle': {
-                'height': 100,
-                'width': 15
+                'height': int(600 * 0.2),
+                'width': int(800 * 0.02)
             },
             'ball': {
-                'diameter': 20,
+                'diameter': int(800 * 0.03),
                 'speed': 350
             }
         }
-        
     async def start(self):
         try:
             if self.running:
@@ -307,6 +306,8 @@ class GameManager:
         }
     
     def reset_game(self, game_state):
+        game_state.clear()
+
         config = self.config
         # Reset scores
         game_state['paddles']['left']['score'] = 0
@@ -342,8 +343,17 @@ class GameManager:
                     player['alias'] for player in game_state['players'].values() if player['side'] == winning_side
                 )
                 logger.info(f"The winner is: {winner}")
+                try: 
+                    player1 = game_state['players']['side']['left'] # Assuming you store the players as 'left' and 'right'
+                    player2 = game_state['players']['side']['right']
+                    score1 = game_state['paddles']['left']['score']
+                    score2 = game_state['paddles']['right']['score']
 
-                self.reset_game(game_state)
+                    # Record the match result
+                    record_match(player1, player2, score1, score2)
+                except Exception as e:
+                    logger.error(f"Error recording match: {e}")
+
                 if game_state["tournament_id"] != None:
                     tournament_id = game_state["tournament_id"]
                     tournament = self.tournaments.get(tournament_id)
@@ -378,6 +388,7 @@ class GameManager:
                         }
                     )
 
+                game_state.clear()
 
                 continue
 

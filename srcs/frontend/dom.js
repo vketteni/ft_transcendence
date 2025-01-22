@@ -3,30 +3,25 @@ export const DOM = {
     topBar: document.getElementById('topbar'),
     topBarNav: document.getElementById('topbar-nav'),
     topBarLogo: document.getElementById('logo'),
+	header: document.getElementById("header"),
 
     // game canvas
     canvas: document.getElementById('canvas'),
     ctx: document.getElementById('canvas').getContext('2d'),
-    // canvasImg: (() => {
-    //     const img = new Image();
-    //     img.src = './canvas.png';
-    //     return img;
-    // })(),
-    
-    // animated video background
-    // backgroundCanvas: document.getElementById('background-animation'),
-    // backgroundCtx: document.getElementById('background-animation').getContext('2d'), 
-    
+
     // screens
     gameScreen: document.getElementById('game-screen'),
+
     // registrationScreen: document.getElementById('registration-screen'),
     loginScreen: document.getElementById('login-screen'),
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
     matchmakingScreen: document.getElementById('matchmaking-screen'),
-	// homeLink: document.getElementById("home-link"),
-    //
-    matchmakingButton: document.getElementById('matchmaking-button'),
+    AIwaitingScreen: document.getElementById('ai-waiting-screen'),
+
+
+    AItimer: document.getElementById('AItimerDisplay'),
+    // matchmakingButton: document.getElementById('matchmaking-button'),
     matchmakingTimer: document.getElementById('timerDisplay'),
     userprofileScreen: document.getElementById('userprofile-screen'),
     
@@ -44,11 +39,13 @@ export const DOM = {
     loginAlias: document.getElementById('login-alias'),
     loginPassword: document.getElementById('login-password'),
     login42Button: document.getElementById('login-42-button'),
+	loginExitButton: document.getElementById('login-exit'),
     
     // sing up form
     signupAlias: document.getElementById('signup-alias'),
     signupPassword: document.getElementById('signup-password'),
     signupEmail: document.getElementById('signup-email'),
+	signupExitButton: document.getElementById('signup-exit'),
     
     // Category screen buttons  
     PvPButton: document.getElementById('PvP'),
@@ -59,6 +56,7 @@ export const DOM = {
     editProfileButton: document.getElementById('editProfileButton'),
     cancelEditButton: document.getElementById('cancelEditButton'),
     profileButton: document.getElementById('profileButton'),
+	profileExitButton: document.getElementById('profile-exit'),
 
     // Edit user profile screen
     editProfileForm: document.getElementById('editProfileForm'),
@@ -74,10 +72,13 @@ export const DOM = {
     profileEmail: document.getElementById('profileEmail'),
     profileFirstName: document.getElementById('profileFirstName'),
     profileLastName: document.getElementById('profileLastName'),
-	profile2fa: document.getElementById('profile2fa'),
     
     // Game screen
     pauseButton: document.getElementById('pause-button'),
+	exitButton: document.getElementById('game-exit'),
+
+	//Matchmaking screen
+	// matchmakingExitButton: document.getElementById('matchmaking-exit'),
     
     // AI Game over screen
     AIgameOverScreen: document.getElementById('ai-game-over-screen'),
@@ -94,8 +95,4 @@ export const DOM = {
     logoutButton: document.getElementById('logout-button'),
 };
 
-
-// DOM.canvasImg.onerror = () => {
-//     console.error('Image failed to load. Check the file path.');
-// };
 

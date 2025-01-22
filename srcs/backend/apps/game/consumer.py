@@ -106,38 +106,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             await game_manager.set_game_resumed(room_id)
 
     
-    
-    async def end_game(self, match_id, winner):
-        logger.info("Calling GameConsumer.end_game().")
-        from asgiref.sync import sync_to_async
-        from django.utils import timezone
-        from apps.matchmaking.models import Match
-    
-        try:
-            # Fetch the match in an async-safe manner
-            match = await sync_to_async(Match.objects.get)(id=match_id)
-            
-            # Update fields and save the match using async-safe operations
-            match.end_time = timezone.now()
-            match.winner = winner
-            match.duration = match.calculate_duration()
-            await sync_to_async(match.save)()
-            
-        except Match.DoesNotExist:
-            logger.error(f"Match with id {match_id} does not exist.")
-            return
-            
     async def game_message(self, event):
-        data = event['data']
-        if data['type'] == "game_over" or data['type'] == "ai_game_over" :
-            from apps.accounts.models import User
-            from asgiref.sync import sync_to_async
-            
-            logger.info("Receiving game over message.")
-            match_id = data['match_id']
-            winner = await sync_to_async(User.objects.get)(id=data['winner']['user_id'])
-            logger.info(f"match_id: {match_id}, winner: {winner.id}")
-            await self.end_game(match_id, winner)
-            
+    
         # Called by group_send in GameManager
         await self.send(text_data=json.dumps(event['data']))
