@@ -4,6 +4,7 @@ import { showScreen } from './showScreen.js';
 import { connectToMatchmaking, startPvCMatch } from './WebsocketMatchmaking.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
+import { is2PG } from './pong.js';
 // import { GAME_CONFIG, setPlayerID } from './config.js';
 // import { resizeCanvas } from './render.js';
 // import { handleLoginRedirect, setLoginState } from './auth.js';
@@ -18,6 +19,7 @@ import { Timer } from './Timer.js';
 let isPaused = false;
 const matchmakingTimer = new Timer(DOM.matchmakingTimer);
 const AItimer = new Timer(DOM.AItimer);
+const twoPGTimer = new Timer(DOM.twoPGTimer);
 
 export function stopAndResetTimer() {
     matchmakingTimer.stop();
@@ -76,18 +78,14 @@ export const Buttons = {
         });
 
         DOM.profileExitButton.addEventListener('click', () => {
+			is2PG = false;
             showScreen('category-screen');
         });
 
-        // PVP buttons
 
-        DOM.PvPButton.addEventListener('click', () => {
-            console.log("PvP button clicked, showing matchmaking screen...");
-            showScreen('matchmaking-screen');
-            matchmakingTimer.start();
-            connectToMatchmaking("PVP");
-        });
 
+
+		//PVP Buttons
         DOM.PvPplayAgainButton.addEventListener('click', () => {
             showScreen('matchmaking-screen');
             matchmakingTimer.start();
@@ -99,8 +97,14 @@ export const Buttons = {
             // wsManager.close('game');
         });
 
-        // AI buttons
+        DOM.PvPButton.addEventListener('click', () => {
+            console.log("PvP button clicked, showing matchmaking screen...");
+            showScreen('matchmaking-screen');
+            matchmakingTimer.start();
+            connectToMatchmaking("PVP");
+        });
 
+        // AI buttons
         DOM.PvCButton.addEventListener('click', () => {
             console.log("PvC button clicked, showing matchmaking screen...");
             showScreen('ai-waiting-screen');
@@ -139,7 +143,7 @@ export const Buttons = {
             wsManager.close('game');
         });
 
-        DOM.TournamentButton.addEventListener('click', () => {
+        DOM.tournamentButton.addEventListener('click', () => {
             console.log("Tournament button clicked, showing matchmaking screen...");
             showScreen('matchmaking-screen');
             matchmakingTimer.start();
@@ -147,6 +151,28 @@ export const Buttons = {
         });
     },
 };
+
+//2PG buttons
+DOM.twoPGButton.addEventListener('click', () => {
+	is2PG = true;
+    console.log("2PG button clicked, showing matchmaking screen...");
+    showScreen('2PG-waiting-screen');
+    twoPGTimer.start();
+    connectToMatchmaking("2PG");
+});
+
+DOM.twoPGplayAgainButton.addEventListener('click', () => {
+    is2PG = true;
+	showScreen('2PG-waiting-screen');
+    twoPGTimer.start();
+    connectToMatchmaking("2PG");
+});
+
+DOM.twoPGbackToMenuButton.addEventListener('click', () => {
+	is2PG = false;
+    showScreen('category-screen');
+});
+
 
 
 

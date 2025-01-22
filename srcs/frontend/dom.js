@@ -18,10 +18,10 @@ export const DOM = {
     categoryScreen: document.getElementById('category-screen'),
     matchmakingScreen: document.getElementById('matchmaking-screen'),
     AIwaitingScreen: document.getElementById('ai-waiting-screen'),
+	twoPGwaitingScreen: document.getElementById('2PG-waiting-screen'), 
 
-
+	twoPGTimer: document.getElementById('2PGtimerDisplay'),
     AItimer: document.getElementById('AItimerDisplay'),
-    // matchmakingButton: document.getElementById('matchmaking-button'),
     matchmakingTimer: document.getElementById('timerDisplay'),
     userprofileScreen: document.getElementById('userprofile-screen'),
     
@@ -48,9 +48,10 @@ export const DOM = {
 	signupExitButton: document.getElementById('signup-exit'),
     
     // Category screen buttons  
+	twoPGButton: document.getElementById('2PG'),
     PvPButton: document.getElementById('PvP'),
     PvCButton: document.getElementById('PvC'),
-    TournamentButton: document.getElementById('Tournament'),
+    tournamentButton: document.getElementById('Tournament'),
 
     // User profile screen
     editProfileButton: document.getElementById('editProfileButton'),
@@ -91,6 +92,12 @@ export const DOM = {
     PvPgameOverMessage: document.getElementById('pvp-game-over-message'),
     PvPplayAgainButton: document.getElementById('pvp-play-again-button'),
     PvPbackToMenuButton: document.getElementById('pvp-back-to-menu'),
+
+	//2PG
+    twoPGgameOverScreen: document.getElementById('2PG-game-over-screen'),
+    twoPGgameOverMessage: document.getElementById('2PG-game-over-message'),
+    twoPGplayAgainButton: document.getElementById('2PG-play-again-button'),
+    twoPGbackToMenuButton: document.getElementById('2PG-back-to-menu'),
 
     logoutButton: document.getElementById('logout-button'),
 };

@@ -16,6 +16,8 @@ import { Buttons } from './buttons.js';
 
 DOM.canvas.width = GAME_CONFIG.canvasWidth;
 DOM.canvas.height = GAME_CONFIG.canvasHeight;
+export let is2PG = false;
+
 
 DOM.loginForm.addEventListener('submit', async (e) => {
     console.log("loginForm.addEventListener");
@@ -112,24 +114,71 @@ window.addEventListener('resize', resizeCanvas);
 
 document.addEventListener("keydown", (e) => {
     if (wsManager.sockets['game']?.readyState === WebSocket.OPEN) {
-        const up = e.key === "ArrowUp";
-        const down = e.key === "ArrowDown";
-		console.log("keypress down");
+        if (is2PG) {
+            // 2-player game mode logic
+            if (e.key === "w" || e.key === "s") {
+                // Left player's controls
+                console.log("Left player key pressed:", e.key);
+                wsManager.send('game', {
+                    player: "left",
+                    action: "input",
+                    up: e.key === "w",
+                    down: e.key === "s"
+                });
+            } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                // Right player's controls
+                console.log("Right player key pressed:", e.key);
+                wsManager.send('game', {
+                    player: "right",
+                    action: "input",
+                    up: e.key === "ArrowUp",
+                    down: e.key === "ArrowDown"
+                });
+            }
+        } else {
+            // Single-player or default mode logic
+            const up = e.key === "ArrowUp" || e.key === "w";
+            const down = e.key === "ArrowDown" || e.key === "s";
 
-        if (up || down) {
-            wsManager.send('game', {
-                action: "input",
-                up: up,
-                down: down
-            });
+            if (up || down) {
+                console.log("Key pressed:", e.key);
+                wsManager.send('game', {
+                    action: "input",
+                    up: up,
+                    down: down
+                });
+            }
         }
     }
 });
 
 document.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-		console.log("keypress up");
-        wsManager.send('game', { action: 'input', up: false, down: false });
+    if (wsManager.sockets['game']?.readyState === WebSocket.OPEN) {
+        if (is2PG) {
+            // 2-player game mode
+            if (e.key === 'w') {
+                console.log("Left player: Up key (W) released");
+                wsManager.send('game', { player: 'left', action: 'input', up: false });
+            } else if (e.key === 's') {
+                console.log("Left player: Down key (S) released");
+                wsManager.send('game', { player: 'left', action: 'input', down: false });
+            } else if (e.key === 'ArrowUp') {
+                console.log("Right player: Up key (ArrowUp) released");
+                wsManager.send('game', { player: 'right', action: 'input', up: false });
+            } else if (e.key === 'ArrowDown') {
+                console.log("Right player: Down key (ArrowDown) released");
+                wsManager.send('game', { player: 'right', action: 'input', down: false });
+            }
+        } else {
+            // Single-player or default mode
+            if (e.key === 'ArrowUp' || e.key === 'w') {
+                console.log("Up key released (ArrowUp or W)");
+                wsManager.send('game', { action: 'input', up: false });
+            } else if (e.key === 'ArrowDown' || e.key === 's') {
+                console.log("Down key released (ArrowDown or S)");
+                wsManager.send('game', { action: 'input', down: false });
+            }
+        }
     }
 });
 

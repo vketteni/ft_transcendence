@@ -13,7 +13,8 @@ export function showScreen(screenId, addToHistory = true) {
         DOM.AIgameOverScreen,
         DOM.userprofileScreen,
         DOM.matchmakingScreen,
-		DOM.AIwaitingScreen
+		DOM.AIwaitingScreen,
+		DOM.twoPGwaitingScreen
     ];
     screens.forEach(screen => {
         if (screen.id === screenId) {
