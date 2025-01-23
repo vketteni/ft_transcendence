@@ -14,7 +14,6 @@ export const DOM = {
 	PvPgameOverScreen: document.getElementById('pvp-game-over-screen'),
 	twoPGgameOverScreen: document.getElementById('2PG-game-over-screen'),
 
-    registrationScreen: document.getElementById('registration-screen'),
     loginScreen: document.getElementById('login-screen'),
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
@@ -33,10 +32,9 @@ export const DOM = {
     
     
     
-    
-    // registrationButton
+    // login/signup
 	loginButton: document.getElementById('login-button'),
-    registrationButton: document.getElementById('registration-button'),
+    signupButton: document.getElementById('signup-button'),
     
     loginForm: document.getElementById('login-form'),
     signupForm: document.getElementById('signup-form'),

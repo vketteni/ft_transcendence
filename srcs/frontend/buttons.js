@@ -29,9 +29,9 @@ export function stopAndResetTimer() {
 export const Buttons = {
     init() {
         // login buttons
-        DOM.registrationButton.addEventListener('click', () => {
+        DOM.signupButton.addEventListener('click', () => {
             event.preventDefault(); 
-            console.log("registrationButton.addEventListener");
+            console.log("signupButton.addEventListener");
             showScreen('signup-screen');
         });
 
@@ -55,7 +55,7 @@ export const Buttons = {
         });
 
         DOM.editProfileButton.addEventListener("click", () => {
-            console.log("editProfileButton.addEventListener");
+            // console.log("editProfileButton.addEventListener");
             DOM.profileView.classList.add("d-none");
             DOM.profileEdit.classList.remove("d-none");
             
