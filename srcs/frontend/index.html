@@ -173,9 +173,16 @@
     <!-- PVP Game Over Screen -->
     <div id="pvp-game-over-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
         <h1 id="pvp-game-over-message" class="mb-3">Game Over!</h1>
+		<button type=button id="pvp-add-friend" class="btn btn-outline-info btn-lg mb-3">Add to friends</button>
         <button type=button id="pvp-play-again-button" class="btn btn-outline-light btn-lg mb-3">Rematch</button>
         <button type=button id="pvp-back-to-menu" class="btn btn-outline-info btn-lg">Back to menu</button>
     </div>
+
+	<!-- Add friend screen -->
+	<div id="add-friend-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+		<h1 id="pvp-game-over-message" class="mb-3">Add opponent to friend's list</h1>
+		<button type=button id="pvp-add-friend" class="btn btn-outline-info btn-lg mb-3">Add to friends</button>
+	</div>
     
     <script type="module" src="pong.js"></script>
 	<script type="module" src="buttons.js"></script>

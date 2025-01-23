@@ -92,6 +92,7 @@ export const DOM = {
     PvPgameOverMessage: document.getElementById('pvp-game-over-message'),
     PvPplayAgainButton: document.getElementById('pvp-play-again-button'),
     PvPbackToMenuButton: document.getElementById('pvp-back-to-menu'),
+	PvPaddFriendButton: document.getElementById('pvp-add-friend'),
 
 	//2PG
     twoPGgameOverScreen: document.getElementById('2PG-game-over-screen'),

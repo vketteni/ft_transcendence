@@ -82,10 +82,11 @@ export const Buttons = {
             showScreen('category-screen');
         });
 
-
-
-
 		//PVP Buttons
+		DOM.PvPaddFriendButton.addEventListener('click', () => {
+            showScreen('add-friend-screen');
+        });
+
         DOM.PvPplayAgainButton.addEventListener('click', () => {
             showScreen('matchmaking-screen');
             matchmakingTimer.start();

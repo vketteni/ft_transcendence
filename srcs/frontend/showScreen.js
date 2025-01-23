@@ -14,7 +14,8 @@ export function showScreen(screenId, addToHistory = true) {
         DOM.userprofileScreen,
         DOM.matchmakingScreen,
 		DOM.AIwaitingScreen,
-		DOM.twoPGwaitingScreen
+		DOM.twoPGwaitingScreen,
+		DOM.PvPgameOverScreen
     ];
     screens.forEach(screen => {
         if (screen.id === screenId) {
