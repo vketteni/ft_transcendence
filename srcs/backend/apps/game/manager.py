@@ -3,7 +3,10 @@ from asyncio import Lock
 import logging
 import random
 from channels.layers import get_channel_layer
-from .models import TournamentNode
+from django.contrib.auth import get_user_model
+from asgiref.sync import sync_to_async
+import hashlib
+# from .models import TournamentNode
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -11,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 import traceback
 from contextlib import asynccontextmanager
 SCORE_TO_WIN = 3
-
+User = get_user_model() 
 
 class DebugLock(Lock):
     def __init__(self):
@@ -50,6 +53,7 @@ class GameManager:
         self.channel_layer = get_channel_layer()
         self.locks = defaultdict(DebugLock)
         self.game_loop = GameLoop(self)
+        self.user_id_map = {} 
 
         self.config = {
             'canvas': {'width': 800, 'height': 600},
@@ -94,11 +98,12 @@ class GameManager:
 
         async with room_lock:
             logger.debug(f"Acquired lock for room_id={room_id}")
+
             if room_id not in self.games:
                 self.games[room_id] = self.initial_game_state(**kwargs)
-                logger.debug(f"Created new game state for room: {room_id}")
-                
+
             return self.games[room_id]
+
 
     async def remove_game(self, room_id):
         async with debug_lock(self.locks[room_id]):
@@ -175,6 +180,7 @@ class GameManager:
 
     async def remove_player(self, room_id, user_id):
         async with debug_lock(self.locks[room_id]):
+            logger.info(f"remove_player() called for room_id={room_id}, user_id={user_id}")
             game = self.games.get(room_id)
             if not game:
                 return
@@ -184,9 +190,9 @@ class GameManager:
     
             # Optional: If no players left, you can remove the game from memory
             if len(game['players']) == 0:
-                logger.debug("Before calling remove_game()")
+                logger.info("Before calling remove_game()")
                 await self.remove_game(room_id)
-                logger.debug("After calling remove_game()")
+                logger.info("After calling remove_game()")
             
     async def update_player_input(self, room_id, user_id, up, down):
         async with debug_lock(self.locks[room_id]):
@@ -209,7 +215,6 @@ class GameManager:
         return {
             'room_id': room_id,
             'tournament_id': tournament_id,
-            'match_id': None,
             'players': {},
             'spectators': {},
             'ai_controlled': ai_controlled,
@@ -244,27 +249,19 @@ class GameManager:
                 logger.warning(f"Game not found for room {room_id}")
                 return
 
-            if user_id in game['players']:
-                game['players'][user_id]['ready'] = True
-                
-            # Check if BOTH players are ready (human vs human) or AI match is set
-            players = list(game['players'].values())
-            if len(players) == 2 and all(p.get('ready', False) for p in players):
-                from apps.matchmaking.models import Match
-                from apps.accounts.models import User
-                
-                users = list(game['players'].keys())
-                user1 = await sync_to_async(User.objects.get)(id=users[0])
-                user2 = await sync_to_async(User.objects.get)(id=users[1])
+            # nsure we use the mapped numeric ID
+            mapped_user_id = self.user_id_map.get(user_id, user_id)
 
-                # Create a new Match object asynchronously
-                match = await sync_to_async(Match.objects.create)(
-                    player1=user1,
-                    player2=user2,
-                )
-                game['match_id'] = match.id
+            if mapped_user_id in game['players']:
+                game['players'][mapped_user_id]['ready'] = True
+            # Check if all players are ready before starting
+            players = list(game['players'].values())
+            if all(p.get('ready', False) for p in players):
                 game['game_started'] = True
-                logger.info(f"Game in room '{room_id}'.")
+                logger.info(f"Game in room '{room_id}' has started.")
+            else:
+                logger.info(f"Waiting for both players to be ready in room {room_id}...")
+
                 
     async def set_game_paused(self, room_id, paused=True):
         async with debug_lock(self.locks[room_id]):
@@ -306,7 +303,6 @@ class GameManager:
         }
     
     def reset_game(self, game_state):
-        game_state.clear()
 
         config = self.config
         # Reset scores
@@ -329,66 +325,85 @@ class GameManager:
         game_state['game_started'] = False
         game_state['paused'] = True
 
+        game_state.clear()
+
+    async def get_user(self, identifier):
+        """Fetches user object by ID (if integer) or by username otherwise."""
+        try:
+            if identifier == "Computer":
+                return await sync_to_async(User.objects.get)(username="Computer")  # ✅ Fetch AI user
+            
+            if identifier.isdigit():
+                return await sync_to_async(User.objects.get)(id=int(identifier))
+            
+            return await sync_to_async(User.objects.get)(username=identifier) 
+        
+        except User.DoesNotExist:
+            logger.error(f"User {identifier} not found.")
+            return None
+
+
     async def broadcast_all_states(self):
         for room_id, game_state in self.games.items():
             if not game_state.get('game_started') and not game_state.get('paused'):
                 continue
+
+            left_score = game_state['paddles']['left']['score']
+            right_score = game_state['paddles']['right']['score']
+
             # Check if game is over
-            if game_state['paddles']['right']['score'] >= SCORE_TO_WIN or game_state['paddles']['left']['score'] >= SCORE_TO_WIN:
-                winning_side = 'right' if game_state['paddles']['right']['score'] >= SCORE_TO_WIN else 'left'
-                logger.info(f"The winning_side is: {winning_side}")
-
-                # Find the user_id corresponding to the winning side
-                winner = next(
-                    player['alias'] for player in game_state['players'].values() if player['side'] == winning_side
+            if left_score >= SCORE_TO_WIN or right_score >= SCORE_TO_WIN:
+                player1_id = next(
+                    (player['alias'] for player in game_state['players'].values() if player['side'] == 'left'),
+                    None
                 )
-                logger.info(f"The winner is: {winner}")
-                try: 
-                    player1 = game_state['players']['side']['left'] # Assuming you store the players as 'left' and 'right'
-                    player2 = game_state['players']['side']['right']
-                    score1 = game_state['paddles']['left']['score']
-                    score2 = game_state['paddles']['right']['score']
+                player2_id = "Computer" if game_state['ai_controlled'] else next(
+                    (player['alias'] for player in game_state['players'].values() if player['side'] == 'right'),
+                    None
+                )
 
-                    # Record the match result
-                    record_match(player1, player2, score1, score2)
+                # Fetch User objects
+                player1 = await self.get_user(player1_id) 
+                player2 = await self.get_user(player2_id)
+
+                winner = player1.username if left_score >= SCORE_TO_WIN else player2.username
+                logger.info(f"🏆 The winner is: {winner}")
+
+                try:
+                    if game_state['ai_controlled']:
+                        logger.info(f"AI Game Over! {winner} wins!")
+                        await self.channel_layer.group_send(
+                            f"game_{room_id}",
+                            {
+                                'type': 'game_message',
+                                'data': {
+                                    'type': 'ai_game_over',
+                                    'message': f"Game Over! {winner} wins!",
+                                    'winner': str(winner)
+                                },
+                            }
+                        )
+                    else:
+                        await self.channel_layer.group_send(
+                            f"game_{room_id}",
+                            {
+                                'type': 'game_message',
+                                'data': {
+                                    'type': 'game_over',
+                                    'message': f"Game Over! {winner} wins!",
+                                    'winner': str(winner)
+                                },
+                            }
+                        )
+                except Exception as e:
+                    logger.info(f"Error broadcasting game over message: {e}")
+                try:
+                    await sync_to_async(record_match)(player1, player2, left_score, right_score)
+
                 except Exception as e:
                     logger.error(f"Error recording match: {e}")
 
-                if game_state["tournament_id"] != None:
-                    tournament_id = game_state["tournament_id"]
-                    tournament = self.tournaments.get(tournament_id)
-                    logger.info(f"Tournament node before advance: {tournament}")
-                    await self.advance_tournament_match(tournament_id)
-                    logger.info(f"Tournament node after advance: {tournament}")
-                
-                if game_state['ai_controlled']:
-                    await self.channel_layer.group_send(
-                    f"game_{room_id}", 
-                    {
-                        'type': 'game_message',
-                        'data': {
-                            'type': 'ai_game_over',
-                            'message': f"Game Over! {winner} wins!",
-                            'winner': {'user_id': str(winner)},
-							'match_id': game_state['match_id']
-                        },
-                    }
-                )
-                else:
-                    await self.channel_layer.group_send(
-                        f"game_{room_id}",
-                        {
-                            'type': 'game_message',
-                            'data': {
-                                'type': 'game_over',
-                                'message': f"Game Over! {winner} wins!",
-                                'winner': {'user_id': str(winner)},
-								'match_id': game_state['match_id']
-                            },
-                        }
-                    )
-
-                game_state.clear()
+                self.reset_game(game_state)
 
                 continue
 

@@ -56,8 +56,8 @@ class UserSerializer(serializers.ModelSerializer):
     )
     full_name = serializers.SerializerMethodField()
 
-    wins = serializers.IntegerField(source="profile.wins", read_only=True)
-    losses = serializers.IntegerField(source="profile.losses", read_only=True)
+    wins = serializers.IntegerField(read_only=True) 
+    losses = serializers.IntegerField(read_only=True) 
     match_history = MatchSerializer(source="matches_as_player1", many=True, read_only=True)
 
     class Meta:

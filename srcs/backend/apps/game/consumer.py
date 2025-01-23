@@ -41,10 +41,11 @@ class GameConsumer(AsyncWebsocketConsumer):
                 if key not in self.game_attributes:
                     raise ValueError(f"Missing required key: {key} in token payload")
 
+            
             tournament_id = self.game_attributes["tournament_id"]
             players = self.game_attributes["users"]
             
-            if tournament_id and game_manager.tournaments.get(tournament_id) == None:
+            if tournament_id is not '0' and game_manager.tournaments.get(tournament_id) == None:
                 await game_manager.create_tournament(tournament_id, players)
 
             # Generate group name dynamically
@@ -74,8 +75,10 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         logger.debug(f"WebSocket disconnect: room={self.game_attributes['room_id']}, channel={self.channel_name}, close_code={close_code}")
         game_manager.remove_player(self.game_attributes['room_id'], self.channel_name)
-        if (self.room_group_name):
+        try:
             await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        except Exception as e:
+            logger.error(f"Error during disconnect: {e}")
 
     async def receive(self, text_data):
         logger.debug(f"WebSocket receive: room={self.game_attributes['room_id']}, data={text_data}")

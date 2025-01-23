@@ -1,7 +1,7 @@
 import { wsManager } from './WebSocketManager.js';
 import { fetchUserState } from './fetchUserState.js';
 import { showScreen } from './showScreen.js';
-import { connectToMatchmaking, startPvCMatch } from './WebsocketMatchmaking.js';
+import { connectToMatchmaking } from './WebsocketMatchmaking.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
 // import { GAME_CONFIG, setPlayerID } from './config.js';

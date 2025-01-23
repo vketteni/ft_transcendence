@@ -64,3 +64,4 @@ django-otp
 django-two-factor-auth[phonenumbers]
 qrcode
 django-ratelimit
+debugpy
