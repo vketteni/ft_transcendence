@@ -7,24 +7,60 @@ import logging
 from apps.accounts.models import User
 import uuid
 
+from django.contrib.auth import get_user_model
+import random
+
 
 logger = logging.getLogger(__name__)
 
+
+User = get_user_model() 
+
 class MatchmakingConsumer(JsonWebsocketConsumer):
+
+    def userExists(self, user_id):
+        user_exists = User.objects.filter(id=user_id).exists()
+        if not user_exists:
+            User.objects.create(
+                id=user_id,
+                username=f"{user_id}"  # Ensures a unique username
+            )
+            logger.info(f" New User Created: {user_id} with numeric_id: {user_id}")
+        else:
+            logger.info(f" User {user_id} (numeric_id: {user_id}) already exists.")
+
+    def computerExists(self):
+        computer_exists = User.objects.filter(username="Computer").exists()
+        logger.info(f"Computer Exists: {computer_exists}")
+        if not computer_exists:
+            ai_user_id = random.randint(1000001, 2000000)  # Generate a unique numeric ID
+            User.objects.create(
+                id=ai_user_id,
+                username="Computer"
+            )
+            logger.info(f" AI User 'Computer' created.")
+
     def connect(self):
         logger.info("MatchmakingConsumer().connect() called.")
         # Parse query parameters to determine the queue type
         query_params = parse_qs(self.scope['query_string'].decode())
         self.queue_name = query_params.get('queue_name', [None])[0]
-        unknown_id = query_params.get('player_id', [None])[0]
+        self.player_id = query_params.get('player_id', [None])[0]
         
-        if unknown_id is not None and not unknown_id.isdigit():
-            logger.info(f"unknown_id is not None and not unknown_id.isdigit: {unknown_id}")
-            user = user = User.objects.create(username=str(unknown_id))
-            self.player_id = str(user.id)
-        else:
-            self.player_id = str(unknown_id)
-        
+        if not self.player_id:
+            logger.error("Player ID is missing from the WebSocket request.")
+            return
+        try:
+            self.player_id = int(self.player_id)  # Ensures it's a valid integer
+        except ValueError:
+            logger.error(f"Invalid player ID format: {self.player_id}")
+            return
+
+        self.userExists(self.player_id)
+        self.computerExists()
+
+        logger.info(f"Player {self.player_id} connected to {self.queue_name} queue.")
+
         # Validate queue_name and player_id
         if self.queue_name not in matchmaking_manager.QUEUE_KEYS or not self.player_id:
             self.close()

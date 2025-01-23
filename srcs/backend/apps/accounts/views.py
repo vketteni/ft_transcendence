@@ -217,6 +217,7 @@ class LoginView(APIView):
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
+        logger.info(f"LoginView.post() username: {username} password: {password}")
         user = authenticate(request, username=username, password=password)
         logger.info(f"LoginView.post() user: {user} userid: {user.id}")
         if user is not None:
@@ -301,17 +302,18 @@ from rest_framework.authentication import SessionAuthentication
 # API view for profile management
 class UserProfileView(APIView):
     # authentication_classes = [SessionAuthentication]
-    # authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        logger.info(f"UserProfileView(APIView).get() User: {request.user}")
+
+        logger.info(f"UserProfileView(APIView).get() User: {request.user} User id: {request.user.id}")
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
     def put(self, request):
         # Authenticate the user
-        # jwt_authenticator = JWTAuthentication()
+        jwt_authenticator = JWTAuthentication()
         try:
             # logger.info(f"JWT Access Token: {request.data['access_token']}")
             # user, token = jwt_authenticator.authenticate(request)
@@ -325,6 +327,7 @@ class UserProfileView(APIView):
             serializer = UserSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
+                logger.info(f"serializer.data: {serializer.data}")
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
             return Response({"detail": "Invalid data.", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

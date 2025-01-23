@@ -33,7 +33,7 @@ export async function updateUserInfo() {
 
 export async function loadUserInfo() {
     const token = localStorage.getItem('access_token');
-
+    
     try {
         const response = await fetch('/api/accounts/user/', {
             method: 'GET',
@@ -43,8 +43,12 @@ export async function loadUserInfo() {
             },
         });
 
+        const data = await response.json();
+        console.log("Raw API Response:", data);  // ✅ Log full API response
+
         if (response.ok) {
-            const data = await response.json();
+            console.log("Wins:", data.wins, "Losses:", data.losses);  // ✅ Log extracted values
+
             document.getElementById('profileUsername').textContent = data.username;
             document.getElementById('profileEmail').textContent = data.email;
             document.getElementById('profileFirstName').textContent = data.first_name;

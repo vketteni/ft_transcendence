@@ -79,8 +79,8 @@ class GameConsumer(AsyncWebsocketConsumer):
         game_manager.remove_player(self.game_attributes['room_id'], self.channel_name)
         try:
             await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-        except:
-            logger.debug(f"Disconnect before channel group was created.")
+        except Exception as e:
+            logger.error(f"Error during disconnect: {e}")
 
     async def receive(self, text_data):
         logger.debug(f"WebSocket receive: room={self.game_attributes['room_id']}, data={text_data}")

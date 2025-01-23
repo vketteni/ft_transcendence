@@ -24,7 +24,7 @@ class GameLoop:
         last_broadcast_time = 0
         try:
             while self.manager.running:
-    
+      
                 start = time.perf_counter()
                 dt = start - next_frame_time + frame_duration
     
@@ -33,11 +33,8 @@ class GameLoop:
                         continue
 
                     if game_state.get('game_started'):
-                        try:
-                            await self.update_game_state(self.manager.config, game_state, dt)
-                        except Exception as e:
-                            logger.error(f"Error updating game state for room {room_id}: {e}")
-    
+                        await self.update_game_state(self.manager.config, game_state, dt)
+                        
                 if start - last_broadcast_time >= broadcast_interval:
                     await self.manager.broadcast_all_states()
                     last_broadcast_time = start

@@ -1,5 +1,8 @@
 export function generateUUID() {
-    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    );
+    let id = "";
+    const digits = "0123456789";
+    for (let i = 0; i < 10; i++) { 
+        id += digits[Math.floor(Math.random() * 10)];
+    }
+    return id;
 }

@@ -6,8 +6,6 @@ import time
 import logging
 from redis.exceptions import LockError
 import uuid
-from apps.accounts.models import Match
-from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
 
@@ -83,11 +81,10 @@ class MatchmakingManager:
             
             if queue == "TRNMT":
                 data.update({'tournament_id' : str(uuid.uuid4())})
-
-            users = []
-            for player in players:
-                users.append(str(player))
-            data.update({'users': users})
+            # else:
+            #     data.update({'tournament_id' : str(0)})
+ 
+            data.update({'users': list(players)})
             
             # Notify players of the match
             self._notify_players(**data)
@@ -95,7 +92,7 @@ class MatchmakingManager:
             logger.debug(f"Insufficient players in {queue} queue for matchmaking.")
             return None, None
         # Always return a tuple with players and room_url
-        return users, room_url
+        return players, room_url
 
 
     def _has_sufficient_players(self, queue, players):
@@ -161,9 +158,8 @@ class MatchmakingManager:
                 })
             room_url = generate_shared_game_room_url(**data)
             try:
-               
+
                 channel_name = self.get_player_channel(user_id)
-                logger.info(f"ChANNEl name: {channel_name}")
                 if not channel_name:
                     logger.error(f"No channel found for player {user_id}")
                     continue
@@ -175,6 +171,7 @@ class MatchmakingManager:
                     }
                 )
             except Exception as e:
+                logger.error(f"Failed to notify player {user_id}: {e}")
                 logger.error(f"Failed to notify player {user_id}: {e}")
 
 matchmaking_manager = MatchmakingManager()
