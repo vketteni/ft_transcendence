@@ -37,7 +37,7 @@
 				<button id="2PG" class="btn btn-outline-light btn-md mb-2">2 Player Game</button>
 				<button id="PvP" class="btn btn-outline-light btn-md mb-2">Player vs Player</button>
 				<button id="PvC" class="btn btn-outline-light btn-md mb-2">Player vs Computer</button>
-				<button id="Tournament" class="btn btn-outline-light btn-md">Tournament</button>
+				<button id="tournament-button" class="btn btn-outline-light btn-md">Tournament</button>
 			</div>
 		</div>
     </div>
@@ -153,7 +153,7 @@
         <!-- tournament screen -->
 	<div id="tournament-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
             <!-- Sidebar -->
-        <div id="player-sidebar" class="bg-dark text-light p-3 d-flex flex-column" style="width: 250px;">
+        <div id="player-sidebar" class="bg-dark text-light p-3 d-flex flex-column" style="width: 20%;">
             <h4 class="text-center mb-4">Players</h4>
             <ul class="list-group list-group-flush">
                 <li class="list-group-item bg-dark text-light">1. Alice vs Bob</li>
@@ -182,10 +182,9 @@
         <button type=button id="pvp-back-to-menu" class="btn btn-outline-info btn-lg">Back to menu</button>
     </div>
 
-	<!-- Add friend screen -->
-	<div id="add-friend-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-		<h1 id="pvp-game-over-message" class="mb-3">Add opponent to friend's list</h1>
-		<button type=button id="pvp-add-friend" class="btn btn-outline-info btn-lg mb-3">Add to friends</button>
+	<!-- friends screen -->
+	<div id="friends-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+
 	</div>
     
     <script type="module" src="pong.js"></script>
