@@ -20,7 +20,7 @@ class MatchmakingConsumer(JsonWebsocketConsumer):
         
         if unknown_id is not None and not unknown_id.isdigit():
             logger.info(f"unknown_id is not None and not unknown_id.isdigit: {unknown_id}")
-            user = user = User.objects.create(username=str(uuid.uuid4()))
+            user = user = User.objects.create(username=str(unknown_id))
             self.player_id = str(user.id)
         else:
             self.player_id = str(unknown_id)

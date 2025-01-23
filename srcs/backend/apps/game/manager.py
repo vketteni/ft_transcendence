@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 import traceback
 from contextlib import asynccontextmanager
-SCORE_TO_WIN = 4
+SCORE_TO_WIN = 1
 
 
 class DebugLock(Lock):
@@ -231,6 +231,7 @@ class GameManager:
         }
 
     async def set_game_started(self, room_id, user_id):
+        logger.info("Called set_game_started().")
         async with debug_lock(self.locks[room_id]):
             game = self.games.get(room_id)
             if not game:
@@ -240,10 +241,8 @@ class GameManager:
             if user_id in game['players']:
                 game['players'][user_id]['ready'] = True
                 
-            # Check if BOTH players are ready (human vs human) or AI match is set
             players = list(game['players'].values())
-            if len(players) == 2 and all(p.get('ready', False) for p in players):
-
+            if all(p.get('ready', False) for p in players):
                 game['game_started'] = True
                 logger.info(f"Game in room '{room_id}'.")
                 
@@ -321,51 +320,57 @@ class GameManager:
 
                 # Find the user_id corresponding to the winning side
                 winner = next(
-                    player['alias'] for player in game_state['players'].values() if player['side'] == winning_side
+                    (player['alias'] for player in game_state['players'].values() if player['side'] == winning_side),
+					None
                 )
                 looser = next(
-                    player['alias'] for player in game_state['players'].values() if player['side'] != winning_side
+                    (player['alias'] for player in game_state['players'].values() if player['side'] != winning_side),
+					None
                 )
                 logger.info(f"The winner is: {winner}")
                 
-                next = await self.tournament_manager.advance_next_match(game_state['tournament_id'], looser)
-                if next and len(next) == 2:
-                    data = game_state['game_attributes']
-                    data.update({'next_players': [next[0], next[1]]})
-                    url = generate_shared_game_room_url(**data)
-                    await self.channel_layer.group_send(
-                        f"game_{room_id}",
-                        {
-                            'type': 'game_message',
-                            'data': {
-                                'type': 'tournament',
-                                'winner': {'user_id': str(winner)},
-                                'next' : {
-                                    'players': [next[0], next[1]],
-                                    'url': url
-								}
-                            },
-                        }
-                    )
-                elif next and len(next) == 1:
-                    await self.channel_layer.group_send(
-                        f"game_{room_id}",
-                        {
-                            'type': 'game_message',
-                            'data': {
-                                'type': 'tournament',
-                                'winner': {'user_id': str(winner)}
-                            },
-                        }
-                    )
-                else:
-                    logger.info(next)
-
-                player1 = game_state['players']['side']['left'] # Assuming you store the players as 'left' and 'right'
-                player2 = game_state['players']['side']['right']
-                score1 = game_state['paddles']['left']['score']
-                score2 = game_state['paddles']['right']['score']
-                safe_record_match(player1, player2, score1, score2)
+                tournament_id = game_state.get('tournament_id')
+                if tournament_id:
+                    tournament_result = await self.tournament_manager.advance_next_match(tournament_id, looser)
+                    if len(tournament_result) == 2:
+                        data = game_state['game_attributes']
+                        data.update({'next_players': [tournament_result[0], tournament_result[1]]})
+                        url = generate_shared_game_room_url(**data)
+                        await self.channel_layer.group_send(
+                            f"game_{room_id}",
+                            {
+                                'type': 'game_message',
+                                'data': {
+                                    'type': 'tournament',
+                                    'winner': {'user_id': str(winner)},
+                                    'next' : {
+                                        'players': [tournament_result[0], tournament_result[1]],
+                                        'url': url
+                                    }
+                                },
+                            }
+                        )
+                    elif len(tournament_result) == 1:
+                        await self.channel_layer.group_send(
+                            f"game_{room_id}",
+                            {
+                                'type': 'game_message',
+                                'data': {
+                                    'type': 'tournament',
+                                    'winner': {'user_id': str(winner)}
+                                },
+                            }
+                        )
+                    else:
+                        logger.info("Something happend but I don't know whyat")
+                try:
+                    player1 = game_state['players']['side']['left'] # Assuming you store the players as 'left' and 'right'
+                    player2 = game_state['players']['side']['right']
+                    score1 = game_state['paddles']['left']['score']
+                    score2 = game_state['paddles']['right']['score']
+                    safe_record_match(player1, player2, score1, score2)
+                except:
+                    logger.info("Failed to save gamestate: ")
 
                 if game_state['ai_controlled']:
                     await self.channel_layer.group_send(
@@ -376,7 +381,7 @@ class GameManager:
                             'type': 'ai_game_over',
                             'message': f"Game Over! {winner} wins!",
                             'winner': {'user_id': str(winner)},
-							# 'match_id': game_state['match_id']
+                			# 'match_id': game_state['match_id']
                         },
                     }
                 )
@@ -389,7 +394,7 @@ class GameManager:
                                 'type': 'game_over',
                                 'message': f"Game Over! {winner} wins!",
                                 'winner': {'user_id': str(winner)},
-								# 'match_id': game_state['match_id']
+                                # 'match_id': game_state['match_id']
                             },
                         }
                     )
@@ -420,6 +425,7 @@ class TournamentManager:
 
     async def add(self, tournament_id, players):
         # Initialize the tournament with all players active and waiting
+        logger.info(f"Tournament with id {tournament_id} has been added.")
         self.tournaments[tournament_id] = {
             str(player): {'is_active': True, 'is_waiting': True} for player in players
         }
@@ -428,7 +434,8 @@ class TournamentManager:
         tournament = self.tournaments.get(tournament_id)
         if not tournament:
             raise ValueError(f"Tournament {tournament_id} not found")
-        
+        logger.info(f"Called advance_next_match() with tournament id: {tournament_id}")
+
         # If a loser is provided, mark them as inactive
         if loser:
             if loser in tournament:
@@ -487,7 +494,7 @@ Round 1
     find_match? select players
 		-> round ended
 			-> is_active?
-				Ana Na is_waiting True
+                Ana Na is_waiting True
 Round 2
 	find match? select palyers
 		-> Ana Na is_waiting False

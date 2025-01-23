@@ -28,7 +28,7 @@ class GameLoop:
                 start = time.perf_counter()
                 dt = start - next_frame_time + frame_duration
     
-                for room_name, game_state in self.manager.games.items():
+                for room_id, game_state in self.manager.games.items():
                     if game_state.get('paused', False):
                         continue
 
@@ -36,7 +36,7 @@ class GameLoop:
                         try:
                             await self.update_game_state(self.manager.config, game_state, dt)
                         except Exception as e:
-                            logger.error(f"Error updating game state for room {room_name}: {e}")
+                            logger.error(f"Error updating game state for room {room_id}: {e}")
     
                 if start - last_broadcast_time >= broadcast_interval:
                     await self.manager.broadcast_all_states()
@@ -97,15 +97,15 @@ class GameLoop:
         paddle_center = right_paddle['y'] + paddle_height / 2
         
         current_time = time.perf_counter()
-        if game_state['room_name'] not in self.ai_last_update:
-            self.ai_last_update[game_state['room_name']] = 0
-            self.ai_predicted_y[game_state['room_name']] = ball['y'] 
+        if game_state['room_id'] not in self.ai_last_update:
+            self.ai_last_update[game_state['room_id']] = 0
+            self.ai_predicted_y[game_state['room_id']] = ball['y'] 
         
-        if current_time - self.ai_last_update.get(game_state['room_name'], 0) >= 1:
-            self.ai_last_update[game_state['room_name']] = current_time
-            self.ai_predicted_y[game_state['room_name']] = self.predict_ball_position(ball, canvas_height, right_paddle['x'])
+        if current_time - self.ai_last_update.get(game_state['room_id'], 0) >= 1:
+            self.ai_last_update[game_state['room_id']] = current_time
+            self.ai_predicted_y[game_state['room_id']] = self.predict_ball_position(ball, canvas_height, right_paddle['x'])
         
-        predicted_y = self.ai_predicted_y[game_state['room_name']]
+        predicted_y = self.ai_predicted_y[game_state['room_id']]
 
         ai_input = ai_player['input']
         ai_input['up'] = False
