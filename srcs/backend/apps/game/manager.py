@@ -210,11 +210,15 @@ class GameManager:
         game_type = kwargs.get('game_type')
         room_id = kwargs.get('room_id')
         tournament_id = kwargs.get('tournament_id')
+        users = kwargs.get('users')
+        room_size = len(users)
+
         config = self.config
         ai_controlled = ( game_type == "PVC" )
         return {
             'room_id': room_id,
             'tournament_id': tournament_id,
+            'room_size': room_size,
             'players': {},
             'spectators': {},
             'ai_controlled': ai_controlled,
@@ -256,7 +260,8 @@ class GameManager:
                 game['players'][mapped_user_id]['ready'] = True
             # Check if all players are ready before starting
             players = list(game['players'].values())
-            if all(p.get('ready', False) for p in players):
+            logger.info(f"Players in room {room_id}: {players}")
+            if all(game['room_size'] == len(players) and p.get('ready', False) for p in players):
                 game['game_started'] = True
                 logger.info(f"Game in room '{room_id}' has started.")
             else:

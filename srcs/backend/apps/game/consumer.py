@@ -44,7 +44,8 @@ class GameConsumer(AsyncWebsocketConsumer):
             
             tournament_id = self.game_attributes["tournament_id"]
             players = self.game_attributes["users"]
-            
+            logger.info(f"Users: {players}")
+
             if tournament_id is not '0' and game_manager.tournaments.get(tournament_id) == None:
                 await game_manager.create_tournament(tournament_id, players)
 
