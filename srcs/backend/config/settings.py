@@ -39,8 +39,6 @@ INSTALLED_APPS = [
 	'django_celery_beat',
     'rest_framework',
     'rest_framework_simplejwt',
-    'django_otp',
-    'django_otp.plugins.otp_totp',
 
     # Local Apps
     'apps.accounts',
@@ -57,7 +55,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django_otp.middleware.OTPMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -208,7 +205,6 @@ CELERY_TASK_SERIALIZER = 'json'
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI')
-
 
 # CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 

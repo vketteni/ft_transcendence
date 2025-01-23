@@ -194,7 +194,11 @@ def register_user(request):
         alias = request.data.get('alias')
         password = make_password(request.data.get('password'))
         email = request.data.get('email')
-        
+        try:
+            avatar = request.FILES.get('avatar')
+        except Exception as e:
+            return Response({"equest.FILES.get('avatar')": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         if User.objects.filter(username=alias).exists():
             return Response({"error": "Alias already taken."}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -204,6 +208,14 @@ def register_user(request):
             email=email,
             is_active=True
         )
+        logger.info(f"avatar: {avatar}")
+        try:
+            if avatar:
+                user.avatar.save(avatar.name, avatar)
+            user.save()
+        except Exception as e:
+            return Response({"save error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         return Response({"message": "User created successfully.", "username": alias}, status=status.HTTP_201_CREATED)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -303,7 +315,7 @@ class UserProfileView(APIView):
 
     def get(self, request):
         logger.info(f"UserProfileView(APIView).get() User: {request.user}")
-        serializer = UserSerializer(request.user)
+        serializer = UserSerializer(request.user, context={'request': request})
         return Response(serializer.data)
 
     def put(self, request):
@@ -313,7 +325,7 @@ class UserProfileView(APIView):
             # logger.info(f"JWT Access Token: {request.data['access_token']}")
             # user, token = jwt_authenticator.authenticate(request)
             user = request.user
-
+            avatar = request.FILES.get('avatar')
             if not user:
                 return Response({"detail": "Authentication failed. Invalid or missing token."}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -321,6 +333,11 @@ class UserProfileView(APIView):
             logger.info(f"Request data: {request.data}")
             serializer = UserSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
+                if avatar:
+                    logger.info(f"Saving avatar: {avatar.name}")
+                    if user.avatar and user.avatar.name != "avatars/default-avatar.jpg":
+                        user.avatar.delete(save=False)
+                    user.avatar.save(avatar.name, avatar)
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
 

@@ -6,6 +6,7 @@ services:
       dockerfile: backend/Dockerfile
     volumes:
       - ./backend:/app
+      - ./backend/media:/app/media
     ports:
       - "8000:8000"
     command: ["watchfiles", "daphne -b 0.0.0.0 -p 8000 config.asgi:application"]
