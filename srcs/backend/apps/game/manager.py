@@ -362,6 +362,7 @@ class GameManager:
                 player1 = await self.get_user(player1_id) 
                 player2 = await self.get_user(player2_id)
 
+
                 winner = player1.username if left_score >= SCORE_TO_WIN else player2.username
                 looser = player1.username if left_score < SCORE_TO_WIN else player2.username
                 
@@ -401,8 +402,6 @@ class GameManager:
                         )
                     else:
                         logger.info("Something happend but I don't know whyat")
-
-
 
                 try:
                     if game_state['ai_controlled']:

@@ -24,8 +24,8 @@ function handleGameMessage(event) {
             break;
 		case 'ai_game_over':
 			console.log("AI Game Over!", data);
-			const winner = data.winner;
-			const gameOverMessage = `Game Over! ${winner} wins!`;
+			winner = data.winner;
+			gameOverMessage = `Game Over! ${winner} wins!`;
 			document.getElementById('ai-game-over-message').textContent = gameOverMessage;
 			showScreen('ai-game-over-screen');
             wsManager.close('game');
@@ -34,7 +34,7 @@ function handleGameMessage(event) {
         case 'game_over':
             console.log("Game Over!", data);
             winner = data.winner;
-            gameOverMessage = `Game Over! ${PVPwinner} wins!`;
+            gameOverMessage = `Game Over! ${winner} wins!`;
             document.getElementById('pvp-game-over-message').textContent = gameOverMessage;
             showScreen('pvp-game-over-screen');
             wsManager.close('game');
