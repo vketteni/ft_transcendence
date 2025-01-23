@@ -42,7 +42,7 @@ async function refreshAccessToken() {
 function logout() {
     localStorage.removeItem('access_token');
     alert("Session expired. Please log in again.");
-    showScreen('registration-screen'); // Redirect to login screen
+    showScreen('signup-screen'); // Redirect to login screen
 }
 
 export async function fetchGameData() {

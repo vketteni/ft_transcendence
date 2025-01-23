@@ -3,6 +3,7 @@
     <head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<title>Pong!</title>
 		<!-- Bootstrap CSS -->
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,30 +15,31 @@
     
 <body class="bg-black text-white vh-100 overflow-hidden">
 
-	<header id="header" class="bg-danger-subtle py-1">
-		<div class="container d-flex justify-content-between align-items-center">
-		  <div id="logo" class="text-black text-decoration-none fs-5 fw-bold">Pong!</div>
-		  <nav id="topbar-nav">
-			<ul class="nav">
-			  <li class="nav-item logged-out"><a class="nav-link text-black" href="#login">Login</a></li>
-			  <li class="nav-item logged-in"><a class="nav-link text-black" href="#logout">Logout</a></li>
-			  <li class="nav-item logged-in"><a class="nav-link text-black" href="#profile">Profile</a></li>
-			  <!-- <li class="nav-item"><a class="nav-link text-white" href="#leaderboard">Leaderboard</a></li> -->
-			  <!-- <li class="nav-item"><a class="nav-link text-white" href="#signup">Sign Up</a></li> -->
-			</ul>
-		  </nav>
-		</div>
-	  </header>
-
    <!-- category screen -->
-   <div id="category-screen" 
-        class="d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-		<img src="title.png" alt="Game Title" class="img-fluid" style="max-width: 400px;">
-        <div class="d-grid gap-2 col-4 mx-auto">
-            <button id="PvP" class="btn btn-outline-light btn-lg mb-2">Player vs Player</button>
-            <button id="PvC" class="btn btn-outline-light btn-lg mb-2">Player vs Computer</button>
-            <button id="Tournament" class="btn btn-outline-light btn-lg">Tournament</button>
-        </div>
+   <div id="category-screen">
+		<header class="bg-danger-subtle py-1">
+			<div class="container d-flex justify-content-between align-items-center">
+			  <div id="logo" class="text-black text-decoration-none fs-5 fw-bold">Pong!</div>
+			  <nav id="topbar-nav">
+				<ul class="nav">
+				  <li class="nav-item logged-out"><a class="nav-link text-black" href="#login">Login</a></li>
+				  <li class="nav-item logged-in"><a class="nav-link text-black" href="#logout">Logout</a></li>
+				  <li class="nav-item logged-in"><a class="nav-link text-black" href="#profile">Profile</a></li>
+				  <!-- <li class="nav-item"><a class="nav-link text-white" href="#leaderboard">Leaderboard</a></li> -->
+				  <!-- <li class="nav-item"><a class="nav-link text-white" href="#signup">Sign Up</a></li> -->
+				</ul>
+			  </nav>
+			</div>
+		</header>
+		<div class="d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+			<img src="title.png" alt="Game Title" class="img-fluid" style="max-width: 400px;">
+			<div class="d-grid gap-2 col-4 mx-auto">
+				<button id="2PG" class="btn btn-outline-light btn-md mb-2">2 Player Game</button>
+				<button id="PvP" class="btn btn-outline-light btn-md mb-2">Player vs Player</button>
+				<button id="PvC" class="btn btn-outline-light btn-md mb-2">Player vs Computer</button>
+				<button id="Tournament" class="btn btn-outline-light btn-md">Tournament</button>
+			</div>
+		</div>
     </div>
 
 	<!-- Login Screen -->
@@ -48,7 +50,7 @@
 			<input type="password" id="login-password" class="form-control mb-3" placeholder="Enter your password" required>
 			<div class="d-grid gap-2 mx-auto">
                 <button type="submit" class="btn btn-outline-light btn-lg mb-3">Login</button>
-                <div><p>Don't have an account? <button id="registration-button" class="btn btn-outline-success btn-sm">Sign Up</button></p></div>
+                <div><p>Don't have an account? <button id="signup-button" class="btn btn-outline-success btn-sm">Sign Up</button></p></div>
                 <p>----------------------- OR -----------------------</p>
                 <button id="login-42-button" class="btn btn-outline-primary btn-lg mb-3">Login with <img src="42logo.png" style="height: 24px"></button>
             </div>
@@ -82,10 +84,12 @@
 				<p><strong>Email:</strong> <span id="profileEmail"></span></p>
 				<p><strong>First Name:</strong> <span id="profileFirstName"></span></p>
 				<p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
-				<p><strong>Wins:</strong> <span id="profileWins">0</span></p>
-                <p><strong>Losses:</strong> <span id="profileLosses">0</span></p>
-                <button id="editProfileButton" class="btn btn-outline-light btn-lg">Edit Profile</button>
+				<p><strong>Wins:</strong> <span id="profileLastName"></span></p>
+				<p><strong>Losses:</strong> <span id="profileLastName"></span></p>
+				<button class="btn btn-outline-warning btn-md mb-2">Friends</button>
+				<button class="btn btn-outline-success btn-md mb-2">Match History</button>
 			</div>
+			<button id="editProfileButton" class="btn btn-outline-light btn-sm mt-3">Edit Profile</button>
 			<button id="profile-exit" class="btn btn-outline-info btn-sm mt-3">Back to menu</button>
         </div>
 
@@ -129,6 +133,13 @@
         <!-- <button id="matchmaking-exit" class="btn btn-lg btn-outline-info mt-3">Back to menu</button> -->
     </div>
 
+	<!-- 2PG waiting screen-->
+    <div id="2PG-waiting-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+        <h1 id="waiting-text">Loading...</h1>
+        <!-- <div id="2PGtimerDisplay">0s</div> -->
+        <!-- <button id="matchmaking-exit" class="btn btn-lg btn-outline-info mt-3">Back to menu</button> -->
+    </div>
+
     <!-- game screen -->
 	<div id="game-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
 		<div class="game-container d-flex flex-column justify-content-center align-items-center">
@@ -166,9 +177,16 @@
     <!-- PVP Game Over Screen -->
     <div id="pvp-game-over-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
         <h1 id="pvp-game-over-message" class="mb-3">Game Over!</h1>
+		<button type=button id="pvp-add-friend" class="btn btn-outline-info btn-lg mb-3">Add to friends</button>
         <button type=button id="pvp-play-again-button" class="btn btn-outline-light btn-lg mb-3">Rematch</button>
         <button type=button id="pvp-back-to-menu" class="btn btn-outline-info btn-lg">Back to menu</button>
     </div>
+
+	<!-- Add friend screen -->
+	<div id="add-friend-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+		<h1 id="pvp-game-over-message" class="mb-3">Add opponent to friend's list</h1>
+		<button type=button id="pvp-add-friend" class="btn btn-outline-info btn-lg mb-3">Add to friends</button>
+	</div>
     
     <script type="module" src="pong.js"></script>
 	<script type="module" src="buttons.js"></script>
