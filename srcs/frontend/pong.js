@@ -16,7 +16,7 @@ import { Buttons } from './buttons.js';
 
 DOM.canvas.width = GAME_CONFIG.canvasWidth;
 DOM.canvas.height = GAME_CONFIG.canvasHeight;
-export let is2PG = false;
+let is2PG = false;
 
 
 DOM.loginForm.addEventListener('submit', async (e) => {
@@ -283,3 +283,22 @@ window.addEventListener("beforeunload", () => {
         wsManager.close('game');
     }
 });
+
+//2PG buttons
+DOM.twoPGButton.addEventListener('click', () => {
+	is2PG = true;
+	console.log("2PG button clicked, showing matchmaking screen...");
+	showScreen('2PG-waiting-screen');
+	twoPGTimer.start();
+	connectToMatchmaking("2PG");
+});
+// DOM.twoPGplayAgainButton.addEventListener('click', () => {
+// 	is2PG = true;
+// 	showScreen('2PG-waiting-screen');
+// 	twoPGTimer.start();
+// 	connectToMatchmaking("2PG");
+// });
+// DOM.twoPGbackToMenuButton.addEventListener('click', () => {
+// 	is2PG = false;
+// 	showScreen('category-screen');
+// });

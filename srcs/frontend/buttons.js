@@ -4,7 +4,7 @@ import { showScreen } from './showScreen.js';
 import { connectToMatchmaking, startPvCMatch } from './WebsocketMatchmaking.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
-import { is2PG } from './pong.js';
+// import { is2PG } from './pong.js';
 // import { GAME_CONFIG, setPlayerID } from './config.js';
 // import { resizeCanvas } from './render.js';
 // import { handleLoginRedirect, setLoginState } from './auth.js';
@@ -151,27 +151,6 @@ export const Buttons = {
         });
     },
 };
-
-//2PG buttons
-DOM.twoPGButton.addEventListener('click', () => {
-	is2PG = true;
-    console.log("2PG button clicked, showing matchmaking screen...");
-    showScreen('2PG-waiting-screen');
-    twoPGTimer.start();
-    connectToMatchmaking("2PG");
-});
-
-DOM.twoPGplayAgainButton.addEventListener('click', () => {
-    is2PG = true;
-	showScreen('2PG-waiting-screen');
-    twoPGTimer.start();
-    connectToMatchmaking("2PG");
-});
-
-DOM.twoPGbackToMenuButton.addEventListener('click', () => {
-	is2PG = false;
-    showScreen('category-screen');
-});
 
 
 
