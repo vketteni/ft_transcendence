@@ -178,10 +178,6 @@ DOM.PvPbackToMenuButton.addEventListener('click', () => {
     wsManager.close('game');
 });
 
-DOM.homeLink.addEventListener('click', () => {
-	showScreen('category-screen');
-});
-
 setCookie('browser_id', generateUUID(), {
     path: '/',
     // domain: '127.0.0.1', // Set this to match the backend's domain
@@ -290,16 +286,16 @@ DOM.editProfileForm.addEventListener("submit", async (event) => {
             body: formData,
             credentials: 'include',
         });
-        const data = await response.json();
         if (response.ok)
-        {
+            {
+                const data = await response.json();
             console.log("Profile updated successfully:", data);
             // Update the profile view with the new data
             DOM.profileUsername.textContent = data.username;
             DOM.profileEmail.textContent = data.email;
             DOM.profileFirstName.textContent = data.first_name || 'N/A';
             DOM.profileLastName.textContent = data.last_name || 'N/A';
-
+            
             if (data.avatar_url) {
                 console.log("New avatar URL:", data.avatar_url);
                 DOM.profileAvatar.src = data.avatar_url; // Update avatar image
@@ -311,14 +307,21 @@ DOM.editProfileForm.addEventListener("submit", async (event) => {
             DOM.profileView.classList.remove("d-none");
         }
         else
-            alert(`Failed to update profile: ${data.error || data.detail}`);
+        {
+            const errorData = await response.json();
+            if (errorData.errors?.email) {
+                alert(`Email Error: ${errorData.errors.email[0]}`);
+            } else {
+                alert('Failed to update profile. Please check your input.');
+            }
+            return;
+        }
     } catch (error) {
         console.error('Error updating profile:', error);
         alert('An unexpected error occurred. Please try again later.');
     }
 });
 
-// Show the edit form and hide the view
 DOM.editProfileButton.addEventListener("click", () => {
     console.log("editProfileButton.addEventListener");
     DOM.profileView.classList.add("d-none");
@@ -329,7 +332,6 @@ DOM.editProfileButton.addEventListener("click", () => {
         email: DOM.profileEmail.textContent,
         first_name: DOM.profileFirstName.textContent,
         last_name: DOM.profileLastName.textContent,
-		twoFA: DOM.profile2fa.textContent
     };
 
     DOM.editUsername.value = profileData.username;

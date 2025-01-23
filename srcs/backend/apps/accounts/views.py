@@ -331,7 +331,7 @@ class UserProfileView(APIView):
 
             # Validate and update the user's profile
             logger.info(f"Request data: {request.data}")
-            serializer = UserSerializer(user, data=request.data, partial=True)
+            serializer = UserSerializer(user, data=request.data, context={'request': request}, partial=True)
             if serializer.is_valid():
                 if avatar:
                     logger.info(f"Saving avatar: {avatar.name}")

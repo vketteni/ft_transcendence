@@ -125,6 +125,8 @@ class UserSerializer(serializers.ModelSerializer):
             logger.error(f"Error in get_avatar_url: {str(e)}", exc_info=True)
             return None
 
+    
+
     def create(self, validated_data):
         """
         Handles user creation. Ensures the password is hashed.
