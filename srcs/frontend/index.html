@@ -150,20 +150,26 @@
 		</div>
 	</div>
 
-        <!-- tournament screen -->
+    <!-- tournament screen -->
 	<div id="tournament-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-            <!-- Sidebar -->
-        <div id="player-sidebar" class="bg-dark text-light p-3 d-flex flex-column" style="width: 20%;">
-            <h4 class="text-center mb-4">Players</h4>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item bg-dark text-light">1. Alice vs Bob</li>
-                <li class="list-group-item bg-dark text-light">2. Charlie vs Dave</li>
-                <li class="list-group-item bg-dark text-light">3. Eve vs Frank</li>
-            </ul>
-        </div>
-		<div class="game-container d-flex flex-column justify-content-center align-items-center">
-			<div id="timerDisplay" class="visually-hidden"></div>
-			<canvas id="canvas" class="border border-2 border-white"></canvas>
+		<div class="container-fluid h-100">
+			<div class="row h-100">
+				<!-- Game Column -->
+				<div class="col-9 d-flex flex-column justify-content-center align-items-center">
+					<div id="timerDisplay" class="visually-hidden"></div>
+					<canvas id="canvas" class="border border-2 border-white w-100"></canvas>
+					<button id="tournament-pause-button" class="btn btn-lg btn-outline-light mt-3">Pause</button>
+				</div>
+	
+				<!-- Player Sidebar -->
+				<div id="player-sidebar" class="col-3 bg-dark text-light p-3 d-flex flex-column justify-content-center align-items-center">
+					<h4 class="text-center mb-4">Round 1</h4>
+					<ul class="list-group list-group-flush">
+						<li class="list-group-item bg-dark text-success">1. Alice vs Bob</li>
+						<li class="list-group-item bg-dark text-light">2. Charlie vs Dave</li>
+					</ul>
+				</div>
+			</div>
 		</div>
 	</div>
 
