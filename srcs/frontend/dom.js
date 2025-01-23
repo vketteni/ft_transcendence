@@ -3,7 +3,6 @@ export const DOM = {
     topBar: document.getElementById('topbar'),
     topBarNav: document.getElementById('topbar-nav'),
     topBarLogo: document.getElementById('logo'),
-	navNav: document.getElementById("naver"),
 
     // game canvas
     canvas: document.getElementById('canvas'),
@@ -11,25 +10,32 @@ export const DOM = {
 
     // screens
     gameScreen: document.getElementById('game-screen'),
+	AIgameOverScreen: document.getElementById('ai-game-over-screen'),
+	PvPgameOverScreen: document.getElementById('pvp-game-over-screen'),
+	twoPGgameOverScreen: document.getElementById('2PG-game-over-screen'),
 
-    // registrationScreen: document.getElementById('registration-screen'),
+    registrationScreen: document.getElementById('registration-screen'),
     loginScreen: document.getElementById('login-screen'),
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
-    matchmakingScreen: document.getElementById('matchmaking-screen'),
+    
+
+	//waiting screens
     AIwaitingScreen: document.getElementById('ai-waiting-screen'),
 	twoPGwaitingScreen: document.getElementById('2PG-waiting-screen'), 
-
+	matchmakingScreen: document.getElementById('matchmaking-screen'),
+	
+	//timers
 	twoPGTimer: document.getElementById('2PGtimerDisplay'),
     AItimer: document.getElementById('AItimerDisplay'),
     matchmakingTimer: document.getElementById('timerDisplay'),
     userprofileScreen: document.getElementById('userprofile-screen'),
     
-    // login/signup screen
-    loginButton: document.getElementById('login-button'),
+    
     
     
     // registrationButton
+	loginButton: document.getElementById('login-button'),
     registrationButton: document.getElementById('registration-button'),
     
     loginForm: document.getElementById('login-form'),
@@ -74,28 +80,22 @@ export const DOM = {
     profileFirstName: document.getElementById('profileFirstName'),
     profileLastName: document.getElementById('profileLastName'),
     
-    // Game screen
+    // Game buttons
     pauseButton: document.getElementById('pause-button'),
 	exitButton: document.getElementById('game-exit'),
-
-	//Matchmaking screen
-	// matchmakingExitButton: document.getElementById('matchmaking-exit'),
     
     // AI Game over screen
-    AIgameOverScreen: document.getElementById('ai-game-over-screen'),
     AIgameOverMessage: document.getElementById('ai-game-over-message'),
     AIplayAgainButton: document.getElementById('ai-play-again-button'),
     AIbackToMenuButton: document.getElementById('ai-back-to-menu'),
 
     // PVP Game over screen
-    PvPgameOverScreen: document.getElementById('pvp-game-over-screen'),
     PvPgameOverMessage: document.getElementById('pvp-game-over-message'),
     PvPplayAgainButton: document.getElementById('pvp-play-again-button'),
     PvPbackToMenuButton: document.getElementById('pvp-back-to-menu'),
 	PvPaddFriendButton: document.getElementById('pvp-add-friend'),
 
 	//2PG
-    twoPGgameOverScreen: document.getElementById('2PG-game-over-screen'),
     twoPGgameOverMessage: document.getElementById('2PG-game-over-message'),
     twoPGplayAgainButton: document.getElementById('2PG-play-again-button'),
     twoPGbackToMenuButton: document.getElementById('2PG-back-to-menu'),

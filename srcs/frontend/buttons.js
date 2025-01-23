@@ -78,7 +78,6 @@ export const Buttons = {
         });
 
         DOM.profileExitButton.addEventListener('click', () => {
-			is2PG = false;
             showScreen('category-screen');
         });
 

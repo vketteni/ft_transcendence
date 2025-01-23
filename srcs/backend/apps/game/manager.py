@@ -261,7 +261,7 @@ class GameManager:
                 continue
             
             # Check if game is over
-            if game_state['paddles']['right']['score'] >= 10 or game_state['paddles']['left']['score'] >= 10:
+            if game_state['paddles']['right']['score'] >= 3 or game_state['paddles']['left']['score'] >= 3:
                 winner = "Right Player" if game_state['paddles']['right']['score'] >= 5 else "Left Player"
                 
                 if game_state['ai_controlled']:

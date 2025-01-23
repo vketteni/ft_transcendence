@@ -289,8 +289,8 @@ DOM.twoPGButton.addEventListener('click', () => {
 	is2PG = true;
 	console.log("2PG button clicked, showing matchmaking screen...");
 	showScreen('2PG-waiting-screen');
-	twoPGTimer.start();
-	connectToMatchmaking("2PG");
+	// twoPGTimer.start();
+	// connectToMatchmaking("2PG");
 });
 // DOM.twoPGplayAgainButton.addEventListener('click', () => {
 // 	is2PG = true;
