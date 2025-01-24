@@ -3,8 +3,9 @@ import { stopAndResetTimer } from './buttons.js';
 import { wsManager } from './WebSocketManager.js';
 import { connectToGame } from './WebsocketGameroom.js';
 import { showScreen } from './showScreen.js';
+import { DOM } from './dom.js';
 
-export function connectToMatchmaking(queue_type="PVP") {
+export function connectToMatchmaking(queue_type) {
     wsManager.connect(
         'matchmaking',
         `/ws/matchmaking?queue_name=${queue_type}&player_id=${getPlayerID()}`,
@@ -24,7 +25,23 @@ function handleMatchmakingMessage(event) {
 
         case 'match_found':
             console.log('Match found:', message.data);
-            promptForGameConnection(message.data);
+			
+			wsManager.close('matchmaking');
+			stopAndResetTimer();
+
+			promptForGameConnection(
+				"Match found. Join game?",
+				() => { // onAccept logic
+					showScreen('game-screen');
+					connectToGame(message.data.room_url);
+					wsManager.send('game', { action: 'player_ready' });
+				},
+				() => { // onReject logic
+					console.log('Game declined.');
+					showScreen('category-screen')
+					// Additional logic if needed
+				}
+			);
             break;
 
 		case 'error':
@@ -40,22 +57,22 @@ function handleMatchmakingClose(event) {
 	if (!wsManager.sockets['game'])
 	{
 		console.warn('Matchmaking WebSocket closed. Retrying...');
-		setTimeout(connectToMatchmaking, 1000);
+		// setTimeout(connectToMatchmaking, 1000);
 	}
 }
 
-function promptForGameConnection(data) {
-	console.log("Game Url:", data.room_url);
+function promptForGameConnection(prompt, onAccept, onReject) {
+    showScreen('accept-screen');
+    
+	DOM.acceptText.innerText = prompt;
 
-	stopAndResetTimer();
-    const accept = confirm(`Match found. Join game?`);
-    if (accept) {
-        wsManager.close('matchmaking');
-        connectToGame(data.room_url);
-        wsManager.send('game', { action: 'player_ready' });
-        showScreen('game-screen');
-    } else {
-        console.log('Game declined.');
-    }
+    // Attach dynamic event listeners
+    DOM.acceptButton.onclick = () => {
+        onAccept(); // Execute the passed "Accept" logic
+    };
+    DOM.rejectButton.onclick = () => {
+        onReject(); // Execute the passed "Reject" logic
+    };
 }
+
 

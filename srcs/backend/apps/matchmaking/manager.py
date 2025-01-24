@@ -10,7 +10,7 @@ import uuid
 logger = logging.getLogger(__name__)
 
 MAX_WAIT_TIME = 30
-TOURNAMENT_SIZE = 3
+TOURNAMENT_SIZE = 4
 
 class MatchmakingManager:
     QUEUE_KEYS = {
@@ -106,8 +106,6 @@ class MatchmakingManager:
         Returns:
             bool: True if sufficient players are present, False otherwise.
         """
-        logger.info("_has_sufficient_players() called.")
-        logger.info(f"queue: {queue}, players: {players}.")
         required_sizes = {
             "PVP": 2,
             "PVC": 1,

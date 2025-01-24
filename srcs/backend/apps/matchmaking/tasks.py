@@ -13,5 +13,6 @@ def run_matchmaking():
     logger.info(f"run_matchmaking() called.")
 
     for queue in manager.QUEUE_KEYS:  # Iterate over all queues
+        logger.debug(f"Run matchmaking for {queue}")
         players, room_url = manager.find_match(queue)
-        logger.debug(f"Run matchmaking for {queue}: {players}")
+        manager.cleanup_stale_entries()

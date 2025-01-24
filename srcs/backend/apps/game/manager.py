@@ -7,6 +7,8 @@ from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 import hashlib
 from apps.matchmaking.manager import generate_shared_game_room_url
+import redis 
+import time
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -46,7 +48,7 @@ from apps.accounts.services import record_match
 
 class GameManager:
 
-    def __init__(self):
+    def __init__(self, redis_host="redis", redis_port=6379):
         self.games = {}  # {room_id: game_state_dict}
         self.tournament_manager = TournamentManager()
         self.running = False
@@ -54,6 +56,8 @@ class GameManager:
         self.locks = defaultdict(DebugLock)
         self.game_loop = GameLoop(self)
         self.user_id_map = {} 
+        self.redis_client = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
+        self.CHANNEL_MAP_KEY = "game:channel_map"
 
         self.config = {
             'canvas': {'width': 800, 'height': 600},
@@ -66,6 +70,16 @@ class GameManager:
                 'speed': 350
             }
         }
+
+    def add_channel_to_player_map(self, player_id, channel_name):
+        logger.info(f"user {player_id} adds channel {channel_name}")
+        self.redis_client.hset(self.CHANNEL_MAP_KEY, player_id, channel_name)
+
+    def get_player_channel(self, player_id):
+        """Get the WebSocket channel name for a player."""
+        logger.info(f"user {player_id} gets channel {self.redis_client.hget(self.CHANNEL_MAP_KEY, player_id)}")
+        return self.redis_client.hget(self.CHANNEL_MAP_KEY, player_id)
+    
     async def start(self):
         try:
             if self.running:
@@ -87,6 +101,7 @@ class GameManager:
         logger.debug("GameManager stopped.")
  
     async def create_or_get_game(self, **kwargs):
+        logger.info(f"Called create_or_get_game()")
         room_id = kwargs.get('room_id')
         
         logger.debug(f"create_or_get_game() called for room_id={room_id}")
@@ -99,7 +114,7 @@ class GameManager:
         async with room_lock:
             logger.debug(f"Acquired lock for room_id={room_id}")
 
-            if room_id not in self.games:
+            if room_id not in self.games or not self.games[room_id]:
                 self.games[room_id] = self.initial_game_state(**kwargs)
 
             return self.games[room_id]
@@ -138,10 +153,12 @@ class GameManager:
             if game is None:
                 raise RuntimeError(f"Could not create or retrieve game for room {room_id}")
             
+            logger.info(f"Debug log of gamestate: {game}")
+
             # Assign player to the current match
             if user_id not in next_players:
                 # Add to spectators if both player slots are filled
-                game['spectators'][user_id] = {'watching': True,}
+                game['spectators'][user_id] = {'watching': True}
                 logger.info(f"Added {user_id} as a spectator for match {room_id}")
                 return  # Spectators don't participate in the match directly
             
@@ -199,6 +216,7 @@ class GameManager:
             game['players'][user_id]['alias'] = alias
 
     def initial_game_state(self, **kwargs):
+        logger.info("Called initial_game_state().")
         game_type = kwargs.get('game_type')
         room_id = kwargs.get('room_id')
         tournament_id = kwargs.get('tournament_id')
@@ -240,7 +258,7 @@ class GameManager:
         }
 
     async def set_game_started(self, room_id, user_id):
-        logger.info("Called set_game_started().")
+        logger.info(f"Called set_game_started(). User id: {user_id}")
         async with debug_lock(self.locks[room_id]):
             game = self.games.get(room_id)
             if not game:
@@ -249,10 +267,19 @@ class GameManager:
 
             if user_id in game['players']:
                 game['players'][user_id]['ready'] = True
-                
+            if user_id in game['spectators']:
+                game['spectators'][user_id]['ready'] = True
+
             players = list(game['players'].values())
+            spectators = list(game['spectators'].values())
+            total_players = len(players) + len(spectators)
+            all_players_ready = all(p.get('ready', False) for p in players)
+            all_spectators_ready = all(s.get('ready', False) for s in spectators)
+
             logger.info(f"Players in room {room_id}: {players}")
-            if all(game['room_size'] == len(players) and p.get('ready', False) for p in players):
+            logger.info(f"Total players (num): {total_players} 'all_players_ready': {all_players_ready}: 'all_spectators_ready'{all_spectators_ready}")
+
+            if total_players == game['room_size'] and all_players_ready and all_spectators_ready:
                 game['game_started'] = True
                 logger.info(f"Game in room '{room_id}' has started.")
             else:
@@ -362,7 +389,6 @@ class GameManager:
                 player1 = await self.get_user(player1_id) 
                 player2 = await self.get_user(player2_id)
 
-
                 winner = player1.username if left_score >= SCORE_TO_WIN else player2.username
                 looser = player1.username if left_score < SCORE_TO_WIN else player2.username
                 
@@ -371,73 +397,85 @@ class GameManager:
                 tournament_id = game_state.get('tournament_id')
                 if tournament_id:
                     tournament_result = await self.tournament_manager.advance_next_match(tournament_id, looser)
+                    logger.info(f"Tournament result: {tournament_result}")
                     if len(tournament_result) == 2:
+                        logger.info(f"Tournament match finished, next up {tournament_result}")
                         data = game_state['game_attributes']
                         data.update({'next_players': [tournament_result[0], tournament_result[1]]})
-                        url = generate_shared_game_room_url(**data)
+                        for user_id in data.get('users'):
+                            logger.info(f"Inside broadcast and tournaments: user in game attributes: {user_id}")
+                            data.update({'user_id': user_id})
+                            url = generate_shared_game_room_url(**data)
+                            player_channel = self.get_player_channel(user_id)
+                            await self.channel_layer.send(
+                                player_channel,
+                                {
+                                    'type': 'game_message',
+                                    'data': {
+                                        'type': 'tournament',
+                                        'winner': str(winner),
+                                        'next' : {
+                                            'players': [tournament_result[0], tournament_result[1]],
+                                            'url': url
+                                        }
+                                    },
+                                }
+                            )
+                    elif len(tournament_result) > 2 and tournament_result.isdigit():
+                        logger.info(f"Tournament finished, winner is {winner}")
                         await self.channel_layer.group_send(
                             f"game_{room_id}",
                             {
                                 'type': 'game_message',
                                 'data': {
                                     'type': 'tournament',
-                                    'winner': {'user_id': str(winner)},
-                                    'next' : {
-                                        'players': [tournament_result[0], tournament_result[1]],
-                                        'url': url
-                                    }
-                                },
-                            }
-                        )
-                    elif len(tournament_result) == 1:
-                        await self.channel_layer.group_send(
-                            f"game_{room_id}",
-                            {
-                                'type': 'game_message',
-                                'data': {
-                                    'type': 'tournament',
-                                    'winner': {'user_id': str(winner)}
+                                    'winner': str(winner),
                                 },
                             }
                         )
                     else:
                         logger.info("Something happend but I don't know whyat")
 
-                try:
-                    if game_state['ai_controlled']:
-                        logger.info(f"AI Game Over! {winner} wins!")
-                        await self.channel_layer.group_send(
-                            f"game_{room_id}",
-                            {
-                                'type': 'game_message',
-                                'data': {
-                                    'type': 'ai_game_over',
-                                    'message': f"Game Over! {winner} wins!",
-                                    'winner': str(winner)
-                                },
-                            }
-                        )
-                    else:
-                        await self.channel_layer.group_send(
-                            f"game_{room_id}",
-                            {
-                                'type': 'game_message',
-                                'data': {
-                                    'type': 'game_over',
-                                    'message': f"Game Over! {winner} wins!",
-                                    'winner': str(winner)
-                                },
-                            }
-                        )
-                except Exception as e:
-                    logger.info(f"Error broadcasting game over message: {e}")
+
+
+                else:
+                    try:
+                        if game_state['ai_controlled']:
+                            logger.info(f"AI Game Over! {winner} wins!")
+                            await self.channel_layer.group_send(
+                                f"game_{room_id}",
+                                {
+                                    'type': 'game_message',
+                                    'data': {
+                                        'type': 'ai_game_over',
+                                        'message': f"Game Over! {winner} wins!",
+                                        'winner': str(winner)
+                                    },
+                                }
+                            )
+                        else:
+                            await self.channel_layer.group_send(
+                                f"game_{room_id}",
+                                {
+                                    'type': 'game_message',
+                                    'data': {
+                                        'type': 'game_over',
+                                        'message': f"Game Over! {winner} wins!",
+                                        'winner': str(winner)
+                                    },
+                                }
+                            )
+                    except Exception as e:
+                        logger.info(f"Error broadcasting game over message: {e}")
                 try:
                     await sync_to_async(record_match)(player1, player2, left_score, right_score)
 
                 except Exception as e:
                     logger.error(f"Error recording match: {e}")
 
+                logger.info("Before reset_game().")
                 self.reset_game(game_state)
+                logger.info("After reset_game().")
 
                 continue
 
@@ -502,7 +540,7 @@ class TournamentManager:
             # End of a round: Reset waiting status for the next round
             for player in active_players:
                 tournament[player]['is_waiting'] = True
-            return self.advance_next_match(tournament_id)
+            return await self.advance_next_match(tournament_id)
 
         else:
             # No more matches to play

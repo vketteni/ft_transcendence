@@ -18,7 +18,9 @@ export function showScreen(screenId, addToHistory = true) {
         DOM.PvPgameOverScreen,
 		DOM.signupScreen,
 		DOM.profileEdit,
-		DOM.tournamentScreen
+		DOM.tournamentScreen,
+		DOM.TRNMTgameOverScreen,
+		DOM.acceptScreen,
         // DOM.twoPGgameOverScreen,
 
     ];

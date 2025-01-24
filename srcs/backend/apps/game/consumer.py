@@ -2,6 +2,7 @@
 from time import timezone
 from .manager import game_manager
 
+from asgiref.sync import async_to_sync
 import os
 import jwt
 import json
@@ -49,6 +50,9 @@ class GameConsumer(AsyncWebsocketConsumer):
                 start_players = await game_manager.tournament_manager.advance_next_match(tournament_id)
                 logger.info(f"Start players: {start_players}")
             logger.info("Consumer.Connect() after tournament check")
+
+            user_id = self.game_attributes.get("user_id")
+            async_to_sync(game_manager.add_channel_to_player_map(user_id, self.channel_name))
 
             # Generate group name dynamically
             self.room_group_name = f"game_{self.game_attributes['room_id']}"

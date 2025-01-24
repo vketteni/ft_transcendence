@@ -123,6 +123,11 @@ export const Buttons = {
             // wsManager.close('game');
         });
 
+        DOM.TRNMTbackToMenuButton.addEventListener('click', () => {
+            showScreen('category-screen');
+            // wsManager.close('game');
+        });
+
         // Game screen buttons
         DOM.pauseButton.addEventListener('click', () => {
             isPaused = !isPaused;
@@ -144,8 +149,13 @@ export const Buttons = {
         });
 
         DOM.tournamentButton.addEventListener('click', () => {
-            showScreen('tournament-screen');
+            // showScreen('tournament-screen');
+			console.log("PvP button clicked, showing matchmaking screen...");
+            showScreen('matchmaking-screen');
+            matchmakingTimer.start();
+            connectToMatchmaking("TRNMT");
         });
+
     },
 };
 

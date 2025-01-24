@@ -46,13 +46,13 @@ class MatchmakingConsumer(JsonWebsocketConsumer):
         query_params = parse_qs(self.scope['query_string'].decode())
         self.queue_name = query_params.get('queue_name', [None])[0]
         self.player_id = query_params.get('player_id', [None])[0]
+        # Assign the group name based on the queue
+        self.group_name = f"queue_{self.queue_name}"
         
         if not self.player_id:
             logger.error("Player ID is missing from the WebSocket request.")
             return
-        try:
-            self.player_id = int(self.player_id)  # Ensures it's a valid integer
-        except ValueError:
+        if not self.player_id.isdigit():
             logger.error(f"Invalid player ID format: {self.player_id}")
             return
 
@@ -66,8 +66,6 @@ class MatchmakingConsumer(JsonWebsocketConsumer):
             self.close()
             return
 
-        # Assign the group name based on the queue
-        self.group_name = f"queue_{self.queue_name}"
 
         # Add player to the group and accept the connection
         async_to_sync(self.channel_layer.group_add)(self.group_name, self.channel_name)
@@ -76,6 +74,7 @@ class MatchmakingConsumer(JsonWebsocketConsumer):
 
 
         # Register the player in the queue
+        logger.info(f"Calling add_player_to_queue() with player_id: {self.player_id} queue: {self.queue_name}")
         matchmaking_manager.add_player_to_queue(
             self.player_id, self.channel_name, self.queue_name
         )

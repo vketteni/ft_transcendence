@@ -77,36 +77,33 @@ DOM.signupForm.addEventListener('submit', async (e) => {
     const alias = DOM.signupAlias.value.trim();
     const password = DOM.signupPassword.value.trim();
     const email = DOM.signupEmail.value.trim();
-    const avatar = DOM.signupAvatar.files[0];
 
     if (!alias || !password || !email) {
         alert("Please create both alias and password.");
         return;
     }
 
-    const formData = new FormData();
-    formData.append('alias', alias);
-    formData.append('password', password);
-    formData.append('email', email);
-    if (avatar) {
-        formData.append('avatar', avatar); // Only append if a file is selected
-    }
-
-    console.log("Sign Up Data:", { alias, password, email, avatar: avatar?.name || 'No file' });
-
+    console.log("Sign Up:", { alias, password, email });
+    // setPlayerAlias(alias);
+    // sendAlias();
     try {
-        const response = await fetch('api/accounts/register/', {
+        const response = await fetch('http://localhost:3000/api/accounts/register/', {
             method: 'POST',
-            body: formData,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ alias, password, email }),
         });
 
+        const data = await response.json();
+
         if (response.ok) {
-            const data = await response.json();
             console.log("Sign Up Successful:", data);
+            // setPlayerAlias(alias);
+            // sendAlias(); // Notify the game server
             showScreen('login-screen');
         } else {
-            const errorData = await response.json();
-            alert(`Registration failed: ${errorData.error}`);
+            alert(`Sign Up Error: ${data.error}`);
         }
     } catch (error) {
         console.error('Error signing up:', error);
@@ -114,81 +111,6 @@ DOM.signupForm.addEventListener('submit', async (e) => {
     }
     // showScreen('category-screen'); // Navigate to category screen
 });
-
-// Handle "Login with 42"
-DOM.login42Button.addEventListener('click', () => {
-		console.log("login42Button.addEventListener()");
-		const loginWindow = window.open(
-			'/oauth/accounts/login/', // Redirects to backend endpoint for OAuth initiation
-			'_blank',          // Open in a new tab or popup
-			'width=500,height=600,noopener=false,noreferrer=false'
-		);
-		fetchUserState(loginWindow);
-		
-	});
-	
-DOM.PvCButton.addEventListener('click', () => {
-    // if (wsManager.sockets['matchmaking'].readyState === WebSocket.OPEN) {
-    //     socket.send(JSON.stringify({ action: 'start_game', player: getPlayerAlias() }));
-    // } else {
-    //     console.error("WebSocket connection is not open.");
-    // }
-    console.log("PvC button clicked, showing matchmaking screen...");
-    matchmakingTimer.start();
-    startPvCMatch();
-});
-
-DOM.PvPButton.addEventListener('click', () => {
-    console.log("PvP button clicked, showing matchmaking screen...");
-    showScreen('matchmaking-screen');
-    matchmakingTimer.start();
-    connectToMatchmaking();
-});
-
-
-DOM.pauseButton.addEventListener('click', () => {
-    isPaused = !isPaused;
-
-    if (isPaused) {
-        DOM.pauseButton.classList.add('paused');
-        DOM.pauseButton.textContent = "Resume";
-        wsManager.send('game', { action: 'pause_game' });
-    } else {
-        DOM.pauseButton.classList.remove('paused');
-        DOM.pauseButton.textContent = "Pause";
-        wsManager.send('game', { action: 'resume_game' });
-    }
-});
-
-DOM.AIplayAgainButton.addEventListener('click', () => {
-    matchmakingTimer.start();
-    startPvCMatch();
-});
-
-DOM.PvPplayAgainButton.addEventListener('click', () => {
-    showScreen('matchmaking-screen');
-    matchmakingTimer.start();
-    connectToMatchmaking();
-});
-
-DOM.AIbackToMenuButton.addEventListener('click', () => {
-    showScreen('category-screen');
-});
-
-DOM.PvPbackToMenuButton.addEventListener('click', () => {
-    showScreen('category-screen');
-    wsManager.close('game');
-});
-
-setCookie('browser_id', generateUUID(), {
-    path: '/',
-    // domain: '127.0.0.1', // Set this to match the backend's domain
-    // secure: true,             // Use true for HTTPS
-    sameSite: 'Lax',
-    // sameSite: 'None',         // None if cross-origin, Lax/Strict for same-origin
-    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-});
-console.log(getCookie('browser_id'));
 
 window.addEventListener('resize', resizeCanvas);
 
@@ -263,87 +185,45 @@ document.addEventListener('keyup', (e) => {
 });
 
 DOM.editProfileForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const csrftoken = getCookie('csrftoken'); 
-    console.log("csrftoken: ", csrftoken);
-    const formData = new FormData(); // Use FormData to handle file upload
-    formData.append('csrfmiddlewaretoken', csrftoken);
-    formData.append('username', DOM.editUsername.value);
-    formData.append('email', DOM.editEmail.value);
-    formData.append('first_name', DOM.editFirstName.value);
-    formData.append('last_name', DOM.editLastName.value);
-
-    const avatarFile = DOM.editAvatar.files[0];
-    if (avatarFile) {
-        formData.append('avatar', avatarFile); // Include the avatar file
-        console.log("Avatar file selected:", avatarFile.name);
-    }
-    try {
-        const response = await fetch('/api/accounts/user-profile/', {
-            method: 'PUT',
-            headers: {
-                'X-CSRFToken': csrftoken,
-                'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
-            },
-            body: formData,
-            credentials: 'include',
-        });
-        if (response.ok)
-            {
-                const data = await response.json();
-            console.log("Profile updated successfully:", data);
-            // Update the profile view with the new data
-            DOM.profileUsername.textContent = data.username;
-            DOM.profileEmail.textContent = data.email;
-            DOM.profileFirstName.textContent = data.first_name || 'N/A';
-            DOM.profileLastName.textContent = data.last_name || 'N/A';
-            
-            if (data.avatar_url) {
-                console.log("New avatar URL:", data.avatar_url);
-                DOM.profileAvatar.src = data.avatar_url; // Update avatar image
-            }
-            DOM.editAvatar.value = "";
-            // Switch back to view mode
-            showScreen('userprofile-screen');
-            DOM.profileEdit.classList.add("d-none");
-            DOM.profileView.classList.remove("d-none");
-        }
-        else
-        {
-            const errorData = await response.json();
-            if (errorData.errors?.email) {
-                alert(`Email Error: ${errorData.errors.email[0]}`);
-            } else {
-                alert('Failed to update profile. Please check your input.');
-            }
-            return;
-        }
-    } catch (error) {
-        console.error('Error updating profile:', error);
-        alert('An unexpected error occurred. Please try again later.');
-    }
-});
-
-DOM.editProfileButton.addEventListener("click", () => {
-    console.log("editProfileButton.addEventListener");
-    DOM.profileView.classList.add("d-none");
-    DOM.profileEdit.classList.remove("d-none");
-
-    const profileData = {
-        username: DOM.profileUsername.textContent,
-        email: DOM.profileEmail.textContent,
-        first_name: DOM.profileFirstName.textContent,
-        last_name: DOM.profileLastName.textContent,
+	event.preventDefault();
+    const updatedData = {
+		username: DOM.editUsername.value,
+        email: DOM.editEmail.value,
+        first_name: DOM.editFirstName.value,
+        last_name: DOM.editLastName.value
     };
-
-    DOM.editUsername.value = profileData.username;
-    DOM.editEmail.value = profileData.email;
-    DOM.editFirstName.value = profileData.first_name || 'N/A';
-    DOM.editLastName.value = profileData.last_name || 'N/A';
-
-    DOM.editAvatar.value = "";
+    try {
+			const response = await fetch('/api/accounts/user-profile/', {
+			method: 'PUT',
+			headers: {
+				'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(updatedData),
+			credentials: 'include',
+		});
+		const data = await response.json();
+		if (response.ok)
+		{
+			console.log("updatedData.username:", updatedData.username);
+			// Update the profile view with the new data
+			DOM.profileUsername.textContent = data.username;
+			DOM.profileEmail.textContent = data.email;
+			DOM.profileFirstName.textContent = data.first_name || 'N/A';
+			DOM.profileLastName.textContent = data.last_name || 'N/A';
+			
+			// Switch back to view mode
+			DOM.profileEdit.classList.add("d-none");
+			DOM.profileView.classList.remove("d-none");
+		}
+		else
+			alert(`Sign Up Error: ${data.error}`);
+	} catch (error) {
+		console.error('Error signing up:', error);
+		alert('An unexpected error occurred. Please try again later.');
+	}
 });
-
+	
 document.addEventListener('DOMContentLoaded', () => {
     Buttons.init(); 
 	// Set the category screen as the default
@@ -374,17 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 });
 
-/* Global Scope */
-
-setCookie('browser_id', generateUUID(), {
-	path: '/',
-	// domain: '127.0.0.1', // Set this to match the backend's domain
-	// secure: true,             // Use true for HTTPS
-	sameSite: 'Lax',
-	// sameSite: 'None',         // None if cross-origin, Lax/Strict for same-origin
-	expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-});
-localStorage.setItem('playerid', getCookie('browser_id'));
 
 window.addEventListener("popstate", (event) => {
     if (event.state && event.state.screen) {
@@ -404,12 +273,6 @@ window.addEventListener("beforeunload", () => {
         console.log("Closing game socket before refresh.");
         wsManager.close('game');
     }
-});
-
-// Cancel editing and return to view mode
-DOM.cancelEditButton.addEventListener("click", () => {
-    DOM.profileEdit.classList.add("d-none");
-    DOM.profileView.classList.remove("d-none");
 });
 
 //2PG buttons
@@ -439,3 +302,15 @@ DOM.editAvatar.addEventListener("change", () => {
         console.log("No file selected.");
     }
 });
+
+/* Global Scope */
+
+setCookie('browser_id', generateUUID(), {
+	path: '/',
+	// domain: '127.0.0.1', // Set this to match the backend's domain
+	// secure: true,             // Use true for HTTPS
+	sameSite: 'Lax',
+	// sameSite: 'None',         // None if cross-origin, Lax/Strict for same-origin
+	expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+});
+localStorage.setItem('playerid', getCookie('browser_id'));

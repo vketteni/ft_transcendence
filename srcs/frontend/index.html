@@ -153,6 +153,16 @@
         <!-- <button id="matchmaking-exit" class="btn btn-lg btn-outline-info mt-3">Back to menu</button> -->
     </div>
 
+	<!-- accept screen -->
+	<div id="accept-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+		<h1 id="accept-text">Accept text...</h1>
+		<div class="d-flex flex-row mt-3 gap-3">
+			<button id="accept-button" class="btn btn-lg btn-outline-info">Yes</button>
+			<button id="reject-button" class="btn btn-lg btn-outline-info">No</button>
+		</div>
+	</div>
+
+
     <!-- game screen -->
 	<div id="game-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
 		<div class="game-container d-flex flex-column justify-content-center align-items-center">
@@ -197,8 +207,15 @@
     <div id="pvp-game-over-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
         <h1 id="pvp-game-over-message" class="mb-3">Game Over!</h1>
 		<button type=button id="pvp-add-friend" class="btn btn-outline-info btn-lg mb-3">Add to friends</button>
-        <button type=button id="pvp-play-again-button" class="btn btn-outline-light btn-lg mb-3">Rematch</button>
+        <button type=button id="pvp-play-again-button" class="btn btn-outline-light btn-lg mb-3">New game</button>
         <button type=button id="pvp-back-to-menu" class="btn btn-outline-info btn-lg">Back to menu</button>
+    </div>
+
+    <!-- TRNMT Game Over Screen -->
+    <div id="trnmt-game-over-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+        <h1 id="trnmt-game-over-message" class="mb-3">placeholder..change me dynamically</h1>
+        <button type=button id="trnmt-go-to-next-game-button" class="btn btn-outline-light btn-lg mb-3">Next</button>
+        <button type=button id="trnmt-back-to-menu" class="btn btn-outline-info btn-lg">Back to menu</button>
     </div>
 
 	<!-- friends screen -->
