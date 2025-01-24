@@ -17,6 +17,10 @@ export const DOM = {
     loginScreen: document.getElementById('login-screen'),
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
+
+	friendsScreen: document.getElementById('friends-screen'),
+	userprofileScreen: document.getElementById('userprofile-screen'),
+	tournamentScreen: document.getElementById('tournament-screen'),
     
 
 	//waiting screens
@@ -28,7 +32,7 @@ export const DOM = {
 	twoPGTimer: document.getElementById('2PGtimerDisplay'),
     AItimer: document.getElementById('AItimerDisplay'),
     matchmakingTimer: document.getElementById('timerDisplay'),
-    userprofileScreen: document.getElementById('userprofile-screen'),
+
     
     
     
@@ -55,7 +59,7 @@ export const DOM = {
 	twoPGButton: document.getElementById('2PG'),
     PvPButton: document.getElementById('PvP'),
     PvCButton: document.getElementById('PvC'),
-    tournamentButton: document.getElementById('Tournament'),
+    tournamentButton: document.getElementById('tournament-button'),
 
     // User profile screen
     editProfileButton: document.getElementById('editProfileButton'),

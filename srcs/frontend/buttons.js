@@ -144,10 +144,7 @@ export const Buttons = {
         });
 
         DOM.tournamentButton.addEventListener('click', () => {
-            console.log("Tournament button clicked, showing matchmaking screen...");
-            showScreen('matchmaking-screen');
-            matchmakingTimer.start();
-            connectToMatchmaking("TRNMT");
+            showScreen('tournament-screen');
         });
     },
 };
