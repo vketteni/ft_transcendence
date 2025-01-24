@@ -17,7 +17,7 @@ def setup_periodic_tasks(sender, **kwargs):
 
     # Schedule the task to run every 10 seconds
     sender.add_periodic_task(
-        10.0,  # Run every 10 seconds
+        3.0,  # Run every 10 seconds
         run_matchmaking.s(),  # `s()` is Celery's signature method
         name='Run matchmaking every 10 seconds'
     )

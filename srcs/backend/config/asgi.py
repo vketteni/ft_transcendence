@@ -5,7 +5,7 @@ import asyncio
 
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
-from apps.game.manager import game_manager  # Import GameManager instance
+# from apps.game.manager import game_manager  # Import GameManager instance
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
@@ -29,9 +29,9 @@ application = ProtocolTypeRouter({
     ),
 })
 
-# Start GameManager's main loop at ASGI startup
-async def startup():
-    asyncio.create_task(game_manager.start())
+# # Start GameManager's main loop at ASGI startup
+# async def startup():
+#     asyncio.create_task(game_manager.start())
 
-# Ensure the startup coroutine runs when ASGI is initialized
-asyncio.get_event_loop().run_until_complete(startup())
+# # Ensure the startup coroutine runs when ASGI is initialized
+# asyncio.get_event_loop().run_until_complete(startup())

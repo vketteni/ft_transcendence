@@ -62,3 +62,4 @@ python-decouple
 django-cors-headers
 qrcode
 django-ratelimit
+debugpy

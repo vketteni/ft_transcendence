@@ -27,6 +27,7 @@ import logging
 import requests
 from apps.accounts.models import User
 from .serializers import UserSerializer
+from rest_framework import serializers
 
 logger = logging.getLogger(__name__)
 
@@ -228,8 +229,8 @@ class LoginView(APIView):
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
+        logger.info(f"LoginView.post() username: {username} password: {password}")
         user = authenticate(request, username=username, password=password)
-        logger.info(f"LoginView.post() user: {user} userid: {user.id}")
         if user is not None:
             login(request, user)
             refresh = RefreshToken.for_user(user)
@@ -301,26 +302,29 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.serializers import ModelSerializer
 
 class UserProfileSerializer(ModelSerializer):
+    wins = serializers.IntegerField(source='profile.wins', read_only=True)
+    losses = serializers.IntegerField(source='profile.losses', read_only=True)
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']  # Include fields to expose
-        read_only_fields = ['id', 'username']  # Prevent modification of certain fields
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'wins', 'losses']  # Include fields to expose
+        read_only_fields = ['id', 'username', 'wins', 'losses']  # Prevent modification of certain fields
 
 from rest_framework.authentication import SessionAuthentication
 # API view for profile management
 class UserProfileView(APIView):
     # authentication_classes = [SessionAuthentication]
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        logger.info(f"UserProfileView(APIView).get() User: {request.user}")
+
+        logger.info(f"UserProfileView(APIView).get() User: {request.user} User id: {request.user.id}")
         serializer = UserSerializer(request.user, context={'request': request})
         return Response(serializer.data)
 
     def put(self, request):
         # Authenticate the user
-        # jwt_authenticator = JWTAuthentication()
+        jwt_authenticator = JWTAuthentication()
         try:
             # logger.info(f"JWT Access Token: {request.data['access_token']}")
             # user, token = jwt_authenticator.authenticate(request)
@@ -339,12 +343,27 @@ class UserProfileView(APIView):
                         user.avatar.delete(save=False)
                     user.avatar.save(avatar.name, avatar)
                 serializer.save()
+                logger.info(f"serializer.data: {serializer.data}")
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
             return Response({"detail": "Invalid data.", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         
         except Exception as e:
             return Response({"detail": f"Authentication error: {str(e)}"}, status=status.HTTP_401_UNAUTHORIZED)
+
+from .models import Match
+from .serializers import MatchSerializer
+from rest_framework import viewsets
+
+class MatchViewSet(viewsets.ModelViewSet):
+    queryset = Match.objects.all()
+    serializer_class = MatchSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        # Retrieve match history for the user (both as player1 and player2)
+        return Match.objects.filter(player1=user).order_by('-date_played') | Match.objects.filter(player2=user).order_by('-date_played')
 
 def csrf_token_view(request):
     """

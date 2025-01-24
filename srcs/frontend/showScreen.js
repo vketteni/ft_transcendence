@@ -17,7 +17,8 @@ export function showScreen(screenId, addToHistory = true) {
         DOM.twoPGwaitingScreen,
         DOM.PvPgameOverScreen,
 		DOM.signupScreen,
-		DOM.profileEdit
+		DOM.profileEdit,
+		DOM.tournamentScreen
         // DOM.twoPGgameOverScreen,
 
     ];
@@ -33,13 +34,6 @@ export function showScreen(screenId, addToHistory = true) {
     screens.forEach(screen => {
         if (screen === targetScreen) {
             screen.classList.remove('d-none'); // Show the target screen
-
-            // // Handle header visibility for specific screens
-            // if (screenId === 'game-screen' || screenId === 'matchmaking-screen' || screenId === '2PG-waiting-screen' || screenId === 'ai-waiting-screen') {
-            //     DOM.topBarNav.classList.add('d-none'); // Hide header for these screens
-            // } else {
-            //     DOM.topBarNav.classList.remove('d-none'); // Show header for all other screens
-            // }
 
             // Special case: game screen setup
             if (screenId === 'game-screen') {

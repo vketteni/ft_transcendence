@@ -1,4 +1,6 @@
 import { wsManager } from './WebSocketManager.js';
+import { sendAlias } from './sendToBackend.js';
+import { connectToMatchmaking } from './WebsocketMatchmaking.js';
 import { GAME_CONFIG, setPlayerID } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';

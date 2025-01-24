@@ -34,10 +34,10 @@
 		<div class="d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
 			<img src="title.png" alt="Game Title" class="img-fluid" style="max-width: 400px;">
 			<div class="d-grid gap-2 col-4 mx-auto">
-				<button id="2PG" class="btn btn-outline-light btn-md mb-2">2 Player Game</button>
-				<button id="PvP" class="btn btn-outline-light btn-md mb-2">Player vs Player</button>
+				<button id="2PG" class="btn btn-outline-light btn-md mb-2">Player vs Player</button>
 				<button id="PvC" class="btn btn-outline-light btn-md mb-2">Player vs Computer</button>
-				<button id="Tournament" class="btn btn-outline-light btn-md">Tournament</button>
+				<button id="tournament-button" class="btn btn-outline-light btn-md mb-2">Tournament</button>
+				<button id="PvP" class="btn btn-outline-info btn-md">Remote Player vs Player</button>
 			</div>
 		</div>
     </div>
@@ -90,8 +90,8 @@
 				<p><strong>Email:</strong> <span id="profileEmail"></span></p>
 				<p><strong>First Name:</strong> <span id="profileFirstName"></span></p>
 				<p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
-				<p><strong>Wins:</strong> <span id="profileLastName"></span></p>
-				<p><strong>Losses:</strong> <span id="profileLastName"></span></p>
+				<p><strong>Wins:</strong> <span id="profileWins"></span></p>  <!-- ✅ Fixed ID -->
+            	<p><strong>Losses:</strong> <span id="profileLosses"></span></p> 
 				<button class="btn btn-outline-warning btn-md mb-2">Friends</button>
 				<button class="btn btn-outline-success btn-md mb-2">Match History</button>
 			</div>
@@ -132,7 +132,7 @@
     </div>
 
 
-    <!-- matchmaking screen-->
+    <!-- remote player matchmaking screen-->
     <div id="matchmaking-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
 		<h1 id="waiting-text">Waiting for opponent...</h1>
 		<div id="timerDisplay">0s</div>
@@ -163,20 +163,26 @@
 		</div>
 	</div>
 
-        <!-- tournament screen -->
+    <!-- tournament screen -->
 	<div id="tournament-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-            <!-- Sidebar -->
-        <div id="player-sidebar" class="bg-dark text-light p-3 d-flex flex-column" style="width: 250px;">
-            <h4 class="text-center mb-4">Players</h4>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item bg-dark text-light">1. Alice vs Bob</li>
-                <li class="list-group-item bg-dark text-light">2. Charlie vs Dave</li>
-                <li class="list-group-item bg-dark text-light">3. Eve vs Frank</li>
-            </ul>
-        </div>
-		<div class="game-container d-flex flex-column justify-content-center align-items-center">
-			<div id="timerDisplay" class="visually-hidden"></div>
-			<canvas id="canvas" class="border border-2 border-white"></canvas>
+		<div class="container-fluid h-100">
+			<div class="row h-100">
+				<!-- Game Column -->
+				<div class="col-9 d-flex flex-column justify-content-center align-items-center">
+					<div id="timerDisplay" class="visually-hidden"></div>
+					<canvas id="canvas" class="border border-2 border-white w-100"></canvas>
+					<button id="tournament-pause-button" class="btn btn-lg btn-outline-light mt-3">Pause</button>
+				</div>
+	
+				<!-- Player Sidebar -->
+				<div id="player-sidebar" class="col-3 bg-dark text-light p-3 d-flex flex-column justify-content-center align-items-center">
+					<h4 class="text-center mb-4">Round 1</h4>
+					<ul class="list-group list-group-flush">
+						<li class="list-group-item bg-dark text-success">1. Alice vs Bob</li>
+						<li class="list-group-item bg-dark text-light">2. Charlie vs Dave</li>
+					</ul>
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -195,10 +201,9 @@
         <button type=button id="pvp-back-to-menu" class="btn btn-outline-info btn-lg">Back to menu</button>
     </div>
 
-	<!-- Add friend screen -->
-	<div id="add-friend-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-		<h1 id="pvp-game-over-message" class="mb-3">Add opponent to friend's list</h1>
-		<button type=button id="pvp-add-friend" class="btn btn-outline-info btn-lg mb-3">Add to friends</button>
+	<!-- friends screen -->
+	<div id="friends-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+
 	</div>
     
     <script type="module" src="pong.js"></script>

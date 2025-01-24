@@ -5,10 +5,22 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.timezone import now
 from django.contrib.auth.password_validation import validate_password
+from .models import Match
 from . import models
 import logging
 from django.conf import settings
 logger = logging.getLogger(__name__)
+
+class MatchSerializer(serializers.ModelSerializer):
+    """Serialize match details."""
+    player1_username = serializers.CharField(source="player1.username", read_only=True)
+    player2_username = serializers.CharField(source="player2.username", read_only=True)
+    winner_username = serializers.CharField(source="winner.username", read_only=True, allow_null=True)
+
+    class Meta:
+        model = Match
+        fields = ['id', 'player1_username', 'player2_username', 'winner_username', 'date_played', 'score_player1', 'score_player2']
+        read_only_fields = ['id', 'date_played']
 
 class UserSerializer(serializers.ModelSerializer):
     """
@@ -46,6 +58,10 @@ class UserSerializer(serializers.ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
 
+    wins = serializers.IntegerField(read_only=True) 
+    losses = serializers.IntegerField(read_only=True) 
+    match_history = MatchSerializer(source="matches_as_player1", many=True, read_only=True)
+
     class Meta:
         model = models.User
         fields = [
@@ -58,6 +74,9 @@ class UserSerializer(serializers.ModelSerializer):
             'password',
             'skill_level',
             'avatar',
+            'wins',
+            'losses',
+            'match_history',
             'is_active',
             'is_staff',
             'date_joined',
@@ -152,3 +171,4 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)  # Ensures password is hashed
         instance.save()
         return instance
+    

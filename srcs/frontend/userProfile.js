@@ -61,8 +61,7 @@ export async function updateUserInfo() {
 
 export async function loadUserInfo() {
     const token = localStorage.getItem('access_token');
-    console.log("Access Token:", token); // Debugging token retrieval
-
+    
     try {
         console.log("Fetching user info...");
         const response = await fetch('/api/accounts/user/', {
@@ -74,11 +73,12 @@ export async function loadUserInfo() {
         });
 
         console.log("Response status:", response.status);
+        console.log("Raw API Response:", data);  // ✅ Log full API response
 
         if (response.ok) {
             const data = await response.json();
             console.log("User data received:", data);
-
+            console.log("Wins:", data.wins, "Losses:", data.losses);  // ✅ Log extracted values
             // Debug DOM elements before updating
             console.log("profileUsername:", document.getElementById('profileUsername'));
             console.log("profileEmail:", document.getElementById('profileEmail'));
@@ -91,6 +91,9 @@ export async function loadUserInfo() {
             document.getElementById('profileEmail').textContent = data.email;
             document.getElementById('profileFirstName').textContent = data.first_name || "N/A";
             document.getElementById('profileLastName').textContent = data.last_name || "N/A";
+
+            document.getElementById('profileWins').textContent = data.wins ?? "0";
+            document.getElementById('profileLosses').textContent = data.losses ?? "0";
 
             console.log("Avatar URL:", data.avatar_url);
             document.getElementById('profileAvatar').src = data.avatar_url;

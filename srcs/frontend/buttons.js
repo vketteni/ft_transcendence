@@ -1,7 +1,7 @@
 import { wsManager } from './WebSocketManager.js';
 import { fetchUserState } from './fetchUserState.js';
 import { showScreen } from './showScreen.js';
-import { connectToMatchmaking, startPvCMatch } from './WebsocketMatchmaking.js';
+import { connectToMatchmaking } from './WebsocketMatchmaking.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
 // import { is2PG } from './pong.js';
@@ -144,10 +144,7 @@ export const Buttons = {
         });
 
         DOM.tournamentButton.addEventListener('click', () => {
-            console.log("Tournament button clicked, showing matchmaking screen...");
-            showScreen('matchmaking-screen');
-            matchmakingTimer.start();
-            startPvCMatch();
+            showScreen('tournament-screen');
         });
     },
 };

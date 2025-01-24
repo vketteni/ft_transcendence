@@ -44,40 +44,18 @@ function handleMatchmakingClose(event) {
 	}
 }
 
-function promptForGameConnection(matchData) {
-	const url = matchData.room_url
-	console.log("Game Url:", url);
+function promptForGameConnection(data) {
+	console.log("Game Url:", data.room_url);
 
-	
 	stopAndResetTimer();
     const accept = confirm(`Match found. Join game?`);
     if (accept) {
         wsManager.close('matchmaking');
-        connectToGame(url);
+        connectToGame(data.room_url);
         wsManager.send('game', { action: 'player_ready' });
         showScreen('game-screen');
     } else {
         console.log('Game declined.');
     }
 }
-
-export function startPvCMatch() {
-    const roomName = `ai_game_${Date.now()}`;
-    const url = `ws://localhost:8000/ws/game/${roomName}/`;
-
-    stopAndResetTimer();
-
-    console.log(`Starting AI match in room: ${roomName}`);
-    
-    connectToGame(url);
-
-    wsManager.send('game', { 
-        action: 'player_ready', 
-        player_id: getPlayerID(),
-        ai_controlled: true
-    });
-
-    showScreen('game-screen');
-}
-
 
