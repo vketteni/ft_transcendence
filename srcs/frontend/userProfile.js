@@ -73,10 +73,10 @@ export async function loadUserInfo() {
         });
 
         console.log("Response status:", response.status);
-        console.log("Raw API Response:", data);  // ✅ Log full API response
-
+        
         if (response.ok) {
             const data = await response.json();
+            console.log("Raw API Response:", data);  // ✅ Log full API response
             console.log("User data received:", data);
             console.log("Wins:", data.wins, "Losses:", data.losses);  // ✅ Log extracted values
             // Debug DOM elements before updating
