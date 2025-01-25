@@ -1,6 +1,4 @@
 import { wsManager } from './WebSocketManager.js';
-import { sendAlias } from './sendToBackend.js';
-import { connectToMatchmaking } from './WebsocketMatchmaking.js';
 import { GAME_CONFIG } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
@@ -8,18 +6,16 @@ import { setLoginState } from './auth.js';
 import { showScreen } from './showScreen.js';
 import { updateTopBar } from './topBar.js';
 import { handleLogout } from './logout.js';
+import { Buttons, isLocal, setIsLocal, setLocalTour, resetIsPaused } from './buttons.js';
+import { localState, resetLocalState } from './state.js';
+import { localTournament, startTournamentMatch } from './localTournament.js';
+import { lgPlayers } from './render_local.js'
 import { getCookie, setCookie } from './cookie.js';
 import { generateUUID } from './generateUUID.js';
-import { Buttons } from './buttons.js';
-// import { connectToMatchmaking, startPvCMatch } from './WebsocketMatchmaking.js';
-// import { initializeSessionAndCSRF } from './intializeSessionAndCSRF.js';
-import { fetchUserState } from './fetchUserState.js';
-// import { fetchGameData } from './token.js';
+
 
 DOM.canvas.width = GAME_CONFIG.canvasWidth;
 DOM.canvas.height = GAME_CONFIG.canvasHeight;
-let is2PG = false;
-
 
 DOM.loginForm.addEventListener('submit', async (e) => {
     console.log("loginForm.addEventListener");
@@ -51,9 +47,9 @@ DOM.loginForm.addEventListener('submit', async (e) => {
             localStorage.setItem('user_id', data.user.user_id);
             localStorage.setItem('username', data.user.username);
             setLoginState(data.logged_in);
-            showScreen('category-screen'); // Example of moving to the category screen
+            // setLoginState(data.logged_in);
+            showScreen('category-screen');
 
-            // Proceed to the next screen or load resources dynamically
         } else {
             const errorData = await response.json();
             alert(`Login failed: ${errorData.detail}`);
@@ -77,8 +73,6 @@ DOM.signupForm.addEventListener('submit', async (e) => {
     }
 
     console.log("Sign Up:", { alias, password, email });
-    // setPlayerAlias(alias);
-    // sendAlias();
     try {
         const response = await fetch('/api/accounts/register/', {
             method: 'POST',
@@ -92,8 +86,6 @@ DOM.signupForm.addEventListener('submit', async (e) => {
 
         if (response.ok) {
             console.log("Sign Up Successful:", data);
-            // setPlayerAlias(alias);
-            // sendAlias(); // Notify the game server
             showScreen('login-screen');
         } else {
             alert(`Sign Up Error: ${data.error}`);
@@ -102,80 +94,83 @@ DOM.signupForm.addEventListener('submit', async (e) => {
         console.error('Error signing up:', error);
         alert('An unexpected error occurred. Please try again later.');
     }
-    // showScreen('category-screen'); // Navigate to category screen
+});
+
+DOM.lgEnterAliasesForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const lgPlayer1 = DOM.lgPlayer1.value.trim();
+    const lgPlayer2 = DOM.lgPlayer2.value.trim();
+
+    if (!lgPlayer1 || !lgPlayer2) {
+        alert("Both players must enter a name!");
+        return;
+    }
+    if (lgPlayer1 === lgPlayer2) {
+        alert("Both players must have unique names!");
+        return;
+    }
+    lgPlayers.splice(0, lgPlayers.length, lgPlayer1, lgPlayer2);
+    console.log("lgEnterAliasesForm");
+    showScreen('game-screen');
+
+});
+
+DOM.ltEnterAliasesForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const ltPlayer1 = DOM.ltPlayer1.value.trim();
+    const ltPlayer2 = DOM.ltPlayer2.value.trim();
+    const ltPlayer3 = DOM.ltPlayer3.value.trim();
+    const ltPlayer4 = DOM.ltPlayer4.value.trim();
+
+    if (!ltPlayer1 || !ltPlayer2 || !ltPlayer3 || !ltPlayer4) {
+        alert("All players must enter a name!");
+        return;
+    }
+    if (new Set([ltPlayer1, ltPlayer2, ltPlayer3, ltPlayer4]).size !== 4) {
+        alert("All players must have unique names!");
+        return;
+    }
+
+    // Store names and matchups
+    localTournament.players = [ltPlayer1, ltPlayer2, ltPlayer3, ltPlayer4];
+    localTournament.matches = [
+        [ltPlayer1, ltPlayer2], 
+        [ltPlayer3, ltPlayer4], 
+    ];
+    
+    localTournament.currentMatchIndex = 0;
+
+    console.log("Tournament Initialized:", localTournament);
+    startTournamentMatch();
+    
 });
 
 window.addEventListener('resize', resizeCanvas);
 
-document.addEventListener("keydown", (e) => {
-    if (wsManager.sockets['game']?.readyState === WebSocket.OPEN) {
-        if (is2PG) {
-            // 2-player game mode logic
-            if (e.key === "w" || e.key === "s") {
-                // Left player's controls
-                console.log("Left player key pressed:", e.key);
-                wsManager.send('game', {
-                    player: "left",
-                    action: "input",
-                    up: e.key === "w",
-                    down: e.key === "s"
-                });
-            } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-                // Right player's controls
-                console.log("Right player key pressed:", e.key);
-                wsManager.send('game', {
-                    player: "right",
-                    action: "input",
-                    up: e.key === "ArrowUp",
-                    down: e.key === "ArrowDown"
-                });
-            }
-        } else {
-            // Single-player or default mode logic
-            const up = e.key === "ArrowUp" || e.key === "w";
-            const down = e.key === "ArrowDown" || e.key === "s";
+document.addEventListener("keydown", (e) => handleInput(e, true));
+document.addEventListener("keyup", (e) => handleInput(e, false));
 
-            if (up || down) {
-                console.log("Key pressed:", e.key);
-                wsManager.send('game', {
-                    action: "input",
-                    up: up,
-                    down: down
-                });
-            }
+function handleInput(event, isPressed) {
+    let up = event.key === "ArrowUp" || event.key === "w";
+    let down = event.key === "ArrowDown" || event.key === "s";
+
+    if (isLocal) {
+        if (event.key === "w") localState.paddles.left.up = isPressed;
+        if (event.key === "s") localState.paddles.left.down = isPressed;
+        if (event.key === "ArrowUp") localState.paddles.right.up = isPressed;
+        if (event.key === "ArrowDown") localState.paddles.right.down = isPressed;
+    } else if (wsManager.sockets['game']?.readyState === WebSocket.OPEN) {
+        if (up || down) {
+            wsManager.send('game', {
+                action: "input",
+                up: up && isPressed,
+                down: down && isPressed,
+            });
         }
     }
-});
-
-document.addEventListener('keyup', (e) => {
-    if (wsManager.sockets['game']?.readyState === WebSocket.OPEN) {
-        if (is2PG) {
-            // 2-player game mode
-            if (e.key === 'w') {
-                console.log("Left player: Up key (W) released");
-                wsManager.send('game', { player: 'left', action: 'input', up: false });
-            } else if (e.key === 's') {
-                console.log("Left player: Down key (S) released");
-                wsManager.send('game', { player: 'left', action: 'input', down: false });
-            } else if (e.key === 'ArrowUp') {
-                console.log("Right player: Up key (ArrowUp) released");
-                wsManager.send('game', { player: 'right', action: 'input', up: false });
-            } else if (e.key === 'ArrowDown') {
-                console.log("Right player: Down key (ArrowDown) released");
-                wsManager.send('game', { player: 'right', action: 'input', down: false });
-            }
-        } else {
-            // Single-player or default mode
-            if (e.key === 'ArrowUp' || e.key === 'w') {
-                console.log("Up key released (ArrowUp or W)");
-                wsManager.send('game', { action: 'input', up: false });
-            } else if (e.key === 'ArrowDown' || e.key === 's') {
-                console.log("Down key released (ArrowDown or S)");
-                wsManager.send('game', { action: 'input', down: false });
-            }
-        }
-    }
-});
+}
 
 DOM.editProfileForm.addEventListener("submit", async (event) => {
 	event.preventDefault();
@@ -256,26 +251,26 @@ window.addEventListener("popstate", (event) => {
 
 window.addEventListener("beforeunload", () => {
     console.log("Checking WebSocket connections before refresh...");
-
-    if (wsManager.sockets['matchmaking']) {
+    if (isLocal) {
+       resetLocalState();
+       setIsLocal(false);
+       setLocalTour(false);
+       resetIsPaused();
+    }
+    else { 
+        if (wsManager.sockets['matchmaking']) {
         console.log("Closing matchmaking socket before refresh.");
         wsManager.close('matchmaking');
-    }
+        }
 
-    if (wsManager.sockets['game']) {
-        console.log("Closing game socket before refresh.");
-        wsManager.close('game');
+        if (wsManager.sockets['game']) {
+            console.log("Closing game socket before refresh.");
+            wsManager.close('game');
+        }
     }
 });
 
-//2PG buttons
-DOM.twoPGButton.addEventListener('click', () => {
-	is2PG = true;
-	console.log("2PG button clicked, showing matchmaking screen...");
-	showScreen('2PG-waiting-screen');
-	// twoPGTimer.start();
-	// connectToMatchmaking("2PG");
-});
+
 
 document.getElementById('signup-avatar').addEventListener('change', function (event) {
     const file = event.target.files[0];

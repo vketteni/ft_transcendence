@@ -4,22 +4,27 @@ import { showScreen } from './showScreen.js';
 import { connectToMatchmaking } from './WebsocketMatchmaking.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
-// import { is2PG } from './pong.js';
-// import { GAME_CONFIG } from './config.js';
-// import { resizeCanvas } from './render.js';
-// import { handleLoginRedirect, setLoginState } from './auth.js';
-// import { sendAlias } from './sendToBackend.js';
-// import { initializeSessionAndCSRF } from './intializeSessionAndCSRF.js';
-// import { updateTopBar } from './topBar.js';
-// import { handleLogout } from './logout.js';
-// import { fetchGameData } from './token.js';
-// import { getCookie, setCookie } from './cookie.js';
-// import { generateUUID } from './generateUUID.js';
+import { localState, resetLocalState } from './state.js';
+import { localRenderLoop } from './render_local.js';
 
 let isPaused = false;
 const matchmakingTimer = new Timer(DOM.matchmakingTimer);
 const AItimer = new Timer(DOM.AItimer);
-const twoPGTimer = new Timer(DOM.twoPGTimer);
+export let isLocal = false;
+export let localTour = false;
+
+export function setIsLocal(value) {
+    isLocal = value;
+}
+
+export function setLocalTour(value) {
+    localTour = value;
+}
+
+export function resetIsPaused() {
+    isPaused = false;
+}
+    
 
 export function stopAndResetTimer() {
     matchmakingTimer.stop();
@@ -93,6 +98,18 @@ export const Buttons = {
             showScreen('add-friend-screen');
         });
 
+        DOM.lgButton.addEventListener('click', () => {
+            isLocal = true;
+            showScreen('local-game-alias-screen');
+            
+        });
+
+        DOM.ltButton.addEventListener('click', () => {
+            isLocal = true;
+            localTour = true;
+            showScreen('local-tournament-alias-screen');
+        });
+        
         DOM.PvPplayAgainButton.addEventListener('click', () => {
             showScreen('matchmaking-screen');
             matchmakingTimer.start();
@@ -135,6 +152,38 @@ export const Buttons = {
             // wsManager.close('game');
         });
 
+        // Local game over buttons
+        DOM.lgPlayAgainButton.addEventListener('click', () => {
+            resetLocalState();
+            console.log("Local game play again button clicked");
+            showScreen('game-screen');
+
+        });
+
+        DOM.lgToMenuButton.addEventListener('click', () => {
+            showScreen('category-screen');
+            resetLocalState();
+            isLocal = false;
+        });
+
+        DOM.ltNextButton.addEventListener('click', () => {
+            startTournamentMatch();
+        });
+
+        // Local tournament game over buttons 
+        DOM.ltPlayAgainButton.addEventListener('click', () => {
+            resetLocalState();
+            console.log("Local tournament play again button clicked");
+            showScreen('game-screen');
+        });
+
+        DOM.ltToMenuButton.addEventListener('click', () => {
+            showScreen('category-screen');
+            resetLocalState();
+            isLocal = false;
+            localTour = false;
+        });
+
         // Game screen buttons
         DOM.pauseButton.addEventListener('click', () => {
             isPaused = !isPaused;
@@ -142,17 +191,32 @@ export const Buttons = {
             if (isPaused) {
                 DOM.pauseButton.classList.add('paused');
                 DOM.pauseButton.textContent = "Resume";
-                wsManager.send('game', { action: 'pause_game' });
+                if (isLocal) {
+                    localState.isPaused = true;
+                }
+                else {
+                    wsManager.send('game', { action: 'pause_game' });
+                }
             } else {
                 DOM.pauseButton.classList.remove('paused');
                 DOM.pauseButton.textContent = "Pause";
-                wsManager.send('game', { action: 'resume_game' });
+                if (isLocal) {
+                    localState.isPaused = false;
+                }
+                else {
+                    wsManager.send('game', { action: 'resume_game' });
+                }
             }
         });
 
         DOM.exitButton.addEventListener('click', () => {
             showScreen('category-screen');
-            wsManager.close('game');
+            if (!isLocal)
+                wsManager.close('game');
+            else {
+                isLocal = false;
+                resetLocalState();
+            }        
         });
 
         DOM.tournamentButton.addEventListener('click', () => {

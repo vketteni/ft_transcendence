@@ -1,6 +1,6 @@
 import { GAME_CONFIG } from './config.js';
 import { DOM } from './dom.js';
-import { clientState, serverState } from './state.js';
+import { clientState, serverState, localState } from './state.js';
 import { clearCanvas, drawRect, drawBall, extrapolateState } from './renderUtils.js';
 
 export function renderLoop() {
@@ -51,6 +51,10 @@ export function resizeCanvas() {
         canvasWidth = canvasHeight * aspectRatio;
     }
 
+    const widthScaleFactor = canvasWidth / GAME_CONFIG.canvasWidth;
+    const heightScaleFactor = canvasHeight / GAME_CONFIG.canvasHeight;
+
+    // Update canvas dimensions
     DOM.canvas.width = canvasWidth;
     DOM.canvas.height = canvasHeight;
 
@@ -59,4 +63,16 @@ export function resizeCanvas() {
     GAME_CONFIG.paddleWidth = canvasWidth * 0.02;
     GAME_CONFIG.paddleHeight = canvasHeight * 0.2;
     GAME_CONFIG.ballDiameter = canvasWidth * 0.025;
+
+    localState.paddles.left.y *= heightScaleFactor;
+    localState.paddles.right.y *= heightScaleFactor;
+
+    localState.paddles.left.x = 0;
+    localState.paddles.right.x = GAME_CONFIG.canvasWidth - GAME_CONFIG.paddleWidth;
+
+    localState.ball.x *= widthScaleFactor;
+    localState.ball.y *= heightScaleFactor;
+
+    localState.ball.vx *= widthScaleFactor;
+    localState.ball.vy *= heightScaleFactor;
 }
