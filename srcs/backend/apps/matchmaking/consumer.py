@@ -45,24 +45,24 @@ class MatchmakingConsumer(JsonWebsocketConsumer):
         # Parse query parameters to determine the queue type
         query_params = parse_qs(self.scope['query_string'].decode())
         self.queue_name = query_params.get('queue_name', [None])[0]
-        self.player_id = query_params.get('player_id', [None])[0]
+        self.user_id = query_params.get('user_id', [None])[0]
         # Assign the group name based on the queue
         self.group_name = f"queue_{self.queue_name}"
         
-        if not self.player_id:
-            logger.error("Player ID is missing from the WebSocket request.")
+        if not self.user_id:
+            logger.error("User ID is missing from the WebSocket request.")
             return
-        if not self.player_id.isdigit():
-            logger.error(f"Invalid player ID format: {self.player_id}")
+        if not self.user_id.isdigit():
+            logger.error(f"Invalid User ID format: {self.user_id}")
             return
 
-        self.userExists(self.player_id)
+        self.userExists(self.user_id)
         self.computerExists()
 
-        logger.info(f"Player {self.player_id} connected to {self.queue_name} queue.")
+        logger.info(f"User ID {self.user_id} connected to {self.queue_name} queue.")
 
-        # Validate queue_name and player_id
-        if self.queue_name not in matchmaking_manager.QUEUE_KEYS or not self.player_id:
+        # Validate queue_name and user_id
+        if self.queue_name not in matchmaking_manager.QUEUE_KEYS or not self.user_id:
             self.close()
             return
 
@@ -74,20 +74,20 @@ class MatchmakingConsumer(JsonWebsocketConsumer):
 
 
         # Register the player in the queue
-        logger.info(f"Calling add_player_to_queue() with player_id: {self.player_id} queue: {self.queue_name}")
+        logger.info(f"Calling add_player_to_queue() with user_id: {self.user_id} queue: {self.queue_name}")
         matchmaking_manager.add_player_to_queue(
-            self.player_id, self.channel_name, self.queue_name
+            self.user_id, self.channel_name, self.queue_name
         )
-        logger.info(f"Player {self.player_id} joined {self.queue_name} queue.")
+        logger.info(f"Player {self.user_id} joined {self.queue_name} queue.")
 
     def disconnect(self, close_code):
         # Remove player from the queue and group
         queue_key = matchmaking_manager.QUEUE_KEYS.get(self.queue_name)
-        if queue_key and self.player_id:
-            matchmaking_manager.remove_player_from_queue(self.player_id, queue_key)
+        if queue_key and self.user_id:
+            matchmaking_manager.remove_player_from_queue(self.user_id, queue_key)
 
         async_to_sync(self.channel_layer.group_discard)(self.group_name, self.channel_name)
-        logger.info(f"Player {self.player_id} left {self.queue_name} queue.")
+        logger.info(f"Player {self.user_id} left {self.queue_name} queue.")
 
     def receive_json(self, content):
         # Dispatch based on the message type

@@ -13,7 +13,6 @@ export function showScreen(screenId, addToHistory = true) {
         DOM.gameScreen,
         DOM.AIgameOverScreen,
         DOM.userprofileScreen,
-        DOM.friendsScreen,
         DOM.matchmakingScreen,
         DOM.AIwaitingScreen,
         DOM.twoPGwaitingScreen,
@@ -21,7 +20,7 @@ export function showScreen(screenId, addToHistory = true) {
 		DOM.profileEdit,
 		DOM.tournamentScreen,
         DOM.friendScreen,
-        DOM.matchHistoryScreen,,
+        DOM.matchHistoryScreen,
 		DOM.TRNMTgameOverScreen,
 		DOM.acceptScreen,
         // DOM.twoPGgameOverScreen,
@@ -31,6 +30,7 @@ export function showScreen(screenId, addToHistory = true) {
 	}
     const defaultScreen = DOM.categoryScreen; // Define the category screen as the default
 
+    console.log(screens);
     // Validate screenId or fall back to the default screen
     const targetScreen = screens.find(screen => screen.id === screenId) || defaultScreen;
 

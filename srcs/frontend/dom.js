@@ -18,7 +18,6 @@ export const DOM = {
     signupScreen: document.getElementById('signup-screen'),
     categoryScreen: document.getElementById('category-screen'),
 
-	friendsScreen: document.getElementById('friends-screen'),
 	userprofileScreen: document.getElementById('userprofile-screen'),
 	tournamentScreen: document.getElementById('tournament-screen'),
 

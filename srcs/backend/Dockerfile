@@ -20,7 +20,7 @@ COPY backend /app/
 RUN chmod -R 755 /app
 
 RUN mkdir -p /app/media && \
-    chmod -R 777 /app/media
+    chmod -R 755 /app/media
     
 # Add a non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser

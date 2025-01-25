@@ -1,5 +1,5 @@
 # backend/apps/accounts/views.py
-
+from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -370,16 +370,29 @@ from .models import Match
 from .serializers import MatchSerializer
 from rest_framework import viewsets
 
-class MatchViewSet(viewsets.ModelViewSet):
-    queryset = Match.objects.all()
-    serializer_class = MatchSerializer
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_user_matches(request):
+    user_id = request.query_params.get('user_id')
 
-    def get_queryset(self):
-        user = self.request.user
-        # Retrieve match history for the user (both as player1 and player2)
-        return Match.objects.filter(player1=user).order_by('-date_played') | Match.objects.filter(player2=user).order_by('-date_played')
+    logger.info("Called get_user_matches().")
+    if not user_id:
+        return JsonResponse({'error': 'user_id parameter is required.'}, status=400)
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found.'}, status=404)
+
+    # Fetch matches where the user is player1 or player2
+    matches = Match.objects.filter(player1=user) | Match.objects.filter(player2=user)
+    matches = matches.order_by('-date_played')
+
+    # Serialize the data
+    serializer = MatchSerializer(matches, many=True)
+    logger.info(f"Matches: {serializer.data}")
+    return JsonResponse({'matches': serializer.data}, status=200)
 
 def csrf_token_view(request):
     """
@@ -393,7 +406,6 @@ def csrf_token_view(request):
     csrf_token = get_token(request)
     return JsonResponse({'csrftoken': csrf_token})
 
-from rest_framework.decorators import authentication_classes, permission_classes
 
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])

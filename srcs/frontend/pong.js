@@ -51,14 +51,7 @@ DOM.loginForm.addEventListener('submit', async (e) => {
             localStorage.setItem('user_id', data.user.user_id);
             localStorage.setItem('username', data.user.username);
             setLoginState(data.logged_in);
-            // setLoginState(data.logged_in);
             showScreen('category-screen'); // Example of moving to the category screen
-            // try {
-            //     await fetchGameData();
-            // } catch (fetchError) {
-            //     console.error('Error fetching game data:', fetchError);
-            //     alert('Failed to load game data.');
-            // }
 
             // Proceed to the next screen or load resources dynamically
         } else {
@@ -87,7 +80,7 @@ DOM.signupForm.addEventListener('submit', async (e) => {
     // setPlayerAlias(alias);
     // sendAlias();
     try {
-        const response = await fetch('http://localhost:3000/api/accounts/register/', {
+        const response = await fetch('/api/accounts/register/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -313,4 +306,4 @@ setCookie('browser_id', generateUUID(), {
 	// sameSite: 'None',         // None if cross-origin, Lax/Strict for same-origin
 	expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
 });
-localStorage.setItem('playerid', getCookie('browser_id'));
+localStorage.setItem('browser_id', getCookie('browser_id'));

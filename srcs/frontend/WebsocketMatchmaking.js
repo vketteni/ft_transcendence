@@ -5,10 +5,16 @@ import { showScreen } from './showScreen.js';
 import { DOM } from './dom.js';
 
 export function connectToMatchmaking(queue_type="PVP") {
-    user_id = localStorage.getItem('user_id');
+    let user_id = localStorage.getItem('user_id');
+    let browser_id = localStorage.getItem('browser_id');
+
+    if (user_id == null) {
+        user_id = browser_id
+    }
+
     wsManager.connect(
         'matchmaking',
-        `/ws/matchmaking?queue_name=${queue_type}&player_id=${user_id}`,
+        `/ws/matchmaking?queue_name=${queue_type}&user_id=${user_id}`,
         handleMatchmakingMessage,
         handleMatchmakingClose
     );

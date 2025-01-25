@@ -1,11 +1,7 @@
 # backend/apps/accounts/urls.py
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 from . import views
 
-# Initialize the router
-router = DefaultRouter()
-router.register(r'matches', views.MatchViewSet)
 
 urlpatterns = [
     path('login/', views.Login42View.as_view(), name='login_42'),
@@ -24,4 +20,5 @@ urlpatterns = [
     path('friends/request/', views.request_friend, name='friend-request'),
     path('friends/accept/', views.accept_friend, name='friend-accept'),
     path('friends/reject/', views.reject_friend, name='friend-reject'),
-]
+    path('matches/', views.get_user_matches, name='get_user_matches'),
+    ]

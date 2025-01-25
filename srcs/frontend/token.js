@@ -20,7 +20,7 @@ function isTokenExpired(token) {
 // Refresh access token using refresh token stored in HTTP-only cookie
 async function refreshAccessToken() {
     try {
-        const response = await fetch('http://localhost:8000/accounts/refresh/', {
+        const response = await fetch('http://localhost:3000/accounts/refresh/', {
             method: 'POST',
             credentials: 'include', // Include refresh token cookie
         });
@@ -45,25 +45,3 @@ function logout() {
     showScreen('signup-screen'); // Redirect to login screen
 }
 
-export async function fetchGameData() {
-    const token = await ensureAccessToken();
-
-    try {
-        const response = await fetch('http://localhost:8000/', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            console.log('Protected Data:', data);
-            // Process game data...
-        } else {
-            console.error("Failed to fetch game data");
-        }
-    } catch (error) {
-        console.error('Error fetching protected data:', error);
-    }
-}
