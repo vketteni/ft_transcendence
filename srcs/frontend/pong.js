@@ -11,7 +11,7 @@ import { generateUUID } from './generateUUID.js';
 import { Buttons, isLocal } from './buttons.js';
 import { localState, resetLocalState } from './state.js';
 import { localTournament, startTournamentMatch } from './localTournament.js';
-
+import { lgPlayers } from './render_local.js'
 
 DOM.canvas.width = GAME_CONFIG.canvasWidth;
 DOM.canvas.height = GAME_CONFIG.canvasHeight;
@@ -95,59 +95,56 @@ DOM.signupForm.addEventListener('submit', async (e) => {
     }
 });
 
-    DOM.lgEnterAliasesForm.addEventListener('submit', (event) => {
-        event.preventDefault();
+DOM.lgEnterAliasesForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const lgPlayer1 = DOM.lgPlayer1.value.trim();
+    const lgPlayer2 = DOM.lgPlayer2.value.trim();
+
+    if (!lgPlayer1 || !lgPlayer2) {
+        alert("Both players must enter a name!");
+        return;
+    }
+    if (lgPlayer1 === lgPlayer2) {
+        alert("Both players must have unique names!");
+        return;
+    }
+    lgPlayers = [lgPlayer1, lgPlayer2];
+    console.log("lgEnterAliasesForm");
+    showScreen('game-screen');
+
+});
+
+DOM.ltEnterAliasesForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const ltPlayer1 = DOM.ltPlayer1.value.trim();
+    const ltPlayer2 = DOM.ltPlayer2.value.trim();
+    const ltPlayer3 = DOM.ltPlayer3.value.trim();
+    const ltPlayer4 = DOM.ltPlayer4.value.trim();
+
+    if (!ltPlayer1 || !ltPlayer2 || !ltPlayer3 || !ltPlayer4) {
+        alert("All players must enter a name!");
+        return;
+    }
+    if (new Set([ltPlayer1, ltPlayer2, ltPlayer3, ltPlayer4]).size !== 4) {
+        alert("All players must have unique names!");
+        return;
+    }
+
+    // Store names and matchups
+    localTournament.players = [ltPlayer1, ltPlayer2, ltPlayer3, ltPlayer4];
+    localTournament.matches = [
+        [ltPlayer1, ltPlayer2], 
+        [ltPlayer3, ltPlayer4], 
+    ];
     
-        const lgPlayer1 = DOM.lgPlayer1.value.trim();
-        const lgPlayer2 = DOM.lgPlayer2.value.trim();
+    localTournament.currentMatchIndex = 0;
 
-        if (!lgPlayer1 || !lgPlayer2) {
-            alert("Both players must enter a name!");
-            return;
-        }
-        if (lgPlayer1 === lgPlayer2) {
-            alert("Both players must have unique names!");
-            return;
-        }
-
-        // Store names in localStorage
-        localStorage.setItem("lgPlayer1", lgPlayer1);
-        localStorage.setItem("lgPlayer2", lgPlayer2);
-        console.log("lgEnterAliasesForm");
-        showScreen('game-screen');
-
-    });
-
-    DOM.ltEnterAliasesForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-
-        const ltPlayer1 = DOM.ltPlayer1.value.trim();
-        const ltPlayer2 = DOM.ltPlayer2.value.trim();
-        const ltPlayer3 = DOM.ltPlayer3.value.trim();
-        const ltPlayer4 = DOM.ltPlayer4.value.trim();
-
-        if (!ltPlayer1 || !ltPlayer2 || !ltPlayer3 || !ltPlayer4) {
-            alert("All players must enter a name!");
-            return;
-        }
-        if (new Set([ltPlayer1, ltPlayer2, ltPlayer3, ltPlayer4]).size !== 4) {
-            alert("All players must have unique names!");
-            return;
-        }
+    console.log("Tournament Initialized:", localTournament);
+    startTournamentMatch();
     
-        // Store names and matchups
-        localTournament.players = [ltPlayer1, ltPlayer2, ltPlayer3, ltPlayer4];
-        localTournament.matches = [
-            [ltPlayer1, ltPlayer2], 
-            [ltPlayer3, ltPlayer4], 
-        ];
-        
-        localTournament.currentMatchIndex = 0;
-    
-        console.log("Tournament Initialized:", localTournament);
-        startTournamentMatch();
-        
-    });
+});
 
 window.addEventListener('resize', resizeCanvas);
 

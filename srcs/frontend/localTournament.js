@@ -1,10 +1,10 @@
 import { localState } from "./state.js";
 import { showScreen } from "./showScreen.js";
 
-
 export let localTournament = {
     players: [],
     matches: [],
+    winners: [], 
     currentMatchIndex: 0,
 };
 
@@ -18,34 +18,37 @@ export function startTournamentMatch() {
 
     localState.paddles.left.name = match[0];
     localState.paddles.right.name = match[1];
-    localState.paddles.left.score = 0;
-    localState.paddles.right.score = 0;
-    localState.gameStarted = true;
-	console.log("Local match started");
-    showScreen("game-screen");
 
-    console.log(`Starting Match: ${match[0]} vs ${match[1]}`);
+    showScreen("game-screen");
 }
 
 export function checkTournamentProgress() {
-    if (localTournament.currentMatchIndex >= localTournament.matches.length) {
+    const match = localTournament.matches[localTournament.currentMatchIndex];
+    if (!match) {
         console.error("Invalid match index!");
         return;
     }
 
-    const match = localTournament.matches[localTournament.currentMatchIndex];
-    const winner = (localState.paddles.left.score >= 10) ? match[0] : match[1];
-
+    const winner = localState.paddles.left.score >= 10 ? match[0] : match[1];
     console.log(`Winner of Match ${localTournament.currentMatchIndex + 1}: ${winner}`);
 
-    if (localTournament.currentMatchIndex === 1) {
-        // Final match
-        console.log(`Tournament Winner: ${winner}`);
-        showWinnerScreen(winner);
+    localTournament.winners.push(winner);
+    localTournament.currentMatchIndex++;
+
+    resetLocalState();
+
+    if (localTournament.currentMatchIndex === 2) {
+        // Show Intermediate Game Over Screen
+        DOM.ltIntGameoverMessage.textContent = `Next Match: ${localTournament.winners[0]} vs ${localTournament.winners[1]}`;
+        showScreen("lt-intermediate-game-over-screen");
+    } else if (localTournament.currentMatchIndex === 3) {
+        // Tournament finished → Show final winner
+        const tournamentWinner = localTournament.winners[2];
+        DOM.ltGameOverMessage.textContent = `${tournamentWinner} Wins the Tournament!`;
+        showScreen("lt-game-over-screen");
     } else {
-        // Store winner and set up final match
-        localTournament.matches.push([winner, "TBD"]); // TBD will be replaced later
-        localTournament.currentMatchIndex++;
+        // Prepare final match between winners
+        localTournament.matches.push([localTournament.winners[0], localTournament.winners[1]]);
         startTournamentMatch();
     }
 }

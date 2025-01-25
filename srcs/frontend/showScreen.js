@@ -20,8 +20,9 @@ export function showScreen(screenId, addToHistory = true) {
 		DOM.signupScreen,
 		DOM.profileEdit,
 		DOM.tournamentScreen,
-        DOM.localGameOverScreen,
-        DOM.localTournamentGameOverScreen,
+        DOM.lgGameOverScreen,
+        DOM.ltGameOverScreen,
+        DOM.ltIntGameOverScreen,
         DOM.lgEnterAliasesScreen,
         DOM.ltEnterAliasesScreen
     ]
@@ -39,7 +40,6 @@ export function showScreen(screenId, addToHistory = true) {
             // Special case: game screen setup
             if (screenId === 'game-screen') {
                 if (isLocal) {
-
                     localState.gameStarted = true;
                     localState.isPaused = false;
                     resizeCanvas();

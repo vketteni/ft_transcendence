@@ -108,16 +108,20 @@ export const DOM = {
 	PvPaddFriendButton: document.getElementById('pvp-add-friend'),
 
     // Local Game over screen
-    localGameOverScreen: document.getElementById("local-game-over-screen"),
-    localGameOverMessage: document.getElementById('local-game-over-message'),
-    lgPlayAgainButton: document.getElementById('local-play-again-button'),
-    lgToMenuButton: document.getElementById('local-back-to-menu'),
+    lgGameOverScreen: document.getElementById("lg-game-over-screen"),
+    lgGameOverMessage: document.getElementById('lg-game-over-message'),
+    lgPlayAgainButton: document.getElementById('lg-play-again-button'),
+    lgToMenuButton: document.getElementById('lg-back-to-menu'),
 
-    // Local Tournament game over screen
-    localTournamentGameOverScreen: document.getElementById("local-tournament-game-over-screen"),
-    localTournamentGameOverMessage: document.getElementById('local-tournament-game-over-message'),
-    ltPlayAgainButton: document.getElementById('local-tournament-play-again-button'),
-    ltToMenuButton: document.getElementById('local-tournament-back-to-menu'),
+    // Local Tournament game over screens
+    ltIntGameOverScreen: document.getElementById("lt-intermediate-game-over-screen"),
+    ltIntGameoverMessage: document.getElementById("lti-game-over-message"),
+    ltNextButton: document.getElementById("lt-next-match"),
+
+    ltGameOverScreen: document.getElementById("lg-game-over-screen"),
+    ltGameOverMessage: document.getElementById('lt-game-over-message'),
+    ltPlayAgainButton: document.getElementById('lt-play-again-button'),
+    ltToMenuButton: document.getElementById('lt-back-to-menu'),
 
     logoutButton: document.getElementById('logout-button'),
 };

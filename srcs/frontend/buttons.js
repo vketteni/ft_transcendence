@@ -140,6 +140,10 @@ export const Buttons = {
             isLocal = false;
         });
 
+        DOM.ltNextButton.addEventListener('click', () => {
+            startTournamentMatch();
+        });
+
         // Local tournament game over buttons 
         DOM.ltPlayAgainButton.addEventListener('click', () => {
             resetLocalState();

@@ -60,7 +60,10 @@ export function resizeCanvas() {
     GAME_CONFIG.paddleHeight = canvasHeight * 0.2;
     GAME_CONFIG.ballDiameter = canvasWidth * 0.025;
 
-//     const speedFactor = Math.min(canvasWidth, canvasHeight) / 400; // Adjust factor as needed
-//     localState.ball.vx = Math.sign(localState.ball.vx) * GAME_CONFIG.ballSpeed * speedFactor;
-//     localState.ball.vy = Math.sign(localState.ball.vy) * GAME_CONFIG.ballSpeed * speedFactor;
+    const widthScaleFactor = canvasWidth / 800;
+    const heightScaleFactor = canvasHeight / 600;
+
+    localState.ball.vx = Math.sign(localState.ball.vx || 1) * GAME_CONFIG.ballSpeed * widthScaleFactor;
+    localState.ball.vy = Math.sign(localState.ball.vy || 1) * GAME_CONFIG.ballSpeed * heightScaleFactor;
+
 }
