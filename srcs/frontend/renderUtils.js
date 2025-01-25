@@ -9,11 +9,19 @@ export function clearCanvas() {
 }
 
 export function drawRect(x, y, w, h, color) {
+    if (!DOM.ctx) {
+        console.error("Canvas context is NULL in drawRect!");
+        return;
+    }
 	DOM.ctx.fillStyle = color;
 	DOM.ctx.fillRect(x, y, w, h);
 }
 
 export function drawBall(x, y, radius, color) {
+    if (!DOM.ctx) {
+        console.error("Canvas context is NULL in drawRect!");
+        return;
+    }
 	DOM.ctx.fillStyle = color;
 	DOM.ctx.beginPath();
 	DOM.ctx.arc(x, y, radius, 0, Math.PI * 2);

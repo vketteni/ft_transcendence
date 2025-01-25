@@ -21,19 +21,20 @@ export const DOM = {
 	friendsScreen: document.getElementById('friends-screen'),
 	userprofileScreen: document.getElementById('userprofile-screen'),
 	tournamentScreen: document.getElementById('tournament-screen'),
-
     
-	
+
 	//waiting screens
     AIwaitingScreen: document.getElementById('ai-waiting-screen'),
 	twoPGwaitingScreen: document.getElementById('2PG-waiting-screen'), 
 	matchmakingScreen: document.getElementById('matchmaking-screen'),
 	
 	//timers
-	twoPGTimer: document.getElementById('2PGtimerDisplay'),
     AItimer: document.getElementById('AItimerDisplay'),
     matchmakingTimer: document.getElementById('timerDisplay'),
-	    
+
+    
+    
+    
     // login/signup
 	loginButton: document.getElementById('login-button'),
     signupButton: document.getElementById('signup-button'),
@@ -55,7 +56,8 @@ export const DOM = {
 	signupExitButton: document.getElementById('signup-exit'),
     
     // Category screen buttons  
-	twoPGButton: document.getElementById('2PG'),
+	lgButton: document.getElementById('local-game-button'),
+    ltButton: document.getElementById('local-tournament-button'),
     PvPButton: document.getElementById('PvP'),
     PvCButton: document.getElementById('PvC'),
     tournamentButton: document.getElementById('tournament-button'),
@@ -88,6 +90,20 @@ export const DOM = {
     // Game buttons
     pauseButton: document.getElementById('pause-button'),
 	exitButton: document.getElementById('game-exit'),
+
+    // Local game enter aliases screen
+    lgEnterAliasesScreen: document.getElementById('local-game-alias-screen'),
+    lgEnterAliasesForm: document.getElementById('lg-alias-form'),
+    lgPlayer1: document.getElementById('lg-player1'),
+    lgPlayer2: document.getElementById('lg-player2'),
+
+    // Local tournament enter aliases screen
+    ltEnterAliasesScreen: document.getElementById('local-tournament-alias-screen'),
+    ltEnterAliasesForm: document.getElementById('lt-alias-form'),
+    ltPlayer1: document.getElementById('lt-player1'),
+    ltPlayer2: document.getElementById('lt-player2'),
+    ltPlayer3: document.getElementById('lt-player3'),
+    ltPlayer4: document.getElementById('lt-player4'),
     
     // AI Game over screen
     AIgameOverMessage: document.getElementById('ai-game-over-message'),
@@ -99,17 +115,28 @@ export const DOM = {
     PvPplayAgainButton: document.getElementById('pvp-play-again-button'),
     PvPbackToMenuButton: document.getElementById('pvp-back-to-menu'),
 	PvPaddFriendButton: document.getElementById('pvp-add-friend'),
-	
-	// TRNMT Game Over Screen
+
+    // TRNMT Game Over Screen
 	TRNMTgameOverScreen: document.getElementById('trnmt-game-over-screen'),
 	TRNMTgameOverMessage: document.getElementById('trnmt-game-over-message'),
 	TRNMTgoToNextGameButton: document.getElementById('trnmt-go-to-next-game-button'),
 	TRNMTbackToMenuButton: document.getElementById('trnmt-back-to-menu'),
+    
+    // Local Game over screen
+    lgGameOverScreen: document.getElementById("lg-game-over-screen"),
+    lgGameOverMessage: document.getElementById('lg-game-over-message'),
+    lgPlayAgainButton: document.getElementById('lg-play-again-button'),
+    lgToMenuButton: document.getElementById('lg-back-to-menu'),
 
-	//2PG
-    twoPGgameOverMessage: document.getElementById('2PG-game-over-message'),
-    twoPGplayAgainButton: document.getElementById('2PG-play-again-button'),
-    twoPGbackToMenuButton: document.getElementById('2PG-back-to-menu'),
+    // Local Tournament game over screens
+    ltIntGameOverScreen: document.getElementById("lt-intermediate-game-over-screen"),
+    ltIntGameoverMessage: document.getElementById("lti-game-over-message"),
+    ltNextButton: document.getElementById("lt-next-match"),
+
+    ltGameOverScreen: document.getElementById("lg-game-over-screen"),
+    ltGameOverMessage: document.getElementById('lt-game-over-message'),
+    ltPlayAgainButton: document.getElementById('lt-play-again-button'),
+    ltToMenuButton: document.getElementById('lt-back-to-menu'),
 
     logoutButton: document.getElementById('logout-button'),
 	

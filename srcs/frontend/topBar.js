@@ -1,7 +1,6 @@
 import { getLoginState } from "./auth.js";
 
 export function updateTopBar() {
-	console.log("updateTopBar() called");
     const loggedInLinks = document.querySelectorAll('.logged-in');
     const loggedOutLinks = document.querySelectorAll('.logged-out');
 
