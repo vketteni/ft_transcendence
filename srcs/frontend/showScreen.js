@@ -3,7 +3,7 @@ import { DOM } from './dom.js'
 import { renderLoop, resizeCanvas } from './render.js';
 import { loadUserInfo } from './userProfile.js';
 import { localRenderLoop } from './render_local.js';
-import { localState, resetLocalState } from './state.js';
+import { localState, resetLocalState, resetClientState } from './state.js';
 import { isLocal } from './buttons.js';
 import { wsManager } from './WebSocketManager.js';
 import { setIsLocal, setLocalTour, resetIsPaused } from './buttons.js';
@@ -102,10 +102,12 @@ export function showScreen(screenId, addToHistory = true) {
             resetIsPaused();
         }
         if (wsManager.sockets['matchmaking']) {
+            resetClientState();
             wsManager.close('matchmaking');
         }
     
         if (wsManager.sockets['game']) {
+            resetClientState();
             wsManager.close('game');
         }
         DOM.topBarNav.classList.remove('d-none'); // Ensure header is shown for category

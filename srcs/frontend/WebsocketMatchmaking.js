@@ -37,15 +37,14 @@ function handleMatchmakingMessage(event) {
 
 			promptForGameConnection(
 				"Match found. Join game?",
-				() => { // onAccept logic
-					showScreen('game-screen');
+				() => {
 					connectToGame(message.data.room_url);
 					wsManager.send('game', { action: 'player_ready' });
+                    showScreen('game-screen');
 				},
-				() => { // onReject logic
+				() => {
 					console.log('Game declined.');
 					showScreen('category-screen')
-					// Additional logic if needed
 				}
 			);
             break;

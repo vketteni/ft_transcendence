@@ -132,9 +132,8 @@ export const DOM = {
     ltIntGameoverMessage: document.getElementById("lti-game-over-message"),
     ltNextButton: document.getElementById("lt-next-match"),
 
-    ltGameOverScreen: document.getElementById("lg-game-over-screen"),
+    ltGameOverScreen: document.getElementById("lt-game-over-screen"),
     ltGameOverMessage: document.getElementById('lt-game-over-message'),
-    ltPlayAgainButton: document.getElementById('lt-play-again-button'),
     ltToMenuButton: document.getElementById('lt-back-to-menu'),
 
     logoutButton: document.getElementById('logout-button'),

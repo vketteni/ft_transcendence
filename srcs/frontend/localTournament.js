@@ -1,5 +1,6 @@
 import { localState, resetLocalState } from "./state.js";
 import { showScreen } from "./showScreen.js";
+import { DOM } from "./dom.js";
 
 export let localTournament = {
     players: [],
@@ -38,13 +39,20 @@ export function checkTournamentProgress() {
     resetLocalState();
 
     if (localTournament.currentMatchIndex === 1) {
-        // Show Intermediate Game Over Screen
-        DOM.ltIntGameoverMessage.textContent = `Next Match: ${localTournament.winners[0]} vs ${localTournament.winners[1]}`;
+        // **First 2 matches finished → Show Intermediate Game Over Screen**
+        console.log("Match 1 finished");
+        DOM.ltIntGameoverMessage.innerHTML = `First round is over. <strong>${localTournament.winners[0]}</strong> wins!<br>Next Match: ${localTournament.players[2]} vs ${localTournament.players[3]}`;
         showScreen("lt-intermediate-game-over-screen");
     } else if (localTournament.currentMatchIndex === 2) {
+        console.log("Match 2 finished");
+        // Show Intermediate Game Over Screen
+        DOM.ltIntGameoverMessage.innerHTML = `Second round is over. <strong>${localTournament.winners[1]}</strong> wins!<br>Final Match: ${localTournament.winners[0]} vs ${localTournament.winners[1]}`;
+        localTournament.matches[2] = [localTournament.winners[0], localTournament.winners[1]];
+        showScreen("lt-intermediate-game-over-screen");
+    } else if (localTournament.currentMatchIndex === 3) {
         // Tournament finished → Show final winner
         const tournamentWinner = localTournament.winners[2];
-        DOM.ltGameOverMessage.textContent = `${tournamentWinner} Wins the Tournament!`;
+        DOM.ltGameOverMessage.innerHTML = `Tournament is over!<br><strong>${tournamentWinner}</strong> won`;
         showScreen("lt-game-over-screen");
     } else {
         // Prepare final match between winners

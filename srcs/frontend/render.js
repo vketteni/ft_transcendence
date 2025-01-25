@@ -2,6 +2,7 @@ import { GAME_CONFIG } from './config.js';
 import { DOM } from './dom.js';
 import { clientState, serverState, localState } from './state.js';
 import { clearCanvas, drawRect, drawBall, extrapolateState } from './renderUtils.js';
+import { isLocal } from './buttons.js';
 
 export function renderLoop() {
     clearCanvas();
@@ -64,15 +65,17 @@ export function resizeCanvas() {
     GAME_CONFIG.paddleHeight = canvasHeight * 0.2;
     GAME_CONFIG.ballDiameter = canvasWidth * 0.025;
 
-    localState.paddles.left.y *= heightScaleFactor;
-    localState.paddles.right.y *= heightScaleFactor;
+    if (isLocal) {
+        localState.paddles.left.y *= heightScaleFactor;
+        localState.paddles.right.y *= heightScaleFactor;
 
-    localState.paddles.left.x = 0;
-    localState.paddles.right.x = GAME_CONFIG.canvasWidth - GAME_CONFIG.paddleWidth;
+        localState.paddles.left.x = 0;
+        localState.paddles.right.x = GAME_CONFIG.canvasWidth - GAME_CONFIG.paddleWidth;
 
-    localState.ball.x *= widthScaleFactor;
-    localState.ball.y *= heightScaleFactor;
+        localState.ball.x *= widthScaleFactor;
+        localState.ball.y *= heightScaleFactor;
 
-    localState.ball.vx *= widthScaleFactor;
-    localState.ball.vy *= heightScaleFactor;
+        localState.ball.vx *= widthScaleFactor;
+        localState.ball.vy *= heightScaleFactor;
+    }
 }

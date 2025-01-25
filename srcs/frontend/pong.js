@@ -137,7 +137,8 @@ DOM.ltEnterAliasesForm.addEventListener('submit', (event) => {
     localTournament.players = [ltPlayer1, ltPlayer2, ltPlayer3, ltPlayer4];
     localTournament.matches = [
         [ltPlayer1, ltPlayer2], 
-        [ltPlayer3, ltPlayer4], 
+        [ltPlayer3, ltPlayer4],
+        ["TBD", "TBD"]
     ];
     
     localTournament.currentMatchIndex = 0;
@@ -259,11 +260,13 @@ window.addEventListener("beforeunload", () => {
     }
     else { 
         if (wsManager.sockets['matchmaking']) {
-        console.log("Closing matchmaking socket before refresh.");
-        wsManager.close('matchmaking');
+            resetClientState();
+            console.log("Closing matchmaking socket before refresh.");
+            wsManager.close('matchmaking');
         }
 
         if (wsManager.sockets['game']) {
+            resetClientState();
             console.log("Closing game socket before refresh.");
             wsManager.close('game');
         }

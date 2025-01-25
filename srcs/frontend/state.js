@@ -56,7 +56,6 @@ export function resetLocalState() {
     };
 }
 
-
 export let clientState = {
     paddles: {
         left: { 
@@ -117,10 +116,11 @@ export function resetClientState() {
             render: false,
         },
     };
+
 }
 
 export function updateServerState(serverData) {
-
+    
     serverState.ball.x = serverData.ball.x * GAME_CONFIG.canvasWidth;
     serverState.ball.y = serverData.ball.y * GAME_CONFIG.canvasHeight;
     serverState.ball.vx = serverData.ball.vx * GAME_CONFIG.canvasWidth;

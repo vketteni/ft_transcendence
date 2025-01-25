@@ -5,7 +5,7 @@ import { connectToMatchmaking } from './WebsocketMatchmaking.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
 import { localState, resetLocalState } from './state.js';
-import { localRenderLoop } from './render_local.js';
+import { startTournamentMatch } from './localTournament.js';
 
 let isPaused = false;
 const matchmakingTimer = new Timer(DOM.matchmakingTimer);
@@ -171,11 +171,6 @@ export const Buttons = {
         });
 
         // Local tournament game over buttons 
-        DOM.ltPlayAgainButton.addEventListener('click', () => {
-            resetLocalState();
-            console.log("Local tournament play again button clicked");
-            showScreen('game-screen');
-        });
 
         DOM.ltToMenuButton.addEventListener('click', () => {
             showScreen('category-screen');
