@@ -22,20 +22,15 @@ export const DOM = {
 	userprofileScreen: document.getElementById('userprofile-screen'),
 	tournamentScreen: document.getElementById('tournament-screen'),
     
-
 	//waiting screens
     AIwaitingScreen: document.getElementById('ai-waiting-screen'),
 	twoPGwaitingScreen: document.getElementById('2PG-waiting-screen'), 
 	matchmakingScreen: document.getElementById('matchmaking-screen'),
 	
 	//timers
-	twoPGTimer: document.getElementById('2PGtimerDisplay'),
     AItimer: document.getElementById('AItimerDisplay'),
     matchmakingTimer: document.getElementById('timerDisplay'),
-
-    
-    
-    
+           
     // login/signup
 	loginButton: document.getElementById('login-button'),
     signupButton: document.getElementById('signup-button'),
@@ -56,7 +51,8 @@ export const DOM = {
 	signupExitButton: document.getElementById('signup-exit'),
     
     // Category screen buttons  
-	twoPGButton: document.getElementById('2PG'),
+	lgButton: document.getElementById('local-game-button'),
+    ltButton: document.getElementById('local-tournament-button'),
     PvPButton: document.getElementById('PvP'),
     PvCButton: document.getElementById('PvC'),
     tournamentButton: document.getElementById('tournament-button'),
@@ -85,6 +81,20 @@ export const DOM = {
     // Game buttons
     pauseButton: document.getElementById('pause-button'),
 	exitButton: document.getElementById('game-exit'),
+
+    // Local game enter aliases screen
+    lgEnterAliasesScreen: document.getElementById('local-game-alias-screen'),
+    lgEnterAliasesForm: document.getElementById('lg-alias-form'),
+    lgPlayer1: document.getElementById('lg-player1'),
+    lgPlayer2: document.getElementById('lg-player2'),
+
+    // Local tournament enter aliases screen
+    ltEnterAliasesScreen: document.getElementById('local-tournament-alias-screen'),
+    ltEnterAliasesForm: document.getElementById('lt-alias-form'),
+    ltPlayer1: document.getElementById('lt-player1'),
+    ltPlayer2: document.getElementById('lt-player2'),
+    ltPlayer3: document.getElementById('lt-player3'),
+    ltPlayer4: document.getElementById('lt-player4'),
     
     // AI Game over screen
     AIgameOverMessage: document.getElementById('ai-game-over-message'),
@@ -97,10 +107,17 @@ export const DOM = {
     PvPbackToMenuButton: document.getElementById('pvp-back-to-menu'),
 	PvPaddFriendButton: document.getElementById('pvp-add-friend'),
 
-	//2PG
-    twoPGgameOverMessage: document.getElementById('2PG-game-over-message'),
-    twoPGplayAgainButton: document.getElementById('2PG-play-again-button'),
-    twoPGbackToMenuButton: document.getElementById('2PG-back-to-menu'),
+    // Local Game over screen
+    localGameOverScreen: document.getElementById("local-game-over-screen"),
+    localGameOverMessage: document.getElementById('local-game-over-message'),
+    lgPlayAgainButton: document.getElementById('local-play-again-button'),
+    lgToMenuButton: document.getElementById('local-back-to-menu'),
+
+    // Local Tournament game over screen
+    localTournamentGameOverScreen: document.getElementById("local-tournament-game-over-screen"),
+    localTournamentGameOverMessage: document.getElementById('local-tournament-game-over-message'),
+    ltPlayAgainButton: document.getElementById('local-tournament-play-again-button'),
+    ltToMenuButton: document.getElementById('local-tournament-back-to-menu'),
 
     logoutButton: document.getElementById('logout-button'),
 };

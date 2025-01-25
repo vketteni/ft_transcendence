@@ -5,6 +5,7 @@ export const GAME_CONFIG = {
     paddleWidth: 15,
     paddleHeight: 100,
     ballDiameter: 20,
+    ballSpeed: 5,
     paddleColor: '#FFFFFF',
     ballColor: '#FFFFFF',
 };

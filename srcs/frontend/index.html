@@ -31,13 +31,24 @@
 			  </nav>
 			</div>
 		</header>
-		<div class="d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+
+		 <!-- Main Menu Layout -->
+		 <div class="d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
 			<img src="title.png" alt="Game Title" class="img-fluid" style="max-width: 400px;">
+	
+			<!-- Local Games Section -->
+			<h3 class="mt-4 text-light">🎮 Local Games</h3>
 			<div class="d-grid gap-2 col-4 mx-auto">
-				<button id="2PG" class="btn btn-outline-light btn-md mb-2">Player vs Player</button>
-				<button id="PvC" class="btn btn-outline-light btn-md mb-2">Player vs Computer</button>
-				<button id="tournament-button" class="btn btn-outline-light btn-md mb-2">Tournament</button>
-				<button id="PvP" class="btn btn-outline-info btn-md">Remote Player vs Player</button>
+				<button id="local-game-button" class="btn btn-outline-light btn-md">Player vs Player</button>
+				<button id="local-tournament-button" class="btn btn-outline-light btn-md">Tournament</button>
+			</div>
+	
+			<!-- Online Games Section -->
+			<h3 class="mt-4 text-light">🌐 Online Games</h3>
+			<div class="d-grid gap-2 col-4 mx-auto">
+				<button id="PvC" class="btn btn-outline-light btn-md">Player vs Computer</button>
+				<button id="PvP" class="btn btn-outline-light btn-md">Remote Player vs Player</button>
+				<button id="tournament-button" class="btn btn-outline-light btn-md">Remote Tournament</button>
 			</div>
 		</div>
     </div>
@@ -133,13 +144,6 @@
         <!-- <button id="matchmaking-exit" class="btn btn-lg btn-outline-info mt-3">Back to menu</button> -->
     </div>
 
-	<!-- 2PG waiting screen-->
-    <div id="2PG-waiting-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-        <h1 id="waiting-text">Loading...</h1>
-        <!-- <div id="2PGtimerDisplay">0s</div> -->
-        <!-- <button id="matchmaking-exit" class="btn btn-lg btn-outline-info mt-3">Back to menu</button> -->
-    </div>
-
     <!-- game screen -->
 	<div id="game-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
 		<div class="game-container d-flex flex-column justify-content-center align-items-center">
@@ -173,6 +177,28 @@
 		</div>
 	</div>
 
+	<!-- Local game alias Entry Screen -->
+	<div id="local-game-alias-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+		<h1 class="mb-4">Enter Your Aliases</h1>
+		<form id="lg-alias-form" class="text-center">
+			<input type="text" id="lg-player1" class="form-control mb-3" placeholder="Player 1 Name" required maxlength="20">
+			<input type="text" id="lg-player2" class="form-control mb-3" placeholder="Player 2 Name" required maxlength="20">
+			<button type="submit" class="btn btn-outline-light btn-lg mt-3">Start Game</button>
+		</form>
+	</div>
+
+	<!-- Local tournament alias entry Screen -->
+	<div id="local-tournament-alias-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+		<h1 class="mb-4">Enter Your Aliases</h1>
+		<form id="lt-alias-form" class="text-center">
+			<input type="text" id="lt-player1" class="form-control mb-3" placeholder="Player 1 Name" required maxlength="20">
+			<input type="text" id="lt-player2" class="form-control mb-3" placeholder="Player 2 Name" required maxlength="20">
+			<input type="text" id="lt-player3" class="form-control mb-3" placeholder="Player 3 Name" required maxlength="20">
+			<input type="text" id="lt-player4" class="form-control mb-3" placeholder="Player 4 Name" required maxlength="20">
+			<button type="submit" class="btn btn-outline-light btn-lg mt-3">Start Game</button>
+		</form>
+	</div>
+
     <!-- AI Game Over Screen -->
     <div id="ai-game-over-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
         <h1 id="ai-game-over-message">Game Over!</h1>
@@ -187,6 +213,20 @@
         <button type=button id="pvp-play-again-button" class="btn btn-outline-light btn-lg mb-3">Rematch</button>
         <button type=button id="pvp-back-to-menu" class="btn btn-outline-info btn-lg">Back to menu</button>
     </div>
+
+	<!-- Local Game Over Screen -->
+	<div id="local-game-over-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+		<h1 id="local-game-over-message" class="mb-3">Game Over!</h1>
+		<button type=button id="local-play-again-button" class="btn btn-outline-light btn-lg mb-3">Play Again</button>
+		<button type=button id="local-back-to-menu" class="btn btn-outline-info btn-lg">Back to menu</button>
+	</div>
+
+	<!-- Local Tournament Game Over Screen -->
+	<div id="local-tournament-game-over-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+		<h1 id="local-tournament-game-over-message" class="mb-3">Game Over!</h1>
+		<button type=button id="local-tournament-play-again-button" class="btn btn-outline-light btn-lg mb-3">Play Again</button>
+		<button type=button id="local-tournament-back-to-menu" class="btn btn-outline-info btn-lg">Back to menu</button>
+	</div>
 
 	<!-- friends screen -->
 	<div id="friends-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">

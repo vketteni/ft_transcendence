@@ -1,6 +1,6 @@
 import { GAME_CONFIG } from './config.js';
 import { DOM } from './dom.js';
-import { clientState, serverState } from './state.js';
+import { clientState, serverState, localState } from './state.js';
 import { clearCanvas, drawRect, drawBall, extrapolateState } from './renderUtils.js';
 
 export function renderLoop() {
@@ -59,4 +59,8 @@ export function resizeCanvas() {
     GAME_CONFIG.paddleWidth = canvasWidth * 0.02;
     GAME_CONFIG.paddleHeight = canvasHeight * 0.2;
     GAME_CONFIG.ballDiameter = canvasWidth * 0.025;
+
+//     const speedFactor = Math.min(canvasWidth, canvasHeight) / 400; // Adjust factor as needed
+//     localState.ball.vx = Math.sign(localState.ball.vx) * GAME_CONFIG.ballSpeed * speedFactor;
+//     localState.ball.vy = Math.sign(localState.ball.vy) * GAME_CONFIG.ballSpeed * speedFactor;
 }

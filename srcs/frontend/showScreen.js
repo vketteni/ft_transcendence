@@ -1,8 +1,10 @@
 import { updateTopBar } from './topBar.js'
 import { DOM } from './dom.js'
-import { fetchUserState } from './fetchUserState.js'
 import { renderLoop, resizeCanvas } from './render.js';
 import { loadUserInfo } from './userProfile.js';
+import { localRenderLoop } from './render_local.js';
+import { localState } from './state.js';
+import { isLocal } from './buttons.js';
 
 export function showScreen(screenId, addToHistory = true) {
     const screens = [
@@ -14,31 +16,40 @@ export function showScreen(screenId, addToHistory = true) {
         DOM.userprofileScreen,
         DOM.matchmakingScreen,
         DOM.AIwaitingScreen,
-        DOM.twoPGwaitingScreen,
         DOM.PvPgameOverScreen,
 		DOM.signupScreen,
 		DOM.profileEdit,
-		DOM.tournamentScreen
-        // DOM.twoPGgameOverScreen,
-
-    ];
-	if (screenId === 'profileEdit') {
-		console.log(`edit profile screen added to history: ${addToHistory}`)
-	}
-    const defaultScreen = DOM.categoryScreen; // Define the category screen as the default
+		DOM.tournamentScreen,
+        DOM.localGameOverScreen,
+        DOM.localTournamentGameOverScreen,
+        DOM.lgEnterAliasesScreen,
+        DOM.ltEnterAliasesScreen
+    ]
+    
+	const defaultScreen = DOM.categoryScreen; // Define the category screen as the default
 
     // Validate screenId or fall back to the default screen
     const targetScreen = screens.find(screen => screen.id === screenId) || defaultScreen;
-
+    
     // Show or hide screens
     screens.forEach(screen => {
-        if (screen === targetScreen) {
+            if (screen === targetScreen) {
             screen.classList.remove('d-none'); // Show the target screen
 
             // Special case: game screen setup
             if (screenId === 'game-screen') {
-                resizeCanvas();
-                renderLoop();
+                if (isLocal) {
+
+                    localState.gameStarted = true;
+                    localState.isPaused = false;
+                    resizeCanvas();
+                    requestAnimationFrame(localRenderLoop);
+                    console.log("Local game rendering started");
+                }
+                else {
+                    resizeCanvas();
+                    renderLoop();
+                }
                 console.log("Game screen initialized");
             }
 

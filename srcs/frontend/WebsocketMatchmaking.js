@@ -53,6 +53,7 @@ function promptForGameConnection(data) {
         wsManager.close('matchmaking');
         connectToGame(data.room_url);
         wsManager.send('game', { action: 'player_ready' });
+        console.log('Game accepted.');
         showScreen('game-screen');
     } else {
         console.log('Game declined.');

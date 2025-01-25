@@ -1,5 +1,62 @@
 import { GAME_CONFIG } from './config.js';
 
+export let localState = {
+    paddles: {
+        left: { 
+                y: GAME_CONFIG.canvasHeight / 2 - 50,
+                x: 0,
+                score: 0,
+                up: false,
+                down: false 
+            },
+        right: { 
+                y: GAME_CONFIG.canvasHeight / 2 - 50,
+                x: GAME_CONFIG.canvasWidth - GAME_CONFIG.paddleWidth,
+                score: 0,
+                up: false,
+                down: false 
+            },
+        },
+    ball: {
+            x: GAME_CONFIG.canvasWidth / 2,
+            y: GAME_CONFIG.canvasHeight / 2,
+            vx: (Math.random() > 0.5 ? 1 : -1) * GAME_CONFIG.ballSpeed,
+            vy: (Math.random() * 2 - 1) * GAME_CONFIG.ballSpeed,
+    },
+    isPaused: true,
+    gameStarted: false,
+};
+
+export function resetLocalState() { 
+    localState = {
+        paddles: {
+            left: { 
+                    y: GAME_CONFIG.canvasHeight / 2 - 50,
+                    x: 0,
+                    score: 0,
+                    up: false,
+                    down: false 
+                },
+            right: { 
+                    y: GAME_CONFIG.canvasHeight / 2 - 50,
+                    x: GAME_CONFIG.canvasWidth - GAME_CONFIG.paddleWidth,
+                    score: 0,
+                    up: false,
+                    down: false 
+                },
+            },
+        ball: {
+                x: GAME_CONFIG.canvasWidth / 2,
+                y: GAME_CONFIG.canvasHeight / 2,
+                vx: (Math.random() > 0.5 ? 1 : -1) * GAME_CONFIG.ballSpeed,
+                vy: (Math.random() * 2 - 1) * GAME_CONFIG.ballSpeed,
+        },
+        isPaused: true,
+        gameStarted: false,
+    };
+}
+
+
 export let clientState = {
     paddles: {
         left: { 
