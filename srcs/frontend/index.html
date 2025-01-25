@@ -13,11 +13,11 @@
     </head>
 	  
     
-<body class="bg-black text-white vh-100 overflow-hidden">
+<body class="bg-black text-white vh-100">
 
    <!-- category screen -->
-   <div id="category-screen">
-		<header class="bg-danger-subtle py-1">
+   <div id="category-screen" class="vh-100 bg-cover text-center">
+		<header class="bg-danger-subtle py-1 position-sticky top-0 z-index-1050">
 			<div class="container d-flex justify-content-between align-items-center">
 			  <div id="logo" class="text-black text-decoration-none fs-5 fw-bold">Pong!</div>
 			  <nav id="topbar-nav">
@@ -31,31 +31,33 @@
 			  </nav>
 			</div>
 		</header>
-		<div class="d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-			<img src="title.png" alt="Game Title" class="img-fluid">
+		<div class="d-flex flex-column justify-content-center align-items-center px-5">
+			<div class="mt-5">
+                <img src="title.png" alt="Game Title" class="img-fluid">
+            </div>
 			<div class="d-grid gap-2 col-4 mx-auto">
 				<button id="2PG" class="btn btn-outline-light btn-md mb-2">Player vs Player</button>
 				<button id="PvC" class="btn btn-outline-light btn-md mb-2">Player vs Computer</button>
 				<button id="tournament-button" class="btn btn-outline-light btn-md mb-2">Tournament</button>
-				<button id="PvP" class="btn btn-outline-info btn-md">Remote Player vs Player</button>
+				<button id="PvP" class="btn btn-outline-info btn-md mb-3">Remote Player vs Player</button>
 			</div>
 		</div>
     </div>
 
 	<!-- Login Screen -->
-	<div id="login-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-2">
-		<h2>Login</h2>
+	<div id="login-screen" class="d-none d-flex flex-column justify-content-center align-items-center bg-cover text-center px-2">
+		<h2 class="mt-5">Login</h2>
 		<form id="login-form" class="text-center w-40">
 			<input type="text" id="login-alias" class="form-control mb-3" placeholder="Enter your alias" required maxlength="20">
 			<input type="password" id="login-password" class="form-control mb-3" placeholder="Enter your password" required>
 			<div class="d-grid gap-2 mx-auto">
                 <button type="submit" class="btn btn-outline-light btn-lg mb-3">Login</button>
                 <div><p>Don't have an account? <button id="signup-button" class="btn btn-outline-success btn-sm">Sign Up</button></p></div>
-                <p>----------------------- OR -----------------------</p>
+                <p>---------------------- OR ----------------------</p>
                 <button id="login-42-button" class="btn btn-outline-primary btn-lg mb-3">Login with <img src="42logo.png" style="height: 24px"></button>
             </div>
 		</form>
-		<button id="login-exit" class="btn btn-outline-info btn-sm mt-3">Back to menu</button>
+		<button id="login-exit" class="btn btn-outline-info btn-sm mt-2 mb-4">Back to menu</button>
 	</div>
 	
 	<!-- Sign Up Screen -->
@@ -165,7 +167,7 @@
 
     <!-- game screen -->
 	<div id="game-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-		<div class="game-container d-flex flex-column justify-content-center align-items-center">
+		<div class="game-container d-flex flex-column justify-content-center align-items-center overflow-hidden">
 			<div id="timerDisplay" class="visually-hidden"></div>
 			<canvas id="canvas" class="border border-2 border-white"></canvas>
 			<button id="pause-button" class="btn btn-lg btn-outline-light mt-3">Pause</button>
