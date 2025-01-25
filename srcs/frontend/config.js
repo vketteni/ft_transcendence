@@ -9,10 +9,10 @@ export const GAME_CONFIG = {
     ballColor: '#FFFFFF',
 };
 
-export function getPlayerID() {
-    return localStorage.getItem('playerid');
+export function getBrowserID() {
+    return localStorage.getItem('browser_id');
 }
 
-export function setPlayerID(playerid) {
-    return localStorage.setItem('playerid', playerid);
+export function setBrowserID(browser_id) {
+    return localStorage.setItem('browser_id', playerid);
 }

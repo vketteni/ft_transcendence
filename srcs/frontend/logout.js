@@ -23,6 +23,7 @@ export async function handleLogout() {
             localStorage.removeItem('access_token');
             // Clear or reset any local state indicating the user is authenticated
 			alert(`Logged out!`);
+            // setLoginState(data.logged_in);
             setLoginState(data.logged_in);
 			updateTopBar();
             // // Optionally redirect user or show a "Logged out" screen

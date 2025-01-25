@@ -39,6 +39,7 @@ INSTALLED_APPS = [
 	'django_celery_beat',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_extensions',
 
     # Local Apps
     'apps.accounts',

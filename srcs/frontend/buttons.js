@@ -5,7 +5,7 @@ import { connectToMatchmaking } from './WebsocketMatchmaking.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
 // import { is2PG } from './pong.js';
-// import { GAME_CONFIG, setPlayerID } from './config.js';
+// import { GAME_CONFIG } from './config.js';
 // import { resizeCanvas } from './render.js';
 // import { handleLoginRedirect, setLoginState } from './auth.js';
 // import { sendAlias } from './sendToBackend.js';
@@ -79,6 +79,13 @@ export const Buttons = {
 
         DOM.profileExitButton.addEventListener('click', () => {
             showScreen('category-screen');
+        });
+
+        DOM.FriendsPageButton.addEventListener('click', () => {
+            showScreen('friends-screen');
+        });
+        DOM.MatchHistoryButton.addEventListener('click', () => {
+            showScreen('match-history-screen');
         });
 
 		//PVP Buttons

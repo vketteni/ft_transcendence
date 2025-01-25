@@ -1,13 +1,17 @@
 import { displayError, logErrorToService } from './errorHandler.js';
 import { apiRequest } from './apiService.js';
 
-export let isLoggedIn = false; // Default to logged out
+// Function to update the login state
+export function getLoginState() {
+    if (localStorage.getItem('isLoggedIn') == "true")
+        return true;
+    else
+        return false;
+}
 
 // Function to update the login state
 export function setLoginState(state) {
-
-	isLoggedIn = state;
-
+    localStorage.setItem('isLoggedIn', state);
 }
 
 export async function handleLoginRedirect(code) {

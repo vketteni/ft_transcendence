@@ -1,18 +1,18 @@
-import { getPlayerID } from './config.js';
 import { stopAndResetTimer } from './buttons.js';
 import { wsManager } from './WebSocketManager.js';
 import { connectToGame } from './WebsocketGameroom.js';
 import { showScreen } from './showScreen.js';
 import { DOM } from './dom.js';
 
-export function connectToMatchmaking(queue_type) {
+export function connectToMatchmaking(queue_type="PVP") {
+    user_id = localStorage.getItem('user_id');
     wsManager.connect(
         'matchmaking',
-        `/ws/matchmaking?queue_name=${queue_type}&player_id=${getPlayerID()}`,
+        `/ws/matchmaking?queue_name=${queue_type}&player_id=${user_id}`,
         handleMatchmakingMessage,
         handleMatchmakingClose
     );
-	console.log("join_queue with player id:", getPlayerID());
+	console.log("join_queue with player id:", user_id);
 }
 
 function handleMatchmakingMessage(event) {

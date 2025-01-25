@@ -2,11 +2,10 @@ import { getCookie } from "./cookie.js";
 import { setLoginState } from "./auth.js";
 import { updateTopBar } from "./topBar.js";
 import { showScreen } from "./showScreen.js";
-import { setPlayerID } from "./config.js";
 
 let loginHandled = false;
 
-export async function fetchUserState(loginWindow = null) {
+export async function fetchUserState(loginWindow) {
 	try {
 
 		const response = await fetch('/api/accounts/user/status/poll/', {
@@ -28,11 +27,12 @@ export async function fetchUserState(loginWindow = null) {
 			console.log("loginWindow: ", loginWindow, "loginWindow.closed: ", loginWindow.closed);
 			localStorage.setItem('access_token', data.access_token);
 			if (loginWindow && !loginWindow.closed) loginWindow.close();
-			setLoginState(data.logged_in);
-			setPlayerID(data.user.id);
+            localStorage.setItem('user_id', data.user.user_id);
+            localStorage.setItem('username', data.user.username);
+            setLoginState(data.logged_in);
 			updateTopBar();
 			showScreen('category-screen');
-			alert(`Welcome, ${data.user.username}!`);
+			// alert(`Welcome, ${data.user.username}!`);
 
 
 		} else if (data.error) {

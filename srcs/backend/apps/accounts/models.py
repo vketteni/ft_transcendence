@@ -18,9 +18,19 @@ class User(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', default='avatars/default-avatar.jpg', blank=True)  # Example: Profile picture
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
+    friends = models.ManyToManyField("self", blank=True, symmetrical=True, related_name="friends_with")
     def __str__(self):
         return self.username
 
+    # def add_friend(self, friend_user):
+    #     """Add a friend to the user's friends list."""
+    #     self.friends.add(friend_user)
+    #     self.save()
+
+    # def remove_friend(self, friend_user):
+    #     """Remove a friend from the user's friends list."""
+    #     self.friends.remove(friend_user)
+    #     self.save()
     
 class Match(models.Model):
     """Stores match history details."""
@@ -33,3 +43,25 @@ class Match(models.Model):
 
     def __str__(self):
         return f"{self.player1.username} vs {self.player2.username} on {self.date_played.strftime('%Y-%m-%d')}"
+    
+class FriendRequest(models.Model):
+    PENDING = 'PENDING'
+    ACCEPTED = 'ACCEPTED'
+    REJECTED = 'REJECTED'
+
+    STATUS_CHOICES = [
+        (PENDING, 'Pending'),
+        (ACCEPTED, 'Accepted'),
+        (REJECTED, 'Rejected'),
+    ]
+
+    sender = models.ForeignKey(User, related_name="sent_friend_requests", on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name="received_friend_requests", on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('sender', 'receiver')  # Prevent duplicate requests
+
+    def __str__(self):
+        return f"{self.sender.username} -> {self.receiver.username} ({self.status})"

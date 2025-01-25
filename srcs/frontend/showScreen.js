@@ -3,6 +3,7 @@ import { DOM } from './dom.js'
 import { fetchUserState } from './fetchUserState.js'
 import { renderLoop, resizeCanvas } from './render.js';
 import { loadUserInfo } from './userProfile.js';
+import { loadMatchHistory } from './matchHistory.js';
 
 export function showScreen(screenId, addToHistory = true) {
     const screens = [
@@ -12,17 +13,18 @@ export function showScreen(screenId, addToHistory = true) {
         DOM.gameScreen,
         DOM.AIgameOverScreen,
         DOM.userprofileScreen,
+        DOM.friendsScreen,
         DOM.matchmakingScreen,
         DOM.AIwaitingScreen,
         DOM.twoPGwaitingScreen,
         DOM.PvPgameOverScreen,
-		DOM.signupScreen,
 		DOM.profileEdit,
 		DOM.tournamentScreen,
+        DOM.friendScreen,
+        DOM.matchHistoryScreen,,
 		DOM.TRNMTgameOverScreen,
 		DOM.acceptScreen,
         // DOM.twoPGgameOverScreen,
-
     ];
 	if (screenId === 'profileEdit') {
 		console.log(`edit profile screen added to history: ${addToHistory}`)
@@ -48,6 +50,12 @@ export function showScreen(screenId, addToHistory = true) {
             if (screenId === 'userprofile-screen') {
                 loadUserInfo();
             }
+
+            // Special case: load user info on profile screen
+            if (screenId === 'match-history-screen') {
+                loadMatchHistory();
+            }
+
         } else {
             screen.classList.add('d-none'); // Hide all other screens
         }

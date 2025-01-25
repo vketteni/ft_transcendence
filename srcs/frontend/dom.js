@@ -33,10 +33,7 @@ export const DOM = {
 	twoPGTimer: document.getElementById('2PGtimerDisplay'),
     AItimer: document.getElementById('AItimerDisplay'),
     matchmakingTimer: document.getElementById('timerDisplay'),
-	
-    
-    
-    
+	    
     // login/signup
 	loginButton: document.getElementById('login-button'),
     signupButton: document.getElementById('signup-button'),
@@ -56,30 +53,32 @@ export const DOM = {
     signupEmail: document.getElementById('signup-email'),
     signupAvatar: document.getElementById('signup-avatar'),
 	signupExitButton: document.getElementById('signup-exit'),
-
+    
     // Category screen buttons  
 	twoPGButton: document.getElementById('2PG'),
     PvPButton: document.getElementById('PvP'),
     PvCButton: document.getElementById('PvC'),
     tournamentButton: document.getElementById('tournament-button'),
-	
+
     // User profile screen
     editProfileButton: document.getElementById('editProfileButton'),
     cancelEditButton: document.getElementById('cancelEditButton'),
     profileButton: document.getElementById('profileButton'),
 	profileExitButton: document.getElementById('profile-exit'),
-	
+    FriendsPageButton: document.getElementById('FriendsPageButton'),
+    MatchHistoryButton: document.getElementById('MatchHistoryButton'),
+    
     // Edit user profile screen
     editProfileForm: document.getElementById('editProfileForm'),
     editUsername: document.getElementById('editUsername'),
     editEmail: document.getElementById('editEmail'),
     editFirstName: document.getElementById('editFirstName'),
     editLastName: document.getElementById('editLastName'),
-	    editAvatar: document.getElementById('editAvatar'),
+    editAvatar: document.getElementById('editAvatar'),
 
     profileView: document.getElementById('profileView'),
     profileEdit: document.getElementById('profileEdit'),
-	
+
     profileUsername: document.getElementById('profileUsername'),
     profileEmail: document.getElementById('profileEmail'),
     profileFirstName: document.getElementById('profileFirstName'),
@@ -94,7 +93,7 @@ export const DOM = {
     AIgameOverMessage: document.getElementById('ai-game-over-message'),
     AIplayAgainButton: document.getElementById('ai-play-again-button'),
     AIbackToMenuButton: document.getElementById('ai-back-to-menu'),
-	
+
     // PVP Game over screen
     PvPgameOverMessage: document.getElementById('pvp-game-over-message'),
     PvPplayAgainButton: document.getElementById('pvp-play-again-button'),
@@ -111,7 +110,7 @@ export const DOM = {
     twoPGgameOverMessage: document.getElementById('2PG-game-over-message'),
     twoPGplayAgainButton: document.getElementById('2PG-play-again-button'),
     twoPGbackToMenuButton: document.getElementById('2PG-back-to-menu'),
-	
+
     logoutButton: document.getElementById('logout-button'),
 	
 	// accept screen
@@ -122,6 +121,13 @@ export const DOM = {
 
 
 
+    
+    // Match history screen
+    matchHistoryScreen: document.getElementById('match-history-screen'),
+    matchHistoryTable: document.getElementById('match-history-table'),
+    
+    // Friends screen
+    friendScreen: document.getElementById('friends-screen'),
 };
 
 

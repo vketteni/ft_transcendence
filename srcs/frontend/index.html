@@ -94,8 +94,8 @@
 				<p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
 				<p><strong>Wins:</strong> <span id="profileWins"></span></p>  <!-- ✅ Fixed ID -->
             	<p><strong>Losses:</strong> <span id="profileLosses"></span></p> 
-				<button class="btn btn-outline-warning btn-md mb-2">Friends</button>
-				<button class="btn btn-outline-success btn-md mb-2">Match History</button>
+				<button id="FriendsPageButton" class="btn btn-outline-warning btn-md mb-2">Friends</button>
+				<button id="MatchHistoryButton" class="btn btn-outline-success btn-md mb-2">Match History</button>
 			</div>
 			<button id="editProfileButton" class="btn btn-outline-light btn-sm mt-3">Edit Profile</button>
 			<button id="profile-exit" class="btn btn-outline-info btn-sm mt-3">Back to menu</button>
@@ -221,8 +221,67 @@
     </div>
 
 	<!-- friends screen -->
-	<div id="friends-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+	<div id="friends-screen" class="d-none">
+		<header class="bg-danger-subtle py-1">
+			<div class="container d-flex justify-content-between align-items-center">
+				<div id="logo" class="text-black text-decoration-none fs-5 fw-bold">Pong!</div>
+			</div>
+		</header>
+		<div class="d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+			<h1 class="text-light mb-4">Friends List</h1>
+			<ul class="list-group w-75">
+				<!-- Example Friends -->
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<span>John Doe</span>
+					<span class="badge bg-primary rounded-pill">Online</span>
+				</li>
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					<span>Jane Smith</span>
+					<span class="badge bg-secondary rounded-pill">Offline</span>
+				</li>
+			</ul>
+			<div class="mt-3">
+				<button class="btn btn-outline-light btn-md" onclick="goBack()">Back</button>
+			</div>
+		</div>
+	</div>
+	
 
+	<!-- Match History Screen -->
+	<div id="match-history-screen" class="d-none">
+		<div class="d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
+			<h1 class="text-light mb-4">Match History</h1>
+			<div class="table-responsive w-75">
+				<table id="match-history-table" class="table table-dark table-striped table-hover">
+					<thead>
+						<tr>
+							<th scope="col">Match ID</th>
+							<th scope="col">Opponent</th>
+							<th scope="col">Result</th>
+							<th scope="col">Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						<!-- Example Matches -->
+						<tr>
+							<td>#101</td>
+							<td>Jane Smith</td>
+							<td>Win</td>
+							<td>2025-01-20</td>
+						</tr>
+						<tr>
+							<td>#102</td>
+							<td>John Doe</td>
+							<td>Loss</td>
+							<td>2025-01-21</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="mt-3">
+				<button class="btn btn-outline-light btn-md" onclick="goBack()">Back</button>
+			</div>
+		</div>
 	</div>
     
     <script type="module" src="pong.js"></script>

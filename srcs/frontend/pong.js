@@ -1,7 +1,7 @@
 import { wsManager } from './WebSocketManager.js';
 import { sendAlias } from './sendToBackend.js';
 import { connectToMatchmaking } from './WebsocketMatchmaking.js';
-import { GAME_CONFIG, setPlayerID } from './config.js';
+import { GAME_CONFIG } from './config.js';
 import { resizeCanvas } from './render.js';
 import { DOM } from './dom.js';
 import { setLoginState } from './auth.js';
@@ -13,7 +13,7 @@ import { generateUUID } from './generateUUID.js';
 import { Buttons } from './buttons.js';
 // import { connectToMatchmaking, startPvCMatch } from './WebsocketMatchmaking.js';
 // import { initializeSessionAndCSRF } from './intializeSessionAndCSRF.js';
-// import { fetchUserState } from './fetchUserState.js';
+import { fetchUserState } from './fetchUserState.js';
 // import { fetchGameData } from './token.js';
 
 DOM.canvas.width = GAME_CONFIG.canvasWidth;
@@ -48,10 +48,10 @@ DOM.loginForm.addEventListener('submit', async (e) => {
 
             // Store tokens in localStorage or sessionStorage
             localStorage.setItem('access_token', data.access_token);
-			setPlayerID(data.user.id);
-
-            alert("Login successful!");
+            localStorage.setItem('user_id', data.user.user_id);
+            localStorage.setItem('username', data.user.username);
             setLoginState(data.logged_in);
+            // setLoginState(data.logged_in);
             showScreen('category-screen'); // Example of moving to the category screen
             // try {
             //     await fetchGameData();

@@ -25,7 +25,7 @@ from django.shortcuts import redirect
 from django.conf import settings
 import logging
 import requests
-from apps.accounts.models import User
+from apps.accounts.models import User, FriendRequest
 from .serializers import UserSerializer
 from rest_framework import serializers
 
@@ -141,6 +141,7 @@ class PollingUserStatusView(APIView):
                     "logged_in": user.is_authenticated,
                     "access_token": str(refresh.access_token),
                     'user': {
+                        'user_id': user.id,
                         'username': user.username
                     }
                 })
@@ -239,7 +240,7 @@ class LoginView(APIView):
                 'access_token': str(refresh.access_token),
                 'user': {
                     'username': request.user.username,
-					'id' : request.user.id
+					'user_id' : request.user.id
                 }
             })
             # Store refresh token in a secure, HttpOnly cookie
@@ -298,8 +299,10 @@ class RefreshTokenView(APIView):
 #     except Exception as e:
 #         return Response({"error": str(e)}, status=400)
 
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.serializers import ModelSerializer
+from rest_framework.decorators import action
 
 class UserProfileSerializer(ModelSerializer):
     wins = serializers.IntegerField(source='profile.wins', read_only=True)
@@ -309,7 +312,6 @@ class UserProfileSerializer(ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'wins', 'losses']  # Include fields to expose
         read_only_fields = ['id', 'username', 'wins', 'losses']  # Prevent modification of certain fields
 
-from rest_framework.authentication import SessionAuthentication
 # API view for profile management
 class UserProfileView(APIView):
     # authentication_classes = [SessionAuthentication]
@@ -351,6 +353,19 @@ class UserProfileView(APIView):
         except Exception as e:
             return Response({"detail": f"Authentication error: {str(e)}"}, status=status.HTTP_401_UNAUTHORIZED)
 
+    @action(detail=True, methods=['post'])
+    def add_friend(self, request, pk=None):
+        user = request.user
+        friend_id = request.data.get('friend_id')
+        try:
+            friend = User.objects.get(pk=friend_id)
+            if friend == user:
+                return Response({"detail": "You cannot add yourself as a friend."}, status=status.HTTP_400_BAD_REQUEST)
+            user.friends.add(friend)
+            return Response({"detail": f"{friend.username} added to your friends list."}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
 from .models import Match
 from .serializers import MatchSerializer
 from rest_framework import viewsets
@@ -359,6 +374,7 @@ class MatchViewSet(viewsets.ModelViewSet):
     queryset = Match.objects.all()
     serializer_class = MatchSerializer
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
     def get_queryset(self):
         user = self.request.user
@@ -376,3 +392,89 @@ def csrf_token_view(request):
     # Generate and return the CSRF token
     csrf_token = get_token(request)
     return JsonResponse({'csrftoken': csrf_token})
+
+from rest_framework.decorators import authentication_classes, permission_classes
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def request_friend(request):
+    sender = request.user
+    receiver_id = request.data.get('receiver_id')
+
+    if not receiver_id:
+        return Response({"error": "Receiver ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        receiver = User.objects.get(pk=receiver_id)
+
+        if sender == receiver:
+            return Response({"error": "You cannot send a friend request to yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if a request already exists
+        if FriendRequest.objects.filter(sender=sender, receiver=receiver).exists():
+            return Response({"error": "Friend request already sent."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create a friend request
+        FriendRequest.objects.create(sender=sender, receiver=receiver)
+        return Response({"message": f"Friend request sent to {receiver.username}."}, status=status.HTTP_201_CREATED)
+
+    except User.DoesNotExist:
+        return Response({"error": "Receiver not found."}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def accept_friend(request):
+    receiver = request.user
+    sender_id = request.data.get('sender_id')
+
+    if not sender_id:
+        return Response({"error": "Sender ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        sender = User.objects.get(pk=sender_id)
+
+        # Find the friend request
+        friend_request = FriendRequest.objects.get(sender=sender, receiver=receiver, status=FriendRequest.PENDING)
+
+        # Update the status and add to friends list
+        friend_request.status = FriendRequest.ACCEPTED
+        friend_request.save()
+
+        receiver.friends.add(sender)  # Add each other as friends
+        sender.friends.add(receiver)
+
+        return Response({"message": f"You are now friends with {sender.username}."}, status=status.HTTP_200_OK)
+
+    except FriendRequest.DoesNotExist:
+        return Response({"error": "Friend request not found."}, status=status.HTTP_404_NOT_FOUND)
+    except User.DoesNotExist:
+        return Response({"error": "Sender not found."}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def reject_friend(request):
+    receiver = request.user
+    sender_id = request.data.get('sender_id')
+
+    if not sender_id:
+        return Response({"error": "Sender ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        sender = User.objects.get(pk=sender_id)
+
+        # Find the friend request
+        friend_request = FriendRequest.objects.get(sender=sender, receiver=receiver, status=FriendRequest.PENDING)
+
+        # Update the status
+        friend_request.status = FriendRequest.REJECTED
+        friend_request.save()
+
+        return Response({"message": f"You rejected the friend request from {sender.username}."}, status=status.HTTP_200_OK)
+
+    except FriendRequest.DoesNotExist:
+        return Response({"error": "Friend request not found."}, status=status.HTTP_404_NOT_FOUND)
+    except User.DoesNotExist:
+        return Response({"error": "Sender not found."}, status=status.HTTP_404_NOT_FOUND)

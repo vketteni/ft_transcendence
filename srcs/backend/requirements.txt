@@ -63,3 +63,4 @@ django-cors-headers
 qrcode
 django-ratelimit
 debugpy
+django-extensions

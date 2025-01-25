@@ -3,3 +3,5 @@
 .env
 backend/game.log
 backend/celerybeat-schedule
+srcs/backend/media/*
+!srcs/backend/media/default-avatar.jpg

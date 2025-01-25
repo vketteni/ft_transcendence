@@ -7,16 +7,18 @@ let lastSentInput = null;
 const INPUT_THROTTLE_INTERVAL = 50; // milliseconds
 
 export function sendInput(up, down) {
+    
     const now = Date.now();
     if (lastSentInput && now - lastSentInput < INPUT_THROTTLE_INTERVAL) {
         return; // Skip sending if throttled
     }
     lastSentInput = now;
-
+    
     // Use WebSocketManager for sending input
+    username = localStorage.getItem('username');
     wsManager.send('game', {
         action: 'input',
-        player: getPlayerID(),
+        player: username,
         up,
         down
     });
@@ -25,10 +27,11 @@ export function sendInput(up, down) {
 // this function has been commented out
 // front communicates with back with post requests
 export function sendAlias() {
-    console.log(`Sending alias "${getPlayerID()}" to backend.`);
+    username = localStorage.getItem('username');
+    console.log(`Sending alias "${username}" to backend.`);
     wsManager.send('game', {
         action: 'alias',
-        player: getPlayerID()
+        player: username
     });
 }
 

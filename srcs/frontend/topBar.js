@@ -1,12 +1,12 @@
-import { isLoggedIn } from "./auth.js";
+import { getLoginState } from "./auth.js";
 
 export function updateTopBar() {
 	console.log("updateTopBar() called");
     const loggedInLinks = document.querySelectorAll('.logged-in');
     const loggedOutLinks = document.querySelectorAll('.logged-out');
 
-	console.log("isLoggedIn: ", isLoggedIn);
-    if (isLoggedIn) {
+	console.log("isLoggedIn: ", getLoginState());
+    if (getLoginState()) {
         // Show logged-in links and hide logged-out links
         loggedInLinks.forEach(link => link.style.display = 'block');
         loggedOutLinks.forEach(link => link.style.display = 'none');
