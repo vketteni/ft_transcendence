@@ -4,6 +4,7 @@ import { fetchUserState } from './fetchUserState.js'
 import { renderLoop, resizeCanvas } from './render.js';
 import { loadUserInfo } from './userProfile.js';
 import { loadMatchHistory } from './matchHistory.js';
+import { loadFriends } from './friendsList.js';
 
 export function showScreen(screenId, addToHistory = true) {
     const screens = [
@@ -54,6 +55,11 @@ export function showScreen(screenId, addToHistory = true) {
             // Special case: load user info on profile screen
             if (screenId === 'match-history-screen') {
                 loadMatchHistory();
+            }
+
+            // Special case: load user info on profile screen
+            if (screenId === 'friends-screen') {
+                loadFriends();
             }
 
         } else {

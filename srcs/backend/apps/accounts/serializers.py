@@ -58,7 +58,7 @@ class UserSerializer(serializers.ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
     
-    # friends = serializers.SerializerMethodField()
+    friends = serializers.SerializerMethodField()
     # is_active = serializers.SerializerMethodField()
 
     wins = serializers.IntegerField(read_only=True) 
@@ -86,7 +86,7 @@ class UserSerializer(serializers.ModelSerializer):
             'last_login',
             'avatar_url',
             'avatar',
-            # 'friends',
+            'friends',
         ]
         read_only_fields = ['id', 'date_joined', 'last_login', 'is_staff']
         extra_kwargs = {
@@ -100,15 +100,15 @@ class UserSerializer(serializers.ModelSerializer):
         """
         return f"{obj.first_name} {obj.last_name}".strip()
     
-    # def get_friends(self, obj):
-    #     # Return a list of friends with their online status
-    #     friends = obj.friends.all()
-    #     return [{
-    #         'id': friend.id,
-    #         'username': friend.username,
-    #         'is_active': friend.is_active,
-    #         'avatar_url': self.context['request'].build_absolute_uri(friend.avatar.url) if friend.avatar else None
-    #     } for friend in friends]
+    def get_friends(self, obj):
+        # Return a list of friends with their online status
+        friends = obj.friends.all()
+        return [{
+            'id': friend.id,
+            'username': friend.username,
+            'is_active': friend.is_active,
+            'avatar_url': self.context['request'].build_absolute_uri(friend.avatar.url) if friend.avatar else None
+        } for friend in friends]
 
     # def get_avatar_url(self, obj):
     #     """

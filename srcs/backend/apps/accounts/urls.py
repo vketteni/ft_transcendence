@@ -17,6 +17,7 @@ urlpatterns = [
     path("refresh/", views.RefreshTokenView.as_view(), name="token_refresh"),
     # path("profile/", views.UserProfileView.as_view(), name="user_profile"),
 	path('register/', views.register_user, name='register_user'),
+    path('friends/', views.get_user_friends, name='get_user_friends'),
     path('friends/request/', views.request_friend, name='friend-request'),
     path('friends/accept/', views.accept_friend, name='friend-accept'),
     path('friends/reject/', views.reject_friend, name='friend-reject'),

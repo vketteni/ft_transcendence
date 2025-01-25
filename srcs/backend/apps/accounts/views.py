@@ -394,6 +394,31 @@ def get_user_matches(request):
     logger.info(f"Matches: {serializer.data}")
     return JsonResponse({'matches': serializer.data}, status=200)
 
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_user_friends(request):
+    user_id = request.query_params.get('user_id')
+
+    logger.info("Called get_user_matches().")
+    if not user_id:
+        return JsonResponse({'error': 'user_id parameter is required.'}, status=400)
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found.'}, status=404)
+
+
+
+    # Serialize the data
+    serializer = UserSerializer(user, data=request.data, context={'request': request}, partial=True)
+
+    logger.info(f"Friends: {serializer.get_friends(user.friends)}")
+
+    return JsonResponse({'friends': serializer.get_friends()}, status=200)
+
 def csrf_token_view(request):
     """
     This view ensures the session is initialized and the CSRF token is sent.

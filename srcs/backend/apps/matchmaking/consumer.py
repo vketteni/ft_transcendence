@@ -66,11 +66,9 @@ class MatchmakingConsumer(JsonWebsocketConsumer):
             self.close()
             return
 
-
         # Add player to the group and accept the connection
         async_to_sync(self.channel_layer.group_add)(self.group_name, self.channel_name)
         self.accept()
-        
 
 
         # Register the player in the queue

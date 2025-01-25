@@ -127,6 +127,8 @@ export const DOM = {
     
     // Friends screen
     friendScreen: document.getElementById('friends-screen'),
+    friendList: document.getElementById('friends-list'),
+    
 };
 
 
