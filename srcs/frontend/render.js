@@ -51,6 +51,10 @@ export function resizeCanvas() {
         canvasWidth = canvasHeight * aspectRatio;
     }
 
+    const widthScaleFactor = canvasWidth / GAME_CONFIG.canvasWidth;
+    const heightScaleFactor = canvasHeight / GAME_CONFIG.canvasHeight;
+
+    // Update canvas dimensions
     DOM.canvas.width = canvasWidth;
     DOM.canvas.height = canvasHeight;
 
@@ -60,10 +64,15 @@ export function resizeCanvas() {
     GAME_CONFIG.paddleHeight = canvasHeight * 0.2;
     GAME_CONFIG.ballDiameter = canvasWidth * 0.025;
 
-    const widthScaleFactor = canvasWidth / 800;
-    const heightScaleFactor = canvasHeight / 600;
+    localState.paddles.left.y *= heightScaleFactor;
+    localState.paddles.right.y *= heightScaleFactor;
 
-    localState.ball.vx = Math.sign(localState.ball.vx || 1) * GAME_CONFIG.ballSpeed * widthScaleFactor;
-    localState.ball.vy = Math.sign(localState.ball.vy || 1) * GAME_CONFIG.ballSpeed * heightScaleFactor;
+    localState.paddles.left.x = 0;
+    localState.paddles.right.x = GAME_CONFIG.canvasWidth - GAME_CONFIG.paddleWidth;
 
+    localState.ball.x *= widthScaleFactor;
+    localState.ball.y *= heightScaleFactor;
+
+    localState.ball.vx *= widthScaleFactor;
+    localState.ball.vy *= heightScaleFactor;
 }

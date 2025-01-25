@@ -8,7 +8,7 @@ import { updateTopBar } from './topBar.js';
 import { handleLogout } from './logout.js';
 import { getCookie, setCookie } from './cookie.js';
 import { generateUUID } from './generateUUID.js';
-import { Buttons, isLocal } from './buttons.js';
+import { Buttons, isLocal, setIsLocal, setLocalTour, resetIsPaused } from './buttons.js';
 import { localState, resetLocalState } from './state.js';
 import { localTournament, startTournamentMatch } from './localTournament.js';
 import { lgPlayers } from './render_local.js'
@@ -109,7 +109,7 @@ DOM.lgEnterAliasesForm.addEventListener('submit', (event) => {
         alert("Both players must have unique names!");
         return;
     }
-    lgPlayers = [lgPlayer1, lgPlayer2];
+    lgPlayers.splice(0, lgPlayers.length, lgPlayer1, lgPlayer2);
     console.log("lgEnterAliasesForm");
     showScreen('game-screen');
 
@@ -164,8 +164,8 @@ function handleInput(event, isPressed) {
         if (up || down) {
             wsManager.send('game', {
                 action: "input",
-                up: up,
-                down: down
+                up: up && isPressed,
+                down: down && isPressed,
             });
         }
     }
@@ -263,8 +263,9 @@ window.addEventListener("beforeunload", () => {
     console.log("Checking WebSocket connections before refresh...");
     if (isLocal) {
        resetLocalState();
-       isLocal = false;
-       localTour = false;
+       setIsLocal(false);
+       setLocalTour(false);
+       resetIsPaused();
     }
     if (wsManager.sockets['matchmaking']) {
         console.log("Closing matchmaking socket before refresh.");

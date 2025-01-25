@@ -1,4 +1,4 @@
-import { localState } from "./state.js";
+import { localState, resetLocalState } from "./state.js";
 import { showScreen } from "./showScreen.js";
 
 export let localTournament = {
@@ -37,11 +37,11 @@ export function checkTournamentProgress() {
 
     resetLocalState();
 
-    if (localTournament.currentMatchIndex === 2) {
+    if (localTournament.currentMatchIndex === 1) {
         // Show Intermediate Game Over Screen
         DOM.ltIntGameoverMessage.textContent = `Next Match: ${localTournament.winners[0]} vs ${localTournament.winners[1]}`;
         showScreen("lt-intermediate-game-over-screen");
-    } else if (localTournament.currentMatchIndex === 3) {
+    } else if (localTournament.currentMatchIndex === 2) {
         // Tournament finished → Show final winner
         const tournamentWinner = localTournament.winners[2];
         DOM.ltGameOverMessage.textContent = `${tournamentWinner} Wins the Tournament!`;

@@ -5,12 +5,26 @@ import { connectToMatchmaking } from './WebsocketMatchmaking.js';
 import { DOM } from './dom.js';
 import { Timer } from './Timer.js';
 import { localState, resetLocalState } from './state.js';
+import { localRenderLoop } from './render_local.js';
 
 let isPaused = false;
 const matchmakingTimer = new Timer(DOM.matchmakingTimer);
 const AItimer = new Timer(DOM.AItimer);
 export let isLocal = false;
 export let localTour = false;
+
+export function setIsLocal(value) {
+    isLocal = value;
+}
+
+export function setLocalTour(value) {
+    localTour = value;
+}
+
+export function resetIsPaused() {
+    isPaused = false;
+}
+    
 
 export function stopAndResetTimer() {
     matchmakingTimer.stop();

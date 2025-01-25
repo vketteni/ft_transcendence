@@ -3,8 +3,10 @@ import { DOM } from './dom.js'
 import { renderLoop, resizeCanvas } from './render.js';
 import { loadUserInfo } from './userProfile.js';
 import { localRenderLoop } from './render_local.js';
-import { localState } from './state.js';
+import { localState, resetLocalState } from './state.js';
 import { isLocal } from './buttons.js';
+import { wsManager } from './WebSocketManager.js';
+import { setIsLocal, setLocalTour, resetIsPaused } from './buttons.js';
 
 export function showScreen(screenId, addToHistory = true) {
     const screens = [
@@ -26,7 +28,10 @@ export function showScreen(screenId, addToHistory = true) {
         DOM.lgEnterAliasesScreen,
         DOM.ltEnterAliasesScreen
     ]
-    
+    // screens.forEach((screen, index) => {
+    //     console.log(`Screen ${index}:`, screen);
+    // });
+
 	const defaultScreen = DOM.categoryScreen; // Define the category screen as the default
 
     // Validate screenId or fall back to the default screen
@@ -43,8 +48,8 @@ export function showScreen(screenId, addToHistory = true) {
                     localState.gameStarted = true;
                     localState.isPaused = false;
                     resizeCanvas();
+                    console.log("Local rendering loop started");
                     requestAnimationFrame(localRenderLoop);
-                    console.log("Local game rendering started");
                 }
                 else {
                     resizeCanvas();
@@ -69,8 +74,20 @@ export function showScreen(screenId, addToHistory = true) {
 
     // Ensure the header is fully visible when showing the category screen
     if (targetScreen === defaultScreen) {
+        if (isLocal) {
+            resetLocalState();
+            setIsLocal(false);
+            setLocalTour(false);
+            resetIsPaused();
+        }
+        if (wsManager.sockets['matchmaking']) {
+            wsManager.close('matchmaking');
+        }
+    
+        if (wsManager.sockets['game']) {
+            wsManager.close('game');
+        }
         DOM.topBarNav.classList.remove('d-none'); // Ensure header is shown for category
     }
-
     updateTopBar(); // Update the top bar dynamically
 }

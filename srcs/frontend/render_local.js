@@ -9,7 +9,7 @@ import { localTour } from './buttons.js';
 export let lgPlayers = [];
 
 export function localRenderLoop () {
-	if (!localState.isPaused && localState.gameStarted) {
+	if (localState.gameStarted) {
         DOM.ctx.clearRect(0, 0, DOM.canvas.width, DOM.canvas.height);
 		updateLocalGame();
         localRender();
@@ -18,14 +18,16 @@ export function localRenderLoop () {
 }
 
 function updateLocalGame() {
-    movePaddles();
-    moveBall();
+    if (!localState.isPaused) {
+        movePaddles();
+        moveBall();
+    }
     handleBallCollisions();
     checkScoring();
 }
 
 function movePaddles() {
-    const paddleSpeed = 5;
+    const paddleSpeed = 8;
 
     if (localState.paddles.left.up && localState.paddles.left.y > 0) {
         localState.paddles.left.y -= paddleSpeed;
@@ -46,32 +48,53 @@ function moveBall() {
     localState.ball.y += localState.ball.vy;
 }
 
+
 function handleBallCollisions() {
     const ballRadius = GAME_CONFIG.ballDiameter / 2;
     const speedingFactor = 1.05;
 
+    // Ball collision with top/bottom walls
     if (localState.ball.y - ballRadius <= 0 || localState.ball.y + ballRadius >= GAME_CONFIG.canvasHeight) {
         localState.ball.vy *= -1; 
     }
 
-    if (isCollidingWithPaddle(localState.paddles.left)) {
-        localState.ball.vx *= -1; 
-        localState.ball.vx *= speedingFactor; 
+    // Ball collision with left paddle
+    if (isCollidingWithPaddle(localState.paddles.left, true)) {
+        adjustBallAngle(localState.paddles.left);
+        localState.ball.vx *= -speedingFactor; 
     }
 
-    if (isCollidingWithPaddle(localState.paddles.right)) {
-        localState.ball.vx *= -1; 
-        localState.ball.vx *= speedingFactor; 
+    // Ball collision with right paddle
+    if (isCollidingWithPaddle(localState.paddles.right, false)) {
+        adjustBallAngle(localState.paddles.right);
+        localState.ball.vx *= -speedingFactor; 
     }
 }
 
-function isCollidingWithPaddle(paddle) {
+function isCollidingWithPaddle(paddle, isLeftPaddle) {
     const ballRadius = GAME_CONFIG.ballDiameter / 2;
-    return (
-        localState.ball.x - ballRadius <= paddle.x + GAME_CONFIG.paddleWidth &&
-        localState.ball.y >= paddle.y &&
-        localState.ball.y <= paddle.y + GAME_CONFIG.paddleHeight
-    );
+
+    if (isLeftPaddle) {
+        return (
+            localState.ball.x - ballRadius <= paddle.x + GAME_CONFIG.paddleWidth &&
+            localState.ball.y >= paddle.y &&
+            localState.ball.y <= paddle.y + GAME_CONFIG.paddleHeight
+        );
+    } else {
+        return (
+            localState.ball.x + ballRadius >= GAME_CONFIG.canvasWidth - GAME_CONFIG.paddleWidth &&
+            localState.ball.y >= paddle.y &&
+            localState.ball.y <= paddle.y + GAME_CONFIG.paddleHeight
+        );
+    }
+}
+
+function adjustBallAngle(paddle) {
+    const paddleCenter = paddle.y + GAME_CONFIG.paddleHeight / 2;
+    const hitPosition = (localState.ball.y - paddleCenter) / (GAME_CONFIG.paddleHeight / 2);
+
+    // Adjust ball direction based on where it hits the paddle
+    localState.ball.vy += hitPosition * GAME_CONFIG.ballSpeed * 0.5;
 }
 
 function checkScoring() {
@@ -91,7 +114,7 @@ function handleScoreEvent(player) {
             checkTournamentProgress();
         } else {
             winner = player === localState.paddles.left ? lgPlayers[0] : lgPlayers[1];
-            DOM.lgGameOverMessage.textContent = `${winner} wins!`;
+            DOM.lgGameOverMessage.textContent = `Game Over! ${winner} wins!`;
             showScreen('lg-game-over-screen');
         }
         resetLocalState();
