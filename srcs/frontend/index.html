@@ -48,7 +48,7 @@
 			<div class="d-grid gap-2 col-4 mx-auto">
 				<button id="PvC" class="btn btn-outline-light btn-md">Player vs Computer</button>
 				<button id="PvP" class="btn btn-outline-light btn-md">Remote Player vs Player</button>
-				<button id="tournament-button" class="btn btn-outline-light btn-md">Remote Tournament</button>
+				<button id="tournament-button" class="btn btn-outline-light btn-md mb-4">Remote Tournament</button>
 			</div>
 		</div>
     </div>
@@ -175,32 +175,36 @@
     <!-- game screen -->
 	<div id="game-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
 		<!-- Player Names & Rules -->
-        <div class="d-flex w-75 justify-content-between align-items-center text-light mb-2">
-            <!-- Left Player Name -->
-            <h6 id="left-player-name" 
-                class="text-start text-truncate fw-semibold flex-shrink-0 m-0"
-                style="width: 25%; font-size: 2vw; white-space: nowrap;">
-            </h6>
-    
-            <p class="mb-1 fw-medium text-center flex-grow-1"
-                style="font-size: 2vw; line-height: 1.4; white-space: normal;">
-                First to <strong>10 points</strong> wins! <br>
-                <strong>Left Paddle:</strong> <kbd>W</kbd> / <kbd>S</kbd> <br>
-                <strong>Right Paddle:</strong> <kbd>⬆</kbd> / <kbd>⬇</kbd>
-            </p>
+		<div class="table-responsive w-100" style="max-width: 90%; margin: auto;">
+			<table class="table table-dark table-bordered text-center sticky-top" style="top: 0; z-index: 1020;">
+				<!-- Left Player Name -->
+				<th id="left-player-name" 
+					class="text-start text-truncate fw-semibold flex-shrink-0 m-0"
+					style="width: 25%; font-size: min(2vw, 3vh); white-space: nowrap;">
+				</th>
 
-            <!-- Right Player Name -->
-            <h6 id="right-player-name" 
-                class="text-end text-truncate fw-semibold flex-shrink-0 m-0"
-                style="width: 25%; font-size: 2vw; white-space: nowrap;">
-            </h6>
-        </div>
-        
-        <div class="game-container d-flex flex-column justify-content-center align-items-center overflow-hidden">
+				<!-- Game Rules (Center Text) -->
+				<th class="mb-1 fw-medium text-center flex-grow-1"
+				style="font-size: min(2vw, 2vh); line-height: 1.4; white-space: normal;">
+					First to <strong>10 points</strong> wins! <br>
+					<strong>Left Paddle:</strong> <kbd>W</kbd> / <kbd>S</kbd> <br>
+					<strong>Right Paddle:</strong> <kbd>⬆</kbd> / <kbd>⬇</kbd>
+				</th>
+
+				<!-- Right Player Name -->
+				<th id="right-player-name" 
+					class="text-end text-truncate fw-semibold flex-shrink-0 m-0"
+					style="width: 25%; font-size: min(2vw, 3vh); white-space: nowrap;">
+				</th>
+			</table>
+		</div>
+
+		<!-- Game Canvas -->
+		<div class="game-container d-flex flex-column justify-content-center align-items-center mt-3">
 			<div id="timerDisplay" class="visually-hidden"></div>
 			<canvas id="canvas" class="border border-2 border-white"></canvas>
 			<button id="pause-button" class="btn btn-lg btn-outline-light mt-3">Pause</button>
-			<button id="game-exit" class="btn btn-lg btn-outline-warning mt-3">Exit</button>
+			<button id="game-exit" class="btn btn-lg btn-outline-warning mt-3 mb-3">Exit</button>
 		</div>
 	</div>
 
