@@ -83,14 +83,11 @@ DOM.signupForm.addEventListener('submit', async (e) => {
         formData.append("avatar", fileInput.files[0]);
     }
 
-    console.log("Sign Up:", { alias, password, email });
-
     try {
         const response = await fetch('/api/accounts/register/', {
             method: 'POST',
             body: formData,
         });
-
         const data = await response.json();
 
         if (response.ok) {

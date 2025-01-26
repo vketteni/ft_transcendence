@@ -3,9 +3,8 @@ import { DOM } from './dom.js'
 import { renderLoop, resizeCanvas } from './render.js';
 import { loadUserInfo } from './userProfile.js';
 import { localRenderLoop } from './render_local.js';
-import { localState, resetLocalState, resetClientState } from './state.js';
+import { localState, resetLocalState } from './state.js';
 import { isLocal } from './buttons.js';
-import { wsManager } from './WebSocketManager.js';
 import { setIsLocal, setLocalTour, resetIsPaused } from './buttons.js';
 import { loadMatchHistory } from './matchHistory.js';
 import { loadFriends } from './friendsList.js';
@@ -55,9 +54,10 @@ export function showScreen(screenId, addToHistory = true) {
             // Special case: game screen setup
             if (screenId === 'game-screen') {
                 if (isLocal) {
+					resetLocalState();
+					resizeCanvas();
                     localState.gameStarted = true;
                     localState.isPaused = false;
-                    resizeCanvas();
                     console.log("Local rendering loop started");
                     requestAnimationFrame(localRenderLoop);
                 }
