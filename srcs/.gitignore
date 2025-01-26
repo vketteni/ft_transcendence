@@ -1,8 +1,0 @@
-*pycache*
-**/migrations/
-.env
-backend/game.log
-backend/celerybeat-schedule
-!**default-avatar.jpg
-**/uploads/avatars/*
-**/sslcert/server*
