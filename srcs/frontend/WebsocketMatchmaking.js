@@ -5,20 +5,11 @@ import { showScreen } from './showScreen.js';
 import { DOM } from './dom.js';
 
 export function connectToMatchmaking(queue_type="PVP") {
-    let user_id = localStorage.getItem('user_id');
-    let browser_id = localStorage.getItem('browser_id');
+    let user_id = localStorage.getItem('user_id') || localStorage.getItem('browser_id');
 
-    if (user_id == null) {
-        user_id = browser_id
-    }
-
-    wsManager.connect(
-        'matchmaking',
-        `/ws/matchmaking?queue_name=${queue_type}&user_id=${user_id}`,
-        handleMatchmakingMessage,
-        handleMatchmakingClose
-    );
-	console.log("join_queue with player id:", user_id);
+    let newUrl = `/ws/matchmaking?queue_name=${queue_type}&user_id=${user_id}`;
+    wsManager.connect('matchmaking', newUrl, handleMatchmakingMessage, handleMatchmakingClose);
+    console.log("join_queue with player id:", user_id);
 }
 
 function handleMatchmakingMessage(event) {
@@ -31,19 +22,23 @@ function handleMatchmakingMessage(event) {
 
         case 'match_found':
             console.log('Match found:', message.data);
-			
-			wsManager.close('matchmaking');
-			stopAndResetTimer();
+            localStorage.setItem("game_url", message.data.room_url);
 
 			promptForGameConnection(
 				"Match found. Join game?",
 				() => {
 					connectToGame(message.data.room_url);
+                    wsManager.close('matchmaking');
+			        stopAndResetTimer();
 					wsManager.send('game', { action: 'player_ready' });
                     showScreen('game-screen');
 				},
 				() => {
 					console.log('Game declined.');
+                    localStorage.removeItem("game_url");
+
+                    wsManager.close('matchmaking');
+			        stopAndResetTimer();
 					showScreen('category-screen')
 				}
 			);
@@ -59,6 +54,7 @@ function handleMatchmakingMessage(event) {
 }
 
 function handleMatchmakingClose(event) {
+    localStorage.removeItem("matchmaking_url")
 	if (!wsManager.sockets['game'])
 	{
 		console.warn('Matchmaking WebSocket closed. Retrying...');

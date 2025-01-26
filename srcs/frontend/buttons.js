@@ -122,6 +122,13 @@ export const Buttons = {
         });
 
         DOM.PvPButton.addEventListener('click', () => {
+            let storedGameUrl = localStorage.getItem("game_url");
+            if (storedGameUrl) {
+                showQuickPopup("Reconnecting to your active game...");
+                console.log(`Reconnecting to existing PvP game: ${storedGameUrl}`);
+                showScreen('game-screen');
+                return;
+            }
             console.log("PvP button clicked, showing matchmaking screen...");
             showScreen('matchmaking-screen');
             matchmakingTimer.start();
@@ -130,6 +137,13 @@ export const Buttons = {
 
         // AI buttons
         DOM.PvCButton.addEventListener('click', () => {
+            let storedGameUrl = localStorage.getItem("game_url");
+            if (storedGameUrl) {
+                showQuickPopup("Reconnecting to your active game...");
+                console.log(`Reconnecting to existing PvP game: ${storedGameUrl}`);
+                showScreen('game-screen');
+                return;
+            }
             console.log("PvC button clicked, showing matchmaking screen...");
             showScreen('ai-waiting-screen');
             AItimer.start();
@@ -206,16 +220,20 @@ export const Buttons = {
 
         DOM.exitButton.addEventListener('click', () => {
             showScreen('category-screen');
-            if (!isLocal)
-                wsManager.close('game');
-            else {
+            if (isLocal) {
                 isLocal = false;
                 resetLocalState();
             }        
         });
 
         DOM.tournamentButton.addEventListener('click', () => {
-            // showScreen('tournament-screen');
+        let storedGameUrl = localStorage.getItem("game_url");
+            if (storedGameUrl) {
+                showQuickPopup("Reconnecting to your active game...");
+                console.log(`Reconnecting to existing PvP game: ${storedGameUrl}`);
+                showScreen('game-screen');
+                return;
+            }
 			console.log("PvP button clicked, showing matchmaking screen...");
             showScreen('matchmaking-screen');
             matchmakingTimer.start();
@@ -232,11 +250,26 @@ export const Buttons = {
     },
 };
 
+function showQuickPopup(message) {
+    // Remove any existing popup
+    const existingPopup = document.getElementById("quick-popup");
+    if (existingPopup) {
+        existingPopup.remove();
+    }
 
+    // Create a Bootstrap alert
+    const popup = document.createElement("div");
+    popup.id = "quick-popup";
+    popup.className = "alert alert-dark text-center position-fixed top-0 start-50 translate-middle-x";
+    popup.style.zIndex = "1050"; // Ensure it appears above other elements
+    popup.textContent = message;
 
+    document.body.appendChild(popup);
 
-// DOM.matchmakingExitButton.addEventListener('click', () => {
-//     showScreen('category-screen');
-//     wsManager.close('matchmaking');
-// 	wsManager.close('game');
-// });
+    // Auto-dismiss after 2 seconds
+    setTimeout(() => {
+        popup.classList.add("fade");
+        setTimeout(() => popup.remove(), 500); // Smooth fade-out
+    }, 2000);
+}
+

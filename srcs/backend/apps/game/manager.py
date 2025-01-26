@@ -472,12 +472,9 @@ class GameManager:
                 except Exception as e:
                     logger.error(f"Error recording match: {e}")
 
-                logger.info("Before reset_game().")
                 self.reset_game(game_state)
-                logger.info("After reset_game().")
 
                 continue
-            logger.info(f"Usernames are {player1.username}, {player2.username}")
             # Normalize state
             norm_state = self.normalize_state(game_state)
             await self.channel_layer.group_send(

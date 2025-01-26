@@ -246,9 +246,6 @@ DOM.editProfileForm.addEventListener("submit", async (event) => {
 	
 document.addEventListener('DOMContentLoaded', () => {
     Buttons.init(); 
-	// Set the category screen as the default
-	const screenId = location.hash.replace("#", "") || "category-screen";
-    showScreen(screenId, false);
     showScreen('category-screen');
     
 	// Set up top bar navigation
@@ -289,7 +286,8 @@ window.addEventListener("beforeunload", () => {
        setLocalTour(false);
        resetIsPaused();
     }
-    else { 
+    else {
+        localStorage.removeItem("game_url");
         if (wsManager.sockets['matchmaking']) {
             resetClientState();
             console.log("Closing matchmaking socket before refresh.");

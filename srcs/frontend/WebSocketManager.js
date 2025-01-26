@@ -16,6 +16,7 @@ class WebSocketManager {
 
         socket.onopen = () => {
             console.log(`WebSocket '${name}' connected.`);
+            localStorage.setItem(`${name}_url`, url); 
             // Send queued messages
             while (this.messageQueue[name].length > 0) {
                 const message = this.messageQueue[name].shift();
@@ -26,6 +27,11 @@ class WebSocketManager {
         socket.onmessage = onMessage;
         socket.onclose = (event) => {
             console.warn(`WebSocket '${name}' closed.`);
+            if (name === 'game') {
+                localStorage.removeItem("game_url");
+            }
+        
+            localStorage.removeItem(`${name}_url`); // ✅ Removes any other stored WebSocket URLs
             if (onClose) onClose(event);
         };
 

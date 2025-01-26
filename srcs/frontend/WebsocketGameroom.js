@@ -4,13 +4,17 @@ import { updateServerState, resetClientState } from './state.js';
 import { DOM } from './dom.js';
 
 export function connectToGame(gameRoomUrl) {
-    wsManager.connect(
-        'game',
-        gameRoomUrl,
-        handleGameMessage,
-        handleGameClose
-    );
-	console.log("wsManager.connect called");
+	let existingGameUrl = localStorage.getItem("game_url");
+    if (!gameRoomUrl && existingGameUrl) {
+        console.log(`Reconnecting to existing game: ${existingGameUrl}`);
+        wsManager.connect('game', existingGameUrl, handleGameMessage, handleGameClose);
+        return;
+    }
+
+    if (gameRoomUrl) {
+        console.log(`Connecting to new game: ${gameRoomUrl}`);
+        wsManager.connect('game', gameRoomUrl, handleGameMessage, handleGameClose);
+    }
 }
 
 function handleGameMessage(event) {
@@ -20,7 +24,6 @@ function handleGameMessage(event) {
 
     switch (data.type) {
         case 'state_update':
-			// console.log("received state");
             updateServerState(data);
             break;
 		case 'ai_game_over':
@@ -29,6 +32,7 @@ function handleGameMessage(event) {
 			gameOverMessage = `Game Over! ${winner} wins!`;
 			document.getElementById('ai-game-over-message').textContent = gameOverMessage;
 			showScreen('ai-game-over-screen');
+			localStorage.removeItem("game_url"); 
             wsManager.close('game');
             resetClientState();
             break ;
@@ -40,7 +44,8 @@ function handleGameMessage(event) {
             winner = data.winner;
             gameOverMessage = `Game Over! ${winner} wins!`;
             document.getElementById('pvp-game-over-message').textContent = gameOverMessage;
-            showScreen('pvp-game-over-screen');
+            localStorage.removeItem("game_url"); 
+			showScreen('pvp-game-over-screen');
             break ;
         case 'tournament':
 			winner = data.winner;
@@ -87,7 +92,7 @@ function handleGameMessage(event) {
 }
 
 function handleGameClose(event) {
-    
+    localStorage.removeItem("game_url");
     console.warn('Game WebSocket closed.');
 }
 

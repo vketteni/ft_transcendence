@@ -46,7 +46,7 @@ export function showScreen(screenId, addToHistory = true) {
     // console.log(screens);
     // Validate screenId or fall back to the default screen
     const targetScreen = screens.find(screen => screen.id === screenId) || defaultScreen;
-    
+    localStorage.setItem("last_active_screen", targetScreen.id);
     // Show or hide screens
     screens.forEach(screen => {
             if (screen === targetScreen) {
@@ -101,15 +101,15 @@ export function showScreen(screenId, addToHistory = true) {
             setLocalTour(false);
             resetIsPaused();
         }
-        if (wsManager.sockets['matchmaking']) {
-            resetClientState();
-            wsManager.close('matchmaking');
-        }
+        // if (wsManager.sockets['matchmaking']) {
+        //     resetClientState();
+        //     wsManager.close('matchmaking');
+        // }
     
-        if (wsManager.sockets['game']) {
-            resetClientState();
-            wsManager.close('game');
-        }
+        // if (wsManager.sockets['game']) {
+        //     resetClientState();
+        //     wsManager.close('game');
+        // }
         DOM.topBarNav.classList.remove('d-none'); // Ensure header is shown for category
     }
     updateTopBar(); // Update the top bar dynamically

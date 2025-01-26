@@ -200,7 +200,7 @@ def register_user(request):
         try:
             avatar = request.FILES.get('avatar')
         except Exception as e:
-            return Response({"Image upload failure": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"Image upload failure": str(e)}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         if User.objects.filter(username=alias).exists():
             return Response({"error": "Alias already taken."}, status=status.HTTP_400_BAD_REQUEST)
@@ -217,11 +217,11 @@ def register_user(request):
                 user.avatar.save(avatar.name, avatar)
             user.save()
         except Exception as e:
-            return Response({"save error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"save error": str(e)}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         return Response({"message": "User created successfully.", "username": alias}, status=status.HTTP_201_CREATED)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 # from rest_framework_simplejwt.views import TokenObtainPairView
 
