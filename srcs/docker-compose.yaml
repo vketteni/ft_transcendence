@@ -6,7 +6,7 @@ services:
       dockerfile: backend/Dockerfile
     volumes:
       - ./backend:/app
-      - ./media/avatars:/uploads
+      - ./uploads/avatars:/uploads
       - ./sslcert:/etc/nginx/ssl
     ports:
       - "8000:8000"
@@ -26,7 +26,7 @@ services:
       - ./frontend:/usr/share/nginx/html:ro
       - ./frontend/nginx.conf:/etc/nginx/nginx.conf
       - ./sslcert:/etc/nginx/ssl
-      - ./media/avatars:/uploads
+      - ./uploads/avatars:/uploads
     ports:
       - "3000:443"
     environment:

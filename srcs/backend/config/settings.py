@@ -190,7 +190,8 @@ LOGGING = {
 
 # backend/config/settings.py
 MEDIA_ROOT = '/uploads'
-MEDIA_URL = '/uploads/'
+# MEDIA_URL = '/uploads/'
+MEDIA_URL = 'https://localhost:3000/uploads/'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/app/static/'

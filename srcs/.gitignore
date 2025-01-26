@@ -4,5 +4,5 @@
 backend/game.log
 backend/celerybeat-schedule
 !**default-avatar.jpg
-**/media/avatars/*
+**/uploads/avatars/*
 **/sslcert/server*
