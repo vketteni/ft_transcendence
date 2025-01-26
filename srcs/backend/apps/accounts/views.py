@@ -179,11 +179,23 @@ class PollingUserStatusView(APIView):
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
-
     def get(self, request):
-        logger.info("LogoutView(APIView).post() called.")
+        logger.info("LogoutView(APIView).get() called.")
+
+        # Safely retrieve the user before logging out
+        user = request.user
+
+        if not user.is_authenticated:
+            logger.info("No authenticated user to log out.")
+            return JsonResponse({"error": "No authenticated user to log out."}, status=400)
+
+        logger.info(f"Logging out user: {user}")
+        # user.is_active = False;
+        # user.save()
         logout(request)
-        return 	JsonResponse({"logged_in": request.user.is_authenticated})
+
+        logger.info(f"User {user.username} has been logged out. is active? {user.is_active}")
+        return JsonResponse({"logged_in": False})
 
 from django.contrib.auth.hashers import make_password
 from rest_framework.decorators import api_view
@@ -350,6 +362,7 @@ class UserProfileView(APIView):
         user = request.user
         friend_id = request.data.get('friend_id')
         try:
+            request.query_params.get('user_id')
             friend = User.objects.get(pk=friend_id)
             if friend == user:
                 return Response({"detail": "You cannot add yourself as a friend."}, status=status.HTTP_400_BAD_REQUEST)
@@ -393,7 +406,7 @@ def get_user_matches(request):
 def get_user_friends(request):
     user_id = request.query_params.get('user_id')
 
-    logger.info("Called get_user_matches().")
+    logger.info("Called friends().")
     if not user_id:
         return JsonResponse({'error': 'user_id parameter is required.'}, status=400)
 
@@ -402,14 +415,14 @@ def get_user_friends(request):
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found.'}, status=404)
 
-
+    friends = user.friends.all()
 
     # Serialize the data
-    serializer = UserSerializer(user, data=request.data, context={'request': request}, partial=True)
+    serializer = UserSerializer(friends, many=True, context={'request': request})
 
-    logger.info(f"Friends: {serializer.get_friends(user.friends)}")
+    # logger.info(f"Friends: {serializer.get_friends(user.friends)}")
 
-    return JsonResponse({'friends': serializer.get_friends()}, status=200)
+    return JsonResponse({'friends': serializer.data}, status=200)
 
 def csrf_token_view(request):
     """
@@ -454,27 +467,16 @@ def request_friend(request):
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def accept_friend(request):
-    receiver = request.user
-    sender_id = request.data.get('sender_id')
-
-    if not sender_id:
-        return Response({"error": "Sender ID is required."}, status=status.HTTP_400_BAD_REQUEST)
-
+def add_friend(request):
+    sender_id = request.query_params.get('user_id')
+    friend_id = request.query_params.get('friend_id')
     try:
         sender = User.objects.get(pk=sender_id)
-
-        # Find the friend request
-        friend_request = FriendRequest.objects.get(sender=sender, receiver=receiver, status=FriendRequest.PENDING)
-
-        # Update the status and add to friends list
-        friend_request.status = FriendRequest.ACCEPTED
-        friend_request.save()
-
+        receiver = User.objects.get(pk=friend_id)
         receiver.friends.add(sender)  # Add each other as friends
         sender.friends.add(receiver)
 
-        return Response({"message": f"You are now friends with {sender.username}."}, status=status.HTTP_200_OK)
+        return Response({"message": f"You are now friends with {receiver.username}."}, status=status.HTTP_200_OK)
 
     except FriendRequest.DoesNotExist:
         return Response({"error": "Friend request not found."}, status=status.HTTP_404_NOT_FOUND)

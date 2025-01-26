@@ -40,9 +40,45 @@ function handleGameMessage(event) {
 			console.log("Game Over!", data);
             wsManager.close('game');
             resetClientState();
-
+			
             winner = data.winner;
-            gameOverMessage = `Game Over! ${winner} wins!`;
+			let players = data.players;
+			let currentUser = localStorage.getItem('user_id');
+			let opponent = data.players[1];
+			console.log("Players!", players);
+			if (players[0] === currentUser)
+				opponent = players[1];
+			else
+				opponent = players[0];
+			
+			DOM.PvPaddFriendButton.onclick = async () => {
+				console.log("Adding friend Listener");
+				
+				try {
+					let user_id = localStorage.getItem('user_id');
+					const response = await fetch(`api/accounts/friends/add/?user_id=${user_id}&friend_id=${opponent}`, {
+						method: 'POST',
+						credentials: 'include',
+						headers: {
+							'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+							'Content-Type': 'application/json',
+						},
+					});
+					
+					if (response.ok) {
+						const data = await response.json();
+						console.log("Message: ", data.message);
+						
+					} else {
+						console.error("Failed to fetch user matches:", response.status);
+					}
+				} catch (error) {
+					console.error('Error during Polling:', error);
+				}
+				
+			}
+			
+			gameOverMessage = `Game Over! ${winner} wins!`;
             document.getElementById('pvp-game-over-message').textContent = gameOverMessage;
             localStorage.removeItem("game_url"); 
 			showScreen('pvp-game-over-screen');

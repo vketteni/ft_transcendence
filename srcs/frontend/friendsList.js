@@ -1,4 +1,4 @@
-
+import { DOM } from "./dom.js";
 
 export async function loadFriends() {
     try {
@@ -14,77 +14,41 @@ export async function loadFriends() {
     
         if (response.ok) {
             const data = await response.json();
-            console.log("Friends:", data.matches);
-            if (data.matches && data.matches.length > 0) {
-                // populateMatchHistory(data.matches);
-            } else {
-                console.log("No friends found.");
-            }
+            console.log("Friends List:", data.friends);
+            populateFriendsList(data.friends);
         } else {
-            console.error("Failed to fetch friends:", response.status);
+            console.error("Failed to fetch friends list:", response.status);
         }
     } catch (error) {
         console.error('Error during Polling:', error);
     }
-
 }
 
+function populateFriendsList(friends) {
+    const friendsListElement = document.getElementById('friends-list');
+    friendsListElement.innerHTML = ''; // Clear existing list
 
+    if (friends.length === 0) {
+        const noFriendsItem = document.createElement('li');
+        noFriendsItem.className = 'list-group-item text-center';
+        noFriendsItem.textContent = 'No friends found.';
+        friendsListElement.appendChild(noFriendsItem);
+        return;
+    }
 
+    friends.forEach(friend => {
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
 
+        const friendName = document.createElement('span');
+        friendName.textContent = friend.username;
 
+        const statusBadge = document.createElement('span');
+        statusBadge.className = `badge rounded-pill ${friend.is_active ? 'bg-primary' : 'bg-secondary'}`;
+        statusBadge.textContent = friend.is_authenticated ? 'Online' : 'Offline';
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// export async function loadMatchHistory() {
-// }
-
-// function populateMatchHistory(matches) {
-//     // Clear existing rows
-//     const tableBody = DOM.matchHistoryTable.querySelector('tbody');
-//     tableBody.innerHTML = ''; // Remove existing rows
-
-//     let username = localStorage.getItem('username'); 
-//     let user_id = localStorage.getItem('user_id'); 
-
-//     matches.forEach((match) => {
-//         const matchId = match.id;
-//         const opponent = match.player1_username === username
-//             ? match.player2_username
-//             : match.player1_username;
-//         const result = match.winner_username === match.player1_username ? 'Win' : 'Loss';
-//         const date = new Date(match.date_played).toLocaleDateString(); // Format date
-
-//         addMatchHistoryRow(matchId, opponent, result, date);
-//     });
-// }
-
-
-
-// function addMatchHistoryRow(matchId, opponent, result, date) {
-//     const tableBody = DOM.matchHistoryTable.querySelector('tbody');
-//     const newRow = document.createElement('tr');
-
-//     newRow.innerHTML = `
-//         <td>${matchId}</td>
-//         <td>${opponent}</td>
-//         <td>${result}</td>
-//         <td>${date}</td>
-//     `;
-
-//     tableBody.appendChild(newRow);
-// }
+        listItem.appendChild(friendName);
+        listItem.appendChild(statusBadge);
+        friendsListElement.appendChild(listItem);
+    });
+}

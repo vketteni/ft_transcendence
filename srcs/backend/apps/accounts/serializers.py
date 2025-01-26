@@ -60,6 +60,7 @@ class UserSerializer(serializers.ModelSerializer):
     
     friends = serializers.SerializerMethodField()
     # is_active = serializers.SerializerMethodField()
+    is_authenticated = serializers.SerializerMethodField()
 
     wins = serializers.IntegerField(read_only=True) 
     losses = serializers.IntegerField(read_only=True) 
@@ -87,6 +88,7 @@ class UserSerializer(serializers.ModelSerializer):
             'avatar_url',
             'avatar',
             'friends',
+            'is_authenticated',
         ]
         read_only_fields = ['id', 'date_joined', 'last_login', 'is_staff']
         extra_kwargs = {
@@ -109,6 +111,15 @@ class UserSerializer(serializers.ModelSerializer):
             'is_active': friend.is_active,
             'avatar_url': self.context['request'].build_absolute_uri(friend.avatar.url) if friend.avatar else None
         } for friend in friends]
+
+    def get_is_authenticated(self, obj):
+        """
+        Returns whether the user is authenticated.
+        """
+        request = self.context.get('request')
+        if request:
+            return request.user == obj and request.user.is_authenticated
+        return False
 
     # def get_avatar_url(self, obj):
     #     """

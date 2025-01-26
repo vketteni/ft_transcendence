@@ -48,8 +48,6 @@ function populateMatchHistory(matches) {
     });
 }
 
-
-
 function addMatchHistoryRow(matchId, opponent, result, date) {
     const tableBody = DOM.matchHistoryTable.querySelector('tbody');
     const newRow = document.createElement('tr');

@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 
 import traceback
 from contextlib import asynccontextmanager
-SCORE_TO_WIN = 10
+SCORE_TO_WIN = 1
 User = get_user_model() 
 
 class DebugLock(Lock):
@@ -439,8 +439,10 @@ class GameManager:
 
                 else:
                     try:
+                        
                         if game_state['ai_controlled']:
                             logger.info(f"AI Game Over! {winner} wins!")
+
                             await self.channel_layer.group_send(
                                 f"game_{room_id}",
                                 {
@@ -448,11 +450,13 @@ class GameManager:
                                     'data': {
                                         'type': 'ai_game_over',
                                         'message': f"Game Over! {winner} wins!",
-                                        'winner': str(winner)
+                                        'winner': str(winner),
+                                        'players': game_state['game_attributes'].get('users'),
                                     },
                                 }
                             )
                         else:
+
                             await self.channel_layer.group_send(
                                 f"game_{room_id}",
                                 {
@@ -460,7 +464,8 @@ class GameManager:
                                     'data': {
                                         'type': 'game_over',
                                         'message': f"Game Over! {winner} wins!",
-                                        'winner': str(winner)
+                                        'winner': str(winner),
+                                        'players': game_state['game_attributes'].get('users'),
                                     },
                                 }
                             )
