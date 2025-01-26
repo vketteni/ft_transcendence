@@ -20,7 +20,7 @@ function isTokenExpired(token) {
 // Refresh access token using refresh token stored in HTTP-only cookie
 async function refreshAccessToken() {
     try {
-        const response = await fetch('http://localhost:3000/accounts/refresh/', {
+        const response = await fetch('https://localhost:3000/accounts/refresh/', {
             method: 'POST',
             credentials: 'include', // Include refresh token cookie
         });

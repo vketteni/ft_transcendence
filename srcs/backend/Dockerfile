@@ -29,5 +29,5 @@ RUN chown -R appuser:appuser /app
 # Assume role
 USER appuser
 
-# Command to run the application (useful if you ever run the container manually)
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
+# # Command to run the application (useful if you ever run the container manually)
+# CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]

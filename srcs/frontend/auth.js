@@ -22,7 +22,7 @@ export async function handleLoginRedirect(code) {
 		localStorage.setItem('user', JSON.stringify(data.user));
 
 		// Redirect to the provided URL or default to a fallback
-		const redirectUrl = data.redirect_url; //|| 'http://localhost:3000'
+		const redirectUrl = data.redirect_url; //|| 'https://localhost:3000'
 		console.log('Redirect URL:', data.redirect_url);
 		window.location.href = redirectUrl;
         // Update app state, e.g., save user info
