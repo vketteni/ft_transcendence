@@ -72,7 +72,7 @@
 	<!-- Sign Up Screen -->
 	<div id="signup-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
 		<h1>Sign Up</h1>
-		<form id="signup-form" class="text-center w-50">
+		<form id="signup-form" class="text-center w-50" method="POST" enctype="multipart/form-data">
 			<input type="text" id="signup-alias" class="form-control mb-3" placeholder="Create your alias" required maxlength="20">
 			<input type="password" id="signup-password" class="form-control mb-3" placeholder="Create a secure password" required>
 			<input type="email" id="signup-email" class="form-control mb-3" placeholder="Enter your email" required>
@@ -80,7 +80,7 @@
                 <label for="signup-avatar" style="cursor: pointer;" class="btn btn-outline-light">
                     Upload Avatar
                 </label>
-                <input type="file" id="signup-avatar" class="d-none" accept="image/*">
+                <input type="file" id="signup-avatar" class="d-none" accept="image/*" name="avatar">
                 <p id="avatar-filename" class="mt-2 text-light">No file selected</p>
 				<button type="submit" class="btn btn-outline-success btn-lg">Sign Up</button>
 			</div>
@@ -116,7 +116,7 @@
 
         <!-- Edit View -->
         <div id="profileEdit" class="d-none w-50">
-            <form id="editProfileForm">
+            <form id="editProfileForm" method="POST" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label for="editUsername" class="form-label">Username</label>
                     <input type="text" id="editUsername" class="form-control" required>

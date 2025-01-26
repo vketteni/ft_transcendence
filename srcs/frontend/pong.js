@@ -63,23 +63,32 @@ DOM.loginForm.addEventListener('submit', async (e) => {
 // Handle sign-up form submission
 DOM.signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+
     const alias = DOM.signupAlias.value.trim();
     const password = DOM.signupPassword.value.trim();
     const email = DOM.signupEmail.value.trim();
+    const fileInput = document.getElementById("signup-avatar");
 
     if (!alias || !password || !email) {
-        alert("Please create both alias and password.");
+        alert("Please provide alias, password, and email.");
         return;
     }
 
+    const formData = new FormData();
+    formData.append("alias", alias);
+    formData.append("password", password);
+    formData.append("email", email);
+
+    if (fileInput.files.length > 0) {
+        formData.append("avatar", fileInput.files[0]);
+    }
+
     console.log("Sign Up:", { alias, password, email });
+
     try {
         const response = await fetch('/api/accounts/register/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ alias, password, email }),
+            body: formData,
         });
 
         const data = await response.json();
@@ -88,7 +97,7 @@ DOM.signupForm.addEventListener('submit', async (e) => {
             console.log("Sign Up Successful:", data);
             showScreen('login-screen');
         } else {
-            alert(`Sign Up Error: ${data.error}`);
+            alert(`Sign Up Error: ${data.error || data["Image upload failure"] || data["save error"]}`);
         }
     } catch (error) {
         console.error('Error signing up:', error);
@@ -174,44 +183,66 @@ function handleInput(event, isPressed) {
 }
 
 DOM.editProfileForm.addEventListener("submit", async (event) => {
-	event.preventDefault();
-    const updatedData = {
-		username: DOM.editUsername.value,
-        email: DOM.editEmail.value,
-        first_name: DOM.editFirstName.value,
-        last_name: DOM.editLastName.value
-    };
+    event.preventDefault();
+
+    // Create a FormData object for the form data
+    const formData = new FormData();
+
+    // Append the text fields to FormData
+    formData.append("username", DOM.editUsername.value);
+    formData.append("email", DOM.editEmail.value);
+    formData.append("first_name", DOM.editFirstName.value);
+    formData.append("last_name", DOM.editLastName.value);
+
+    // Append the avatar file, if selected
+    const file = DOM.editAvatar.files[0];
+    const avatarFilename = document.getElementById("avatar-filename-edit");
+
+    if (file) {
+        formData.append("avatar", file);
+        avatarFilename.textContent = `${file.name}`;
+        console.log("Avatar file selected:", file.name);
+    } else {
+        avatarFilename.textContent = "No file selected";
+        console.log("No file selected.");
+    }
+
     try {
-			const response = await fetch('/api/accounts/user-profile/', {
-			method: 'PUT',
-			headers: {
-				'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(updatedData),
-			credentials: 'include',
-		});
-		const data = await response.json();
-		if (response.ok)
-		{
-			console.log("updatedData.username:", updatedData.username);
-			// Update the profile view with the new data
-			DOM.profileUsername.textContent = data.username;
-			DOM.profileEmail.textContent = data.email;
-			DOM.profileFirstName.textContent = data.first_name || 'N/A';
-			DOM.profileLastName.textContent = data.last_name || 'N/A';
-			
-			// Switch back to view mode
-			DOM.profileEdit.classList.add("d-none");
-			DOM.profileView.classList.remove("d-none");
-		}
-		else
-			alert(`Sign Up Error: ${data.error}`);
-	} catch (error) {
-		console.error('Error signing up:', error);
-		alert('An unexpected error occurred. Please try again later.');
-	}
+        // Send FormData instead of JSON
+        const response = await fetch('/api/accounts/user-profile/', {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
+                // No 'Content-Type' header here; FormData sets it automatically
+            },
+            body: formData, // Include the FormData object
+            credentials: 'include',
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log("Profile updated successfully:", data);
+
+            // Update the profile view with the new data
+            DOM.profileUsername.textContent = data.username;
+            DOM.profileEmail.textContent = data.email;
+            DOM.profileFirstName.textContent = data.first_name || 'N/A';
+            DOM.profileLastName.textContent = data.last_name || 'N/A';
+
+            // Switch back to view mode
+            DOM.profileEdit.classList.add("d-none");
+            DOM.profileView.classList.remove("d-none");
+			// showScreen("userprofile-screen");
+        } else {
+            alert(`Update Error: ${data.error}`);
+        }
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        alert("An unexpected error occurred. Please try again later.");
+    }
 });
+
 	
 document.addEventListener('DOMContentLoaded', () => {
     Buttons.init(); 
@@ -275,24 +306,25 @@ window.addEventListener("beforeunload", () => {
 
 
 
-document.getElementById('signup-avatar').addEventListener('change', function (event) {
-    const file = event.target.files[0];
-    const fileNameElement = document.getElementById('avatar-filename');
-    fileNameElement.textContent = file ? file.name : 'No file selected';
-});
+// document.getElementById('signup-avatar').addEventListener('change', function (event) {
+//     const file = event.target.files[0];
+//     const fileNameElement = document.getElementById('avatar-filename');
+//     fileNameElement.textContent = file ? file.name : 'No file selected';
 
-DOM.editAvatar.addEventListener("change", () => {
-    const file = DOM.editAvatar.files[0];
-    const avatarFilename = document.getElementById("avatar-filename-edit");
+// });
 
-    if (file) {
-        avatarFilename.textContent = `${file.name}`;
-        console.log("Avatar file selected:", file.name);
-    } else {
-        avatarFilename.textContent = "No file selected";
-        console.log("No file selected.");
-    }
-});
+// DOM.editAvatar.addEventListener("change", () => {
+//     const file = DOM.editAvatar.files[0];
+//     const avatarFilename = document.getElementById("avatar-filename-edit");
+
+//     if (file) {
+//         avatarFilename.textContent = `${file.name}`;
+//         console.log("Avatar file selected:", file.name);
+//     } else {
+//         avatarFilename.textContent = "No file selected";
+//         console.log("No file selected.");
+//     }
+// });
 
 /* Global Scope */
 

@@ -1,4 +1,5 @@
 # backend/apps/accounts/views.py
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.views.decorators.csrf import csrf_exempt
@@ -199,7 +200,7 @@ def register_user(request):
         try:
             avatar = request.FILES.get('avatar')
         except Exception as e:
-            return Response({"equest.FILES.get('avatar')": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"Image upload failure": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         if User.objects.filter(username=alias).exists():
             return Response({"error": "Alias already taken."}, status=status.HTTP_400_BAD_REQUEST)
@@ -222,7 +223,6 @@ def register_user(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-from rest_framework_simplejwt.tokens import RefreshToken
 # from rest_framework_simplejwt.views import TokenObtainPairView
 
 # Login endpoint
@@ -304,14 +304,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.serializers import ModelSerializer
 from rest_framework.decorators import action
 
-class UserProfileSerializer(ModelSerializer):
-    wins = serializers.IntegerField(source='profile.wins', read_only=True)
-    losses = serializers.IntegerField(source='profile.losses', read_only=True)
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'wins', 'losses']  # Include fields to expose
-        read_only_fields = ['id', 'username', 'wins', 'losses']  # Prevent modification of certain fields
-
 # API view for profile management
 class UserProfileView(APIView):
     # authentication_classes = [SessionAuthentication]
@@ -329,7 +321,7 @@ class UserProfileView(APIView):
         jwt_authenticator = JWTAuthentication()
         try:
             # logger.info(f"JWT Access Token: {request.data['access_token']}")
-            # user, token = jwt_authenticator.authenticate(request)
+            user, token = jwt_authenticator.authenticate(request)
             user = request.user
             avatar = request.FILES.get('avatar')
             if not user:

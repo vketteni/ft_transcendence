@@ -18,7 +18,7 @@ class User(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', default='avatars/default-avatar.jpg', blank=True)  # Example: Profile picture
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
-    friends = models.ManyToManyField("self", blank=True, symmetrical=True, related_name="friends_with")
+    friends = models.ManyToManyField("self", blank=True, symmetrical=True)
     def __str__(self):
         return self.username
 
