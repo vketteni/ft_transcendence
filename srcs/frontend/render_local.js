@@ -51,7 +51,7 @@ function moveBall() {
 
 function handleBallCollisions() {
     const ballRadius = GAME_CONFIG.ballDiameter / 2;
-    const speedingFactor = 1.05;
+    const speedingFactor = 1.1;
 
     // Ball collision with top/bottom walls
     if (localState.ball.y - ballRadius <= 0 || localState.ball.y + ballRadius >= GAME_CONFIG.canvasHeight) {
@@ -72,29 +72,30 @@ function handleBallCollisions() {
 }
 
 function isCollidingWithPaddle(paddle, isLeftPaddle) {
+    const ball = localState.ball;
     const ballRadius = GAME_CONFIG.ballDiameter / 2;
 
+    const paddleTop = paddle.y;
+    const paddleBottom = paddle.y + GAME_CONFIG.paddleHeight;
+    const paddleLeft = paddle.x;
+    const paddleRight = paddle.x + GAME_CONFIG.paddleWidth;
+
+    let horizontalCollision;
     if (isLeftPaddle) {
-        return (
-            localState.ball.x - ballRadius <= paddle.x + GAME_CONFIG.paddleWidth &&
-            localState.ball.y >= paddle.y &&
-            localState.ball.y <= paddle.y + GAME_CONFIG.paddleHeight
-        );
+        horizontalCollision = (ball.x - ballRadius <= paddleRight) && (ball.x + ballRadius >= paddleLeft);
     } else {
-        return (
-            localState.ball.x + ballRadius >= GAME_CONFIG.canvasWidth - GAME_CONFIG.paddleWidth &&
-            localState.ball.y >= paddle.y &&
-            localState.ball.y <= paddle.y + GAME_CONFIG.paddleHeight
-        );
+        horizontalCollision = (ball.x + ballRadius >= paddleLeft) && (ball.x - ballRadius <= paddleRight);
     }
+    const verticalCollision = (ball.y + ballRadius >= paddleTop) && (ball.y - ballRadius <= paddleBottom);
+
+    return horizontalCollision && verticalCollision;
 }
 
 function adjustBallAngle(paddle) {
     const paddleCenter = paddle.y + GAME_CONFIG.paddleHeight / 2;
     const hitPosition = (localState.ball.y - paddleCenter) / (GAME_CONFIG.paddleHeight / 2);
 
-    // Adjust ball direction based on where it hits the paddle
-    localState.ball.vy += hitPosition * GAME_CONFIG.ballSpeed * 0.5;
+    localState.ball.vy += hitPosition * 1.5;
 }
 
 function checkScoring() {

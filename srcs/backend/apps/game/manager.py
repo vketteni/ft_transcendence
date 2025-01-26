@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 
 import traceback
 from contextlib import asynccontextmanager
-SCORE_TO_WIN = 3
+SCORE_TO_WIN = 10
 User = get_user_model() 
 
 class DebugLock(Lock):

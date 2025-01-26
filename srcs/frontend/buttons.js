@@ -222,6 +222,13 @@ export const Buttons = {
             connectToMatchmaking("TRNMT");
         });
 
+        DOM.matchBackButton.addEventListener('click', () => {
+            showScreen('userprofile-screen');
+        });
+    
+        DOM.friendsBackButton.addEventListener('click', () => {
+            showScreen('userprofile-screen');
+        });
     },
 };
 

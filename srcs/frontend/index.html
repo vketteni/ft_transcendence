@@ -96,7 +96,11 @@
         <!-- Display View -->
         <div id="profileView" class="text-center w-40">
 			<div class="d-grid gap-2 mx-auto">
-                <img id="profileAvatar" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;" />
+                <div class="d-flex justify-content-center">
+                    <img id="profileAvatar" 
+                         class="rounded-circle border border-white img-fluid"
+                         style="width: 100px; height: 100px; object-fit: cover;" />
+                </div>
 				<p><strong>Username:</strong> <span id="profileUsername"></span></p>
 				<p><strong>Email:</strong> <span id="profileEmail"></span></p>
 				<p><strong>First Name:</strong> <span id="profileFirstName"></span></p>
@@ -170,7 +174,12 @@
 
     <!-- game screen -->
 	<div id="game-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-		<div class="game-container d-flex flex-column justify-content-center align-items-center overflow-hidden">
+		<p class="text-light">
+            First to <strong>10 points</strong> wins! <br>
+            <strong>Left Paddle:</strong> <kbd>W</kbd> / <kbd>S</kbd> <br>
+            <strong>Right Paddle:</strong> <kbd>⬆</kbd> / <kbd>⬇</kbd>
+        </p>
+        <div class="game-container d-flex flex-column justify-content-center align-items-center overflow-hidden">
 			<div id="timerDisplay" class="visually-hidden"></div>
 			<canvas id="canvas" class="border border-2 border-white"></canvas>
 			<button id="pause-button" class="btn btn-lg btn-outline-light mt-3">Pause</button>
@@ -284,7 +293,7 @@
 				</li>
 			</ul>
 			<div class="mt-3">
-				<button class="btn btn-outline-light btn-md" onclick="goBack()">Back</button>
+				<button type=button id="friends-back-button" class="btn btn-outline-info btn-lg">Back</button>
 			</div>
 		</div>
 	</div>
@@ -309,7 +318,7 @@
 				</table>
 			</div>
 			<div class="mt-3">
-				<button class="btn btn-outline-light btn-md" onclick="goBack()">Back</button>
+				<button type=button id="match-back-button" class="btn btn-outline-info btn-lg">Back</button>
 			</div>
 		</div>
 	</div>

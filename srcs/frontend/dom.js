@@ -143,17 +143,16 @@ export const DOM = {
 	acceptButton: document.getElementById('accept-button'),
 	rejectButton: document.getElementById('reject-button'),
 	acceptText: document.getElementById('accept-text'),
-
-
-
     
     // Match history screen
     matchHistoryScreen: document.getElementById('match-history-screen'),
     matchHistoryTable: document.getElementById('match-history-table'),
+    matchBackButton: document.getElementById('match-back-button'),
     
     // Friends screen
     friendScreen: document.getElementById('friends-screen'),
     friendList: document.getElementById('friends-list'),
+    friendsBackButton: document.getElementById('friends-back-button'),
     
 };
 
