@@ -156,8 +156,8 @@ function localRender() {
         leftPlayer = lgPlayers[0] || "Player 1";
         rightPlayer = lgPlayers[1] || "Player 2";
     }
-    DOM.ctx.fillText(leftPlayer, GAME_CONFIG.canvasWidth * 0.2, nameOffsetY);
-    DOM.ctx.fillText(rightPlayer, GAME_CONFIG.canvasWidth * 0.8, nameOffsetY);
+    document.getElementById('left-player-name').textContent = leftPlayer;
+    document.getElementById('right-player-name').textContent = rightPlayer;
     
     DOM.ctx.fillText(localState.paddles.left.score, GAME_CONFIG.canvasWidth * 0.2, scoreOffsetY);
     DOM.ctx.fillText(localState.paddles.right.score, GAME_CONFIG.canvasWidth * 0.8, scoreOffsetY);

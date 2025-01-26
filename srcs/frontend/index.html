@@ -174,11 +174,28 @@
 
     <!-- game screen -->
 	<div id="game-screen" class="d-none d-flex flex-column justify-content-center align-items-center vh-100 bg-cover text-center px-3">
-		<p class="text-light">
-            First to <strong>10 points</strong> wins! <br>
-            <strong>Left Paddle:</strong> <kbd>W</kbd> / <kbd>S</kbd> <br>
-            <strong>Right Paddle:</strong> <kbd>⬆</kbd> / <kbd>⬇</kbd>
-        </p>
+		<!-- Player Names & Rules -->
+        <div class="d-flex w-75 justify-content-between align-items-center text-light mb-2">
+            <!-- Left Player Name -->
+            <h6 id="left-player-name" 
+                class="text-start text-truncate fw-semibold flex-shrink-0 m-0"
+                style="width: 25%; font-size: 2vw; white-space: nowrap;">
+            </h6>
+    
+            <p class="mb-1 fw-medium text-center flex-grow-1"
+                style="font-size: 2vw; line-height: 1.4; white-space: normal;">
+                First to <strong>10 points</strong> wins! <br>
+                <strong>Left Paddle:</strong> <kbd>W</kbd> / <kbd>S</kbd> <br>
+                <strong>Right Paddle:</strong> <kbd>⬆</kbd> / <kbd>⬇</kbd>
+            </p>
+
+            <!-- Right Player Name -->
+            <h6 id="right-player-name" 
+                class="text-end text-truncate fw-semibold flex-shrink-0 m-0"
+                style="width: 25%; font-size: 2vw; white-space: nowrap;">
+            </h6>
+        </div>
+        
         <div class="game-container d-flex flex-column justify-content-center align-items-center overflow-hidden">
 			<div id="timerDisplay" class="visually-hidden"></div>
 			<canvas id="canvas" class="border border-2 border-white"></canvas>

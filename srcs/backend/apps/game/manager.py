@@ -374,21 +374,20 @@ class GameManager:
             left_score = game_state['paddles']['left']['score']
             right_score = game_state['paddles']['right']['score']
 
-            # Check if game is over
-            if left_score >= SCORE_TO_WIN or right_score >= SCORE_TO_WIN:
-                player1_id = next(
+            player1_id = next(
                     (player['alias'] for player in game_state['players'].values() if player['side'] == 'left'),
                     None
                 )
-                player2_id = "Computer" if game_state['ai_controlled'] else next(
-                    (player['alias'] for player in game_state['players'].values() if player['side'] == 'right'),
-                    None
-                )
-
-                # Fetch User objects
-                player1 = await self.get_user(player1_id) 
-                player2 = await self.get_user(player2_id)
-
+            player2_id = "Computer" if game_state['ai_controlled'] else next(
+                (player['alias'] for player in game_state['players'].values() if player['side'] == 'right'),
+                None
+            )
+            player1 = await self.get_user(player1_id) 
+            player2 = await self.get_user(player2_id)
+            
+            # Check if game is over
+            if left_score >= SCORE_TO_WIN or right_score >= SCORE_TO_WIN:
+            
                 winner = player1.username if left_score >= SCORE_TO_WIN else player2.username
                 looser = player1.username if left_score < SCORE_TO_WIN else player2.username
                 
@@ -478,7 +477,7 @@ class GameManager:
                 logger.info("After reset_game().")
 
                 continue
-
+            logger.info(f"Usernames are {player1.username}, {player2.username}")
             # Normalize state
             norm_state = self.normalize_state(game_state)
             await self.channel_layer.group_send(
@@ -489,8 +488,11 @@ class GameManager:
                         'type': 'state_update',
                         'ball': norm_state['ball'],
                         'paddles': norm_state['paddles'],
-                        'players': game_state['players'],
                         'spectators': game_state['spectators'],
+                        'players': {
+                            'left': str(player1.username),
+                            'right': str(player2.username)
+                        },
                     },
                 }
             )

@@ -77,23 +77,27 @@ export let clientState = {
 };
 
 export let serverState = {
-        paddles: {
-            left: { 
-                    y: clientState.paddles.left.y,
-                    x: clientState.paddles.left.x,
-                    score: clientState.paddles.left.score },
-            right: { 
-                    y: clientState.paddles.right.y,
-                    x: clientState.paddles.right.x,
-                    score: clientState.paddles.right.score },
-            },
-        ball: {
-            x: clientState.ball.x,
-            y: clientState.ball.y,
-            vx: clientState.ball.vx,
-            vy: clientState.ball.vy,
-            render: clientState.ball.render,
+    players: {
+        left: "",
+        right: "",
+    },
+    paddles: {
+        left: { 
+                y: clientState.paddles.left.y,
+                x: clientState.paddles.left.x,
+                score: clientState.paddles.left.score },
+        right: { 
+                y: clientState.paddles.right.y,
+                x: clientState.paddles.right.x,
+                score: clientState.paddles.right.score },
         },
+    ball: {
+        x: clientState.ball.x,
+        y: clientState.ball.y,
+        vx: clientState.ball.vx,
+        vy: clientState.ball.vy,
+        render: clientState.ball.render,
+    },
 };
 
 export function resetClientState() {
@@ -121,6 +125,9 @@ export function resetClientState() {
 
 export function updateServerState(serverData) {
     
+    serverState.players.left = serverData.players.left;
+    serverState.players.right = serverData.players.right;
+
     serverState.ball.x = serverData.ball.x * GAME_CONFIG.canvasWidth;
     serverState.ball.y = serverData.ball.y * GAME_CONFIG.canvasHeight;
     serverState.ball.vx = serverData.ball.vx * GAME_CONFIG.canvasWidth;

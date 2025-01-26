@@ -21,8 +21,11 @@ export function render() {
     DOM.ctx.fillStyle = 'white';
     DOM.ctx.textAlign = 'center';
 
-    const nameOffsetY = fontSize * 2.2;
-    const scoreOffsetY = nameOffsetY + fontSize * 1.7;
+    const scoreOffsetY = fontSize * 2.2;
+
+    // Update player names dynamically
+    document.getElementById('left-player-name').textContent = serverState.players.left || "Mysterious User";
+    document.getElementById('right-player-name').textContent = serverState.players.right || "Mysterious User";
 
     DOM.ctx.fillText(
         serverState.paddles.left.score,
