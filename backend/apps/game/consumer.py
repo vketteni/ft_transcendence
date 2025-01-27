@@ -52,7 +52,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             logger.info("Consumer.Connect() after tournament check")
 
             user_id = self.game_attributes.get("user_id")
-            async_to_sync(game_manager.add_channel_to_player_map(user_id, self.channel_name))
+            async_to_sync(game_manager.add_player_to_channel_map(user_id, self.channel_name))
 
             # Generate group name dynamically
             self.room_group_name = f"game_{self.game_attributes['room_id']}"

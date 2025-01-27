@@ -22,7 +22,6 @@ class DebugLock(Lock):
     def __init__(self):
         super().__init__()
         self.owner = None
-
     async def acquire(self):
         if self.locked():
             logger.error(f"Lock already held by: {traceback.format_stack()}")
@@ -55,7 +54,6 @@ class GameManager:
         self.channel_layer = get_channel_layer()
         self.locks = defaultdict(DebugLock)
         self.game_loop = GameLoop(self)
-        self.user_id_map = {} 
         self.redis_client = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
         self.CHANNEL_MAP_KEY = "game:channel_map"
 
@@ -71,7 +69,7 @@ class GameManager:
             }
         }
 
-    def add_channel_to_player_map(self, player_id, channel_name):
+    def add_player_to_channel_map(self, player_id, channel_name):
         logger.info(f"user {player_id} adds channel {channel_name}")
         self.redis_client.hset(self.CHANNEL_MAP_KEY, player_id, channel_name)
 
