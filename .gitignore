@@ -1,0 +1,6 @@
+**/migrations/**
+**/__pycache__/**
+sslcert/server.crt
+sslcert/server.key
+backend/celerybeat-schedule
+.env
