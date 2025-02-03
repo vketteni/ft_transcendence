@@ -64,9 +64,9 @@ class GameConsumer(AsyncWebsocketConsumer):
             # Add player to the room via GameManager
             await game_manager.add_player(**self.game_attributes)
 
-            # # Start the game manager if it's not running
-            if not game_manager.running:
-                await game_manager.start()
+            # # # Start the game manager if it's not running
+            # if not game_manager.running:
+            #     await game_manager.start()
                 
         except jwt.ExpiredSignatureError:
             logger.error("Token has expired.")
@@ -104,6 +104,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             await game_manager.update_player_input(room_id, user_id, up, down)
 
         elif action == 'player_ready':
+            logger.info("Received 'player_ready'")
             await game_manager.set_game_started(room_id, user_id)
 
         elif action == 'pause_game':

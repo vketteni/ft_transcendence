@@ -1,65 +1,55 @@
-import logging
 import asyncio
+import logging
+import time
+import random
+import asyncio
+
+from channels.layers import get_channel_layer
+
 logger = logging.getLogger(__name__)
 
-
 class GameLoop:
-    def __init__(self, room_id, manager, initial_game_state):
-        self.room_id = room_id
+
+    def __init__(self, manager):
         self.manager = manager
-        self.queue = asyncio.Queue()
-        self.game_state = initial_game_state
-        self.running = False
+        self.lock = asyncio.Lock()
+        self.ai_last_update = {}
+        self.ai_predicted_y = {}
 
-    async def start(self):
-        """
-        Main loop that processes events and updates the game state.
-        """
-        self.running = True
-        logger.info(f"Game loop started for room {self.room_id}")
-        
-        # Main game loop
-        while self.running:
-            try:
-                # Process events from the queue
-                try:
-                    event = self.queue.get_nowait()
-                    await self.handle_event(event)
-                except asyncio.QueueEmpty:
-                    pass
+    async def run(self):
+        TICK_RATE = 60
+        next_frame_time = time.perf_counter()
+        frame_duration = 1.0 / TICK_RATE
+        broadcast_interval = 0.01
+        last_broadcast_time = 0
+        try:
+            while self.manager.running:
+      
+                start = time.perf_counter()
+                dt = start - next_frame_time + frame_duration
+    
+                for room_id, game_state in self.manager.games.items():
+                    if game_state.get('paused', False):
+                        continue
 
-                # Update game state
-                dt = 1.0 / 60  # Assume 60 FPS
-                await self.update_game_state(self.manager.config, self.game_state, dt)
+                    if game_state.get('game_started'):
+                        await self.update_game_state(self.manager.config, game_state, dt)
+                        
+                if start - last_broadcast_time >= broadcast_interval:
+                    await self.manager.broadcast_all_states()
+                    last_broadcast_time = start
+    
+                next_frame_time += frame_duration
+                sleep_duration = next_frame_time - time.perf_counter()
+                if sleep_duration > 0:
+                    await asyncio.sleep(sleep_duration)
 
-                # Broadcast game state periodically
-                await self.manager.broadcast_state(self.room_id, self.game_state)
+        except Exception as e:
+            logger.error(f"Error in game loop: {e}")
 
-                # Sleep until next tick
-                await asyncio.sleep(dt)
-            except Exception as e:
-                logger.error(f"Error in game loop for room {self.room_id}: {e}")
-
-    async def stop(self):
-        self.running = False
-        logger.info(f"Game loop stopped for room {self.room_id}")
-
-    async def handle_event(self, event):
-        """
-        Handle events sent from the GameManager (e.g., player input, pause, resume).
-        """
-        event_type = event["type"]
-        if event_type == "player_input":
-            user_id = event["user_id"]
-            input_data = event["input"]
-            self.update_player_input(user_id, input_data)
-        elif event_type == "pause":
-            self.game_state["paused"] = True
-        elif event_type == "resume":
-            self.game_state["paused"] = False
-        elif event_type == "stop":
-            await self.stop()
-        # Handle other events as needed
+        finally:
+            logger.debug("Exiting game loop. Cleaning up.")
+            self.manager.running = False
 
     async def update_game_state(self, config, game_state, dt):
         if game_state['ball']['render']:
@@ -70,14 +60,6 @@ class GameLoop:
         self.update_paddles(config, game_state, dt)
         if game_state['ai_controlled']:
             self.update_ai_paddle(config, game_state, dt)
-
-    def update_player_input(self, user_id, input_data):
-        """
-        Update a player's input in the game state.
-        """
-        if user_id in self.game_state["players"]:
-            self.game_state["players"][user_id]["input"] = input_data
-
 
     def update_paddles(self, config, game_state, dt):
         paddle_speed = 550 * dt
@@ -258,39 +240,34 @@ class GameLoop:
             ball['vx'] = -ball['vx']
             ball['vy'] = 600 * relative_hit
 
-    async def handle_scoring(self):
-        """
-        Check if a goal was scored and update the game state.
-        If the game is over, notify the GameManager.
-        """
-        ball_state = self.game_state['ball']
-        canvas = self.manager.config['canvas']
+    async def handle_scoring(self, config, game_state):
+        ball_state = game_state['ball']
+        canvas = config['canvas']
 
-        if ball_state['x'] < 0:  # Left side (point for right paddle)
-            self.game_state['paddles']['right']['score'] += 1
-            await self.manager.notify_score(self.room_id, "right", self.game_state)
-            await self.reset_ball('right')
+        if ball_state['x'] < 0:
+            game_state['paddles']['right']['score'] += 1
+            asyncio.create_task(self.reset_ball(config, ball_state, canvas, 'right'))
+        elif ball_state['x'] > canvas['width']:
+            game_state['paddles']['left']['score'] += 1
+            asyncio.create_task(self.reset_ball(config, ball_state, canvas, 'left'))
 
-        elif ball_state['x'] > canvas['width']:  # Right side (point for left paddle)
-            self.game_state['paddles']['left']['score'] += 1
-            await self.manager.notify_score(self.room_id, "left", self.game_state)
-            await self.reset_ball('left')
+    async def reset_ball(self, config, ball, canvas, lost_side):
+        try:
+            async with self.lock:  # Prevent race conditions
+                ball['render'] = False
+        
+                ball['x'] = canvas['width'] / 2  # Ensure it's a float, not int
+                ball['y'] = canvas['height'] / 2
 
-    async def reset_ball(self, lost_side):
-        """
-        Reset the ball after a score, pausing briefly before resuming.
-        """
-        ball = self.game_state['ball']
-        canvas = self.manager.config['canvas']
-        config = self.manager.config
+                if lost_side == 'left':
+                    ball['vx'] = config['ball']['speed']
+                else:
+                    ball['vx'] = -config['ball']['speed']
+                ball['vy'] = config['ball']['speed'] * (-1 if random.random() < 0.5 else 1)
 
-        # Hide ball during reset
-        ball['render'] = False
-        ball['x'] = canvas['width'] / 2
-        ball['y'] = canvas['height'] / 2
-        ball['vx'] = config['ball']['speed'] if lost_side == 'left' else -config['ball']['speed']
-        ball['vy'] = config['ball']['speed'] * (-1 if random.random() < 0.5 else 1)
+                await asyncio.sleep(1)
+                
+                ball['render'] = True
 
-        # Small delay before ball becomes active again
-        await asyncio.sleep(1)
-        ball['render'] = True
+        except Exception as e:
+            logger.error(f"Error resetting ball: {e}")
