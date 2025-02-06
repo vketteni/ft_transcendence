@@ -56,7 +56,7 @@ class GameManager:
                 'speed': 350
             }
         }
-        self.SCORE_TO_WIN = 3
+        self.SCORE_TO_WIN = 2
 
     async def create_or_get_game(self, **kwargs):
         room_id = kwargs.get("room_id")
@@ -209,6 +209,7 @@ class GameManager:
         """
         Handle game over: record match, notify players, update tournaments.
         """
+        await self.loops[room_id].stop()
         logger.info(f"🏆 Game in room {room_id} is over! Winner: {winner_side}")
         game_state = self.games.get(room_id)
     
@@ -241,6 +242,7 @@ class GameManager:
                         'type': 'game_over',
                         'message': f"Game Over! {winner} wins!",
                         'winner': str(winner),
+                        'players': game_state['game_attributes'].get('users'),
                     },
                 }
             )
@@ -252,7 +254,8 @@ class GameManager:
             logger.error(f"Error recording match: {e}")
     
         # Reset game state
-        self.loops[room_id].reset_game()
+        # self.loops[room_id].reset_game()
+
 
     async def get_user(self, identifier):
         """Fetches user object by ID (if integer) or by username otherwise."""

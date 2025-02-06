@@ -26,11 +26,11 @@ class GameLoop:
                 # Sleep until next tick
                 await asyncio.sleep(dt)
                 # Process events from the queue
-                logger.info("Process events from the queue")
                 try:
                     event = self.queue.get_nowait()
                     await self.handle_event(event)
                 except asyncio.QueueEmpty:
+                    
                     pass
 
                 if not self.game_state.get('game_started') or self.game_state.get('paused'):
@@ -52,12 +52,14 @@ class GameLoop:
         """
         Handle events sent from the GameManager (e.g., player input, pause, resume).
         """
+        logger.info(f"Process event: {event}")
         event_type = event["type"]
         if event_type == "player_input":
             user_id = event["user_id"]
             input_data = event["input"]
             self.update_player_input(user_id, input_data)
         elif event_type == "set_game_started":
+            logger.info(f"Select event: {event_type}")
             user_id = event["user_id"]
             self.set_game_started(user_id)
         elif event_type == "pause":
@@ -68,7 +70,7 @@ class GameLoop:
             await self.stop()
         # Handle other events as needed
 
-    async def set_game_started(self, user_id):
+    def set_game_started(self, user_id):
         """
         Mark the user as ready. If all players and spectators are ready, start the game.
         """
@@ -116,16 +118,19 @@ class GameLoop:
         """
 
         # Normalize the game state before sending
-        self.game_state.update(self.normalize_state())
+        message = self.game_state.copy()
+        message.update(self.normalize_state())
+        
+        # logger.info(f"Sending ball: {message.get('ball')}")
+        # logger.info(f"Sending player paddle: {self.game_state.get('paddles').get('left')}")
         
         await self.manager.channel_layer.group_send(
             f"game_{self.room_id}",
             {
                 'type': 'game_message',
-                'data': self.game_state,
+                'data': message,
             }
         )
-        logger.info(f"Send game_message to game_{self.room_id}.")
 
     def update_player_input(self, user_id, input_data):
         """
@@ -317,7 +322,7 @@ class GameLoop:
 
     def reset_game(self):
         game_state = self.game_state
-        config = self.config
+        config = self.manager.config
         # Reset scores
         game_state['paddles']['left']['score'] = 0
         game_state['paddles']['right']['score'] = 0
@@ -339,6 +344,39 @@ class GameLoop:
         game_state['paused'] = True
 
         game_state.clear()
+
+    def normalize_state(self):
+        """
+        Converts absolute game state positions into relative values (0 to 1) 
+        for standardized broadcasting.
+        """
+        config = self.manager.config
+        canvas_width = config['canvas']['width']
+        canvas_height = config['canvas']['height']
+    
+        return {
+            'type': 'state_update',
+            'ball': {
+                'x': self.game_state['ball']['x'] / canvas_width,
+                'y': self.game_state['ball']['y'] / canvas_height,
+                'vx': self.game_state['ball']['vx'] / canvas_width,
+                'vy': self.game_state['ball']['vy'] / canvas_height,
+                'render': self.game_state['ball']['render'],
+            },
+            'paddles': {
+                'left': {
+                    'x': self.game_state['paddles']['left']['x'] / canvas_width,
+                    'y': self.game_state['paddles']['left']['y'] / canvas_height,
+                    'score': self.game_state['paddles']['left']['score'],
+                },
+                'right': {
+                    'x': self.game_state['paddles']['right']['x'] / canvas_width,
+                    'y': self.game_state['paddles']['right']['y'] / canvas_height,
+                    'score': self.game_state['paddles']['right']['score'],
+                },
+            }
+        }
+
 
     async def handle_scoring(self):
         """
